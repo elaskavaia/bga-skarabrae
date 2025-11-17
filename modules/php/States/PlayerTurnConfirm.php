@@ -11,49 +11,36 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\GameState;
 
-class PlayerTurn extends GameState {
+class PlayerTurnConfirm extends GameState {
     public function __construct(protected Game $game) {
         parent::__construct(
             $game,
-            id: StateConstants::STATE_PLAYER_TURN_OP,
+            id: StateConstants::STATE_PLAYER_TURN_CONF,
             type: StateType::ACTIVE_PLAYER, // This state type means that one player is active and can do actions
-            descriptionMyTurn: clienttranslate('${you} perform an action'), // We tell the ACTIVE player what they must do
+            descriptionMyTurn: clienttranslate('${you} mus confirm'), // We tell the ACTIVE player what they must do
             description: clienttranslate('${actplayer} performs an action') // We tell OTHER players what they are waiting for
         );
     }
 
     public function getArgs(int $active_player_id): array {
-        // Send playable card ids of the active player privately
-        $args = $this->game->machine->getArgs($active_player_id);
-        //XXX send description to other players?
-        return [
-            "description" => $args["description"] ?? "",
-            "_private" => [
-                $active_player_id => $args,
-            ],
-        ];
+        return [];
     }
 
     public function onEnteringState(int $active_player_id) {
-        return $this->game->machine->onEnteringPlayerState($active_player_id);
+        return;
     }
     #[PossibleAction]
     function action_resolve(#[JsonParam] array $data) {
-        return $this->game->machine->action_resolve((int) $this->game->getCurrentPlayerId(), $data);
+        $this->game->notify->all("message", ""); // empty message
+        return GameDispatch::class;
     }
-    #[PossibleAction]
-    function action_skip() {
-        return $this->game->machine->action_skip((int) $this->game->getCurrentPlayerId());
-    }
+
     #[PossibleAction]
     function action_undo(int $move_id = 0) {
         return $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
     }
-    #[PossibleAction]
-    function action_whatever() {
-        return $this->game->machine->action_whatever((int) $this->game->getCurrentPlayerId());
-    }
+
     public function zombie(int $playerId) {
-        return $this->game->machine->action_whatever($playerId);
+        return;
     }
 }

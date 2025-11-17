@@ -1,0 +1,26 @@
+type|name|php
+#set id=Op_{type}
+
+#set class=
+
+#set class=Op_gain
+
+shell|Gain Shell
+rabbit|Gain Rabbit
+barley|Gain Barley
+fish|Gain Fish
+seaweed|Gain Seaweed
+sheep|Gain Sheep
+wool|Gain Wool
+deer|Gain Deer
+stone|Gain Stone
+cow|Gain Cow
+wood|Gain Wood
+skaill|Gain Skaill
+hide|Gain Hide
+food|Gain Food
+bone|Gain Bone
+midden|Gain Midden
+
+#set class=Operation_nop
+nop|None

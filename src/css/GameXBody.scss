@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -11,5 +10,24 @@
  * skarabrae.scss
  *
  */
-@import url(../../../css/csslayer.css); /* Note: you must not use any @import directive other than this one */
-/********* You can start writing your CSS below this line: **********/
+
+//@use "variables" as v;
+
+$full-colors-list: (
+  _ff0000: #ff0000,
+  _008000: #008000,
+  _0000ff: #0000ff,
+  _ffa500: #ffa500,
+  _e94190: #e94190,
+  _982fff: #982fff,
+  _72c3b1: #72c3b1,
+  _f07f16: #f07f16,
+  _bdd002: #bdd002,
+  _7b7b7b: #7b7b7b,
+  _000000: #000000,
+  _ffffff: #ffffff,
+  _6cd0f6: #6cd0f6,
+  _ef58a2: #ef58a2,
+  _ffcc02: #ffcc02,
+  _a0d28c: #a0d28c
+);

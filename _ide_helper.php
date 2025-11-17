@@ -1152,7 +1152,7 @@ namespace Bga\GameFramework {
          * @see mysql_affected_rows()
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function DbAffectedRow(): int
+        final static public function DbAffectedRow(): int
         {
             return 0;
         }
@@ -1163,7 +1163,7 @@ namespace Bga\GameFramework {
          * @see mysql_insert_id()
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function DbGetLastId(): int
+        final static public function DbGetLastId(): int
         {
             return 0;
         }
@@ -1173,7 +1173,7 @@ namespace Bga\GameFramework {
          *
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function DbQuery(string $sql): null|\mysqli_result|bool
+        final static public function DbQuery(string $sql): null|\mysqli_result|bool
         {
             return null;
         }
@@ -1189,7 +1189,7 @@ namespace Bga\GameFramework {
          * @see mysql_real_escape_string()
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function escapeStringForDB(string $string): string
+        final static public function escapeStringForDB(string $string): string
         {
             return ''; 
         }
@@ -1204,7 +1204,7 @@ namespace Bga\GameFramework {
          * @see Table::getCollectionFromDB
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array
+        final static public function getObjectListFromDB(string $sql, bool $bUniqueValue = false): array
         {
             return [];
         }
@@ -1215,7 +1215,7 @@ namespace Bga\GameFramework {
          * @throws \BgaSystemException Raise an exception if more than 1 row is returned.
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getUniqueValueFromDB(string $sql): mixed
+        final static public function getUniqueValueFromDB(string $sql): mixed
         {
             return null;
         }
@@ -1320,7 +1320,7 @@ namespace Bga\GameFramework {
          *
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getCollectionFromDB(string $sql, bool $bSingleValue = false): array
+        final public function getCollectionFromDB(string $sql, bool $bSingleValue = false): array
         {
             return [];
         }
@@ -1348,7 +1348,7 @@ namespace Bga\GameFramework {
          *
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getDoubleKeyCollectionFromDB(string $sql, bool $bSingleValue = false): array
+        final public function getDoubleKeyCollectionFromDB(string $sql, bool $bSingleValue = false): array
         {
             return [];
         }
@@ -1457,7 +1457,7 @@ namespace Bga\GameFramework {
          * @see Table::getCollectionFromDB()
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getNonEmptyCollectionFromDB(string $sql): array
+        final public function getNonEmptyCollectionFromDB(string $sql): array
         {
             return [];
         }
@@ -1470,7 +1470,7 @@ namespace Bga\GameFramework {
          * @see Table::getObjectFromDB()
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getNonEmptyObjectFromDB(string $sql): array
+        final public function getNonEmptyObjectFromDB(string $sql): array
         {
             return [];
         }
@@ -1482,7 +1482,7 @@ namespace Bga\GameFramework {
          * @throws \BgaSystemException if the query return more than one row.
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Accessing_the_database
          */
-        final public static function getObjectFromDB(string $sql): array
+        final public function getObjectFromDB(string $sql): array
         {
             return [];
         }
@@ -1504,7 +1504,7 @@ namespace Bga\GameFramework {
          * @param int $player_id a player id
          * @return int the player before
          */
-        final public function getPlayerBefore(int $playerId): int
+        final public function getPlayerauto(int $playerId): int
         {
             return 0;
         }
