@@ -22,10 +22,8 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_nop extends Operation {
-    /** User does the action */
+class Op_gather2 extends Operation {
     function resolve(mixed $data = []) {
-        $this->notifyMessage(""); // empty message
-        return;
+        $this->queue("wool/stone", $this->getOwner());
     }
 }

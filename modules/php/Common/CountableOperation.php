@@ -23,13 +23,14 @@ namespace Bga\Games\skarabrae\Common;
 use Bga\Games\skarabrae\States\PlayerTurn;
 
 abstract class CountableOperation extends Operation {
-    function auto() {
+    function auto(): bool {
         $count = $this->getCount();
         $mcount = $this->getMinCount();
         if ($count == $mcount && !$this->requireConfirmation()) {
-            return $this->resolve();
+            $this->resolve();
+            return true;
         }
-        return PlayerTurn::class;
+        return false;
     }
     function getPossibleMoves() {
         $res = [];
@@ -39,6 +40,10 @@ abstract class CountableOperation extends Operation {
             $res[] = "$i";
         }
         return $res;
+    }
+
+    public function getExtraArgs() {
+        return ["count" => $this->getCount()];
     }
 
     function getCount() {

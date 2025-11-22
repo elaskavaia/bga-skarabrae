@@ -18,6 +18,9 @@
  */
 namespace Bga\Games\skarabrae\Db;
 use Bga\GameFramework\Table;
+use Exception;
+use feException;
+
 class DbTokens {
     var $table;
     var $autoreshuffle = false; // If true, a new deck is automatically formed with a reshuffled discard as soon at is needed

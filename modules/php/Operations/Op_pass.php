@@ -23,8 +23,8 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\Common\Operation;
 
 class Op_pass extends Operation {
-    function auto() {
+    function auto(): bool {
         $this->notifyMessage('${player_name} passes');
-        return;
+        return true;
     }
 }

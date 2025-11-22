@@ -21,11 +21,17 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Game;
 
-class Op_nop extends Operation {
-    /** User does the action */
-    function resolve(mixed $data = []) {
-        $this->notifyMessage(""); // empty message
-        return;
+class Op_turnall extends Operation {
+    function auto(): bool {
+        $this->game->globals->inc(Game::TURNS_NUMBER_GLOBAL, 1);
+        $players_basic = $this->game->loadPlayersBasicInfos();
+        // schedle player in order of disk TODO
+        foreach ($players_basic as $player_info) {
+            $color = $player_info["player_color"];
+            $this->queue("turn", $color);
+        }
+        return true;
     }
 }

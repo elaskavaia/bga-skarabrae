@@ -11,21 +11,102 @@
 
 /** Game class. Its Call XBody to be last in alphabetical order */
 class GameXBody extends GameMachine {
+  readonly gameTemplate = `
+<div id="thething">
+<div id="players_panels"></div>
+<div id="mainarea">
+ <div id="cardset_1" class="cardset cardset_1"></div>
+ <div id="cardset_2" class="cardset cardset_2"></div>
+ <div id="cardset_3" class="cardset cardset_3"></div>
+</div>
+</div>
+<div id="oversurface"></div>
+`;
   setup(gamedatas) {
     super.setup(gamedatas);
-    //super.setup(gamedatas);
 
-    this.getGameAreaElement().insertAdjacentHTML(
-      "beforeend",
-      ` 
-<div id="thething">
-  <div class="whiteblock cow">${_("Should we eat the cow now?")}</div>
-</div>
-      `
-    );
+    placeHtml(this.gameTemplate, this.getGameAreaElement());
+    // Setting up player boards
+    for (const playerId of gamedatas.playerorder) {
+      const playerInfo = gamedatas.players[playerId];
+      this.setupPlayer(playerInfo);
+    }
+
+    // if (this.isSolo()) {
+    //   const playerInfo = gamedatas.players[1];
+    //   this.setupPlayer(playerInfo);
+    // }
+    super.setupGame(gamedatas);
 
     this.setupNotifications();
     console.log("Ending game setup");
+  }
+  setupPlayer(playerInfo: any) {
+    console.log("player info " + playerInfo.id, playerInfo);
+    const pp = `player_panel_content_${playerInfo.color}`;
+    document.querySelectorAll(`#${pp}>.miniboard`).forEach((node) => node.remove());
+    placeHtml(`<div id='miniboard_${playerInfo.color}' class='miniboard'></div>`, pp);
+    placeHtml(
+      `
+      <div id='tableau_${playerInfo.color}' class='tableau'>
+         <div id='pboard_${playerInfo.color}' class='pboard'>
+                 <div id='track_furnish_${playerInfo.color}' class='track_furnish track'>
+                 </div>
+                 <div id='track_trade_${playerInfo.color}' class='track_trade track'>
+                 </div>
+         </div>
+         <div id='action_area_${playerInfo.color}' class='action_area'></div>
+      </div>`,
+      "players_panels"
+    );
+
+    for (let i = 0; i <= 6; i++) {
+      placeHtml(
+        `<div id='slot_furnish_${i}_${playerInfo.color}' class='slot_furnish slot_furnish_${i}'></div>`,
+        `track_furnish_${playerInfo.color}`
+      );
+    }
+    for (let i = 0; i <= 7; i++) {
+      placeHtml(
+        `<div id='slot_trade_${i}_${playerInfo.color}' class='slot_trade slot_trade_${i}'></div>`,
+        `track_trade_${playerInfo.color}`
+      );
+    }
+  }
+
+  showHelp(id: string) {
+    return false;
+  }
+  onUpdateTokenInDom(tokenNode: HTMLElement, tokenInfo: Token, tokenInfoBefore: Token, animationDuration: number = 0) {
+    return;
+  }
+  updateTokenDisplayInfo(tokenDisplayInfo: TokenDisplayInfo) {
+    // override to generate dynamic tooltips and such
+  }
+  hideCard(tokenId: ElementOrId) {
+    $("limbo")?.appendChild($(tokenId));
+  }
+
+  getPlaceRedirect(tokenInfo: Token): TokenMoveInfo {
+    const location = tokenInfo.location;
+
+    const result: TokenMoveInfo = {
+      location: location,
+      key: tokenInfo.key,
+      state: tokenInfo.state
+    };
+    const tokenId = tokenInfo.key;
+
+    if (tokenId.startsWith("action") && location.startsWith("tableau")) {
+      const color = getPart(location, 1);
+      result.location = `action_area_${color}`;
+      result.onClick = (x) => this.onToken(x);
+    } else if (location?.startsWith("discard")) {
+      result.onEnd = (node) => this.hideCard(node);
+    } else if (location?.startsWith("deck")) {
+      result.onEnd = (node) => this.hideCard(node);
+    }
+    return result;
   }
 
   setupNotifications() {
@@ -37,7 +118,7 @@ class GameXBody extends GameMachine {
       minDurationNoText: 1,
 
       logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
-
+      //handlers: [this, this.tokens],
       onStart: (notifName, msg, args) => this.statusBar.setTitle(msg, args),
       onEnd: (notifName, msg, args) => this.statusBar.setTitle("", args)
     });
@@ -45,5 +126,32 @@ class GameXBody extends GameMachine {
   async notif_message(args: any) {
     //console.log("notif", args);
     return this.wait(10);
+  }
+  /** @Override */
+  bgaFormatText(log: string, args: any) {
+    if (log && args && !args.processed) {
+      args.processed = true;
+      try {
+        if (!args.player_id) {
+          args.player_id = this.getActivePlayerId();
+        }
+        if (args.player_id && !args.player_name) {
+          args.player_name = this.gamedatas.players[args.player_id].name;
+        }
+
+        if (args.you) args.you = this.divYou(); // will replace ${you} with colored version
+        args.You = this.divYou(); // will replace ${You} with colored version
+
+        if (args.reason) {
+          args.reason = "(" + this.getTokenName(args.reason) + ")";
+        }
+        const res = super.bgaFormatText(log, args);
+        log = res.log;
+        args = res.args;
+      } catch (e) {
+        console.error(log, args, "Exception thrown", e.stack);
+      }
+    }
+    return { log, args };
   }
 }

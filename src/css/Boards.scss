@@ -1,0 +1,79 @@
+.tableau {
+  position: relative;
+  $height: 500px;
+  & > * {
+    position: relative;
+    height: $height;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .pboard {
+    aspect-ratio: 332 / 273;
+    background-image: url(img/pboard.jpg);
+    background-size: cover;
+  }
+  .action_area {
+    aspect-ratio: 25 / 16;
+
+    $cols: 5;
+    $rows: 2;
+
+    .action {
+      position: absolute;
+      width: 20%;
+      height: 50%;
+
+      &.active_slot {
+        z-index: 2;
+      }
+    }
+    .action.special {
+      right: 0;
+      bottom: 0;
+    }
+
+    @for $num from 1 through 9 {
+      $i: $num - 1;
+      $col: $i % $cols;
+      $row: calc(($i - $col) / $cols);
+
+      .action_main_#{$num} {
+        left: calc($col * 100% / ($cols));
+        top: calc($row * 100% / ($rows));
+      }
+    }
+  }
+}
+
+.track_furnish {
+  position: absolute;
+  left: 5%;
+  top: 26%;
+  width: 44%;
+  height: 20%;
+}
+.track_furnish .slot_furnish {
+  display: inline-block;
+  width: 10%;
+  aspect-ratio: 1/1;
+  margin-left: 3.4%;
+  top: 6%;
+  position: relative;
+}
+
+.track_trade {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 50%;
+  height: 20%;
+}
+
+.slot_trade {
+  display: inline-block;
+  width: 8%;
+  aspect-ratio: 1/1;
+  margin-left: 4.1%;
+  top: 13%;
+  position: relative;
+}

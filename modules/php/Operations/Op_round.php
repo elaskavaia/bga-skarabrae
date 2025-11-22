@@ -24,16 +24,20 @@ use Bga\Games\skarabrae\Common\Operation;
 use Bga\Games\skarabrae\Game;
 
 class Op_round extends Operation {
-    function auto() {
+    function auto(): bool {
         // start the round
         $roundNum = $this->game->globals->inc(Game::ROUNDS_NUMBER_GLOBAL, 1);
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
 
         $this->game->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
 
-        $this->queue("turn", null);
-        $this->queue("turn", null);
-        $this->queue("turn", null);
+        for ($i = 1; $i <= 3; $i++) {
+            $cards = $this->game->tokensmop->tokens->pickTokensForLocation(4, "deck_village", "cardset_$i"); // XXX 5 for 4 ppl
+            $this->game->tokensmop->dbSetTokensLocation($cards, "cardset_$i", 0, "*", ["place_from" => "deck_village"]);
+            $this->queue("turnall", null, ["num" => $i]);
+        }
+
         $this->queue("endOfRound", null);
+        return true;
     }
 }

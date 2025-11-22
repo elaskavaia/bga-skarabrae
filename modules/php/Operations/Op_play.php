@@ -22,10 +22,18 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_nop extends Operation {
-    /** User does the action */
+class Op_play extends Operation {
+    function auto(): bool {
+        $this->resolve();
+        return true;
+    }
+
     function resolve(mixed $data = []) {
-        $this->notifyMessage(""); // empty message
+        $this->game->notify->all("message", clienttranslate('${player_name} says hello'));
         return;
+    }
+
+    function getDescription() {
+        return '${actplayer} saying hello';
     }
 }

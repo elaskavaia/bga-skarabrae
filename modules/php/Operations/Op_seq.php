@@ -41,12 +41,13 @@ class Op_seq extends ComplexOperation {
 
         return $stored;
     }
-    function auto() {
+    function auto(): bool {
         if ($this->storeDelegates()) {
-            return;
+            return true;
         }
 
         $this->game->machine->interrupt();
         $this->game->machine->renice($this->delegates[0], 1);
+        return true;
     }
 }

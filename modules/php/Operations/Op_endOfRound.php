@@ -21,11 +21,14 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Game;
 
-class Op_nop extends Operation {
-    /** User does the action */
-    function resolve(mixed $data = []) {
-        $this->notifyMessage(""); // empty message
-        return;
+class Op_endOfRound extends Operation {
+    function auto(): bool {
+        $cards = $this->game->tokensmop->getTokensOfTypeInLocation(null, "cardset_%");
+        $this->game->tokensmop->dbSetTokensLocation($cards, "discard_village");
+        $this->queue("round");
+
+        return true;
     }
 }

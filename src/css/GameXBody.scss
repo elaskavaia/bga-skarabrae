@@ -11,23 +11,124 @@
  *
  */
 
-//@use "variables" as v;
+@use "variables" as v;
+@use "Cards";
+@use "Boards";
+@use "Tokens";
+@use "Tooltip";
 
-$full-colors-list: (
-  _ff0000: #ff0000,
-  _008000: #008000,
-  _0000ff: #0000ff,
-  _ffa500: #ffa500,
-  _e94190: #e94190,
-  _982fff: #982fff,
-  _72c3b1: #72c3b1,
-  _f07f16: #f07f16,
-  _bdd002: #bdd002,
-  _7b7b7b: #7b7b7b,
-  _000000: #000000,
-  _ffffff: #ffffff,
-  _6cd0f6: #6cd0f6,
-  _ef58a2: #ef58a2,
-  _ffcc02: #ffcc02,
-  _a0d28c: #a0d28c
-);
+#oversurface {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#oversurface > * {
+  position: absolute;
+  transition-property: all;
+  transition-duration: 500ms;
+  transition-timing-function: ease-in-out;
+  /* background-color: blue; */
+  transform-origin: center center;
+}
+
+.phantom {
+  animation: pulse 500ms ease-in-out;
+}
+
+.limbo {
+  display: none;
+}
+
+#thething {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+// BUTTONS
+
+.bgabutton_orange {
+  background-color: #b17300;
+}
+a.bgabutton_white {
+  background-color: white;
+  color: darkgrey;
+}
+
+.bgabutton_targetcolor {
+  background-color: #2196f3c7;
+}
+
+.bgabutton_purple {
+  background-color: rgb(43, 15, 76);
+}
+
+.bgabutton.disabled {
+  pointer-events: unset; // undo bga default
+}
+
+// .bgabutton.disabled:hover {
+//   background-color: red;
+// }
+
+.bgabutton.disabled:active {
+  pointer-events: unset; // none - prevent default click, but not hover
+}
+
+.active_slot {
+  cursor: pointer;
+  //box-shadow: 0px 0px 4px 2px v.$activeColor !important;
+
+  outline: 4px dashed v.$activeColor;
+}
+
+.gg_selected,
+.gg_selected_alt {
+  box-shadow: 0px 0px 5px 5px v.$selectionColor !important;
+}
+
+.gg_selected_alt {
+  &.segment {
+    margin-top: 0em !important;
+  }
+  &.target_container_card {
+    margin-top: 0em !important;
+  }
+}
+
+.gg_selected_alt[data-count] {
+  box-shadow:
+    0 0 0 2px white,
+    0.3em 0.3em 1em gray !important;
+}
+
+#undoredo_wrap {
+  margin-left: 5px;
+  margin-right: 5px;
+  float: right;
+}
+// unset top otherwise its misaligned
+#go_to_next_table_active_player,
+#go_to_next_table_inactive_player {
+  top: 0px;
+}
+
+.button_undo {
+  min-width: 2em;
+  background-image: none;
+  // &::before {
+  //   content: "\f049"; //' "\f0e2";
+  //   font-size: large;
+  //   font-family: FontAwesome;
+  // }
+}
+
+html {
+  background-image: url(img/stonex.jpg);
+}

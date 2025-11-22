@@ -51,21 +51,27 @@ interface OpInfo {
 }
 
 /**  Generic processing related to Operation Machine */
-class GameMachine extends GameBasics {
-  onEnteringState_auto(args: any) {
-    if (args?.description && !this.isCurrentPlayerActive()) {
-      this.statusBar.setTitle(args.description, args.args);
+class GameMachine extends Game1Tokens {
+  onEnteringState_PlayerTurn(args: OpInfo) {
+    if (!this.isCurrentPlayerActive()) {
+      if (args?.description) this.statusBar.setTitle(args.description, args);
+      return;
     }
-  }
-  onUpdateActionButtons_PlayerTurn(args: OpInfo) {
     this.completeOpInfo(args);
     if (args.descriptionOnMyTurn) {
-      this.statusBar.setTitle(args.descriptionOnMyTurn, args.args);
+      this.statusBar.setTitle(args.descriptionOnMyTurn, args);
     }
 
     for (const target of args.target) {
       const paramInfo = args.info[target];
-      this.statusBar.addActionButton(this.getTr(paramInfo.name), () => this.resolveAction({ target }));
+      const div = $(target);
+      let name = paramInfo.name;
+      if (div) {
+        div.classList?.add(this.classActiveSlot);
+        if (!name) name = div.dataset.name;
+      }
+      if (!name) name = target;
+      this.statusBar.addActionButton(this.getTr(name), () => this.resolveAction({ target }));
     }
     for (const target in args.info) {
       const paramInfo = args.info[target];
@@ -76,19 +82,56 @@ class GameMachine extends GameBasics {
     }
 
     // need a global condition when this can be added
-    this.statusBar.addActionButton(_("Undo"), () => this.bgaPerformAction("action_undo"), { color: "alert" });
+    this.addUndoButton();
+  }
+
+  /** default click processor */
+  onToken(event: Event, fromMethod?: string) {
+    console.log(event);
+    let id: string = this.onClickSanity(event);
+    if (!id) return true;
+    if (!fromMethod) fromMethod = "onToken";
+    event.stopPropagation();
+    event.preventDefault();
+    var methodName = fromMethod + "_" + this.getStateName();
+    let ret = this.callfn(methodName, id);
+    if (ret === undefined) return false;
+    return true;
+  }
+
+  onToken_PlayerTurn(tid: string) {
+    //debugger;
+    if (!tid) return false;
+    this.resolveAction({ target: tid });
   }
 
   onUpdateActionButtons_PlayerTurnConfirm(args: any) {
     this.statusBar.addActionButton(_("Confirm"), () => this.resolveAction());
 
-    this.statusBar.addActionButton(_("Undo"), () => this.bgaPerformAction("action_undo"), { color: "alert" });
+    this.addUndoButton();
   }
 
   resolveAction(args: any = {}) {
     this.bgaPerformAction("action_resolve", {
       data: JSON.stringify(args)
     });
+  }
+
+  addUndoButton() {
+    if (!$("button_undo") && !this.isSpectator && this.isCurrentPlayerActive()) {
+      const div = this.statusBar.addActionButton(_("Undo"), () => this.bgaPerformAction("action_undo"), {
+        color: "alert",
+        id: "button_undo"
+      });
+      div.classList.add("button_undo");
+      div.title = _("Undo all possible steps");
+      $("undoredo_wrap")?.appendChild(div);
+
+      // const div2 = this.addActionButtonColor("button_undo_last", _("Undo"), () => this.sendActionUndo(-1), "red");
+      // div2.classList.add("button_undo");
+      // div2.title = _("Undo One Step");
+      // $("undoredo_wrap")?.appendChild(div2);
+    }
   }
 
   completeOpInfo(opInfo: OpInfo) {
@@ -120,6 +163,13 @@ class GameMachine extends GameBasics {
         const paramInfo = opInfo.info[target];
         if (!paramInfo.o) paramInfo.o = i;
         i++;
+      }
+
+      if (opInfo.info.confirm && !opInfo.info.confirm.name) {
+        opInfo.info.confirm.name = _("Confirm");
+      }
+      if (opInfo.info.skip && !opInfo.info.skip.name) {
+        opInfo.info.skip.name = _("Skip");
       }
     } catch (e) {
       console.error(e);

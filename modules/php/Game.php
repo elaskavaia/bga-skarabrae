@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae;
 
 use Bga\GameFramework\NotificationMessage;
+use Bga\Games\skarabrae\Common\PGameTokens;
 use Bga\Games\skarabrae\Db\DbTokens;
 use Bga\Games\skarabrae\States\GameDispatch;
 
@@ -31,7 +32,6 @@ class Game extends Base {
     public OpMachine $machine;
     public Material $material;
     public PGameTokens $tokensmop;
-    public DbTokens $tokens;
 
     function __construct() {
         parent::__construct();
@@ -39,27 +39,65 @@ class Game extends Base {
 
         $this->material = new Material();
         $this->machine = new OpMachine();
-        $this->tokens = new DbTokens($this);
-        $this->tokensmop = new PGameTokens($this, $this->tokens);
+        $tokens = new DbTokens($this);
+        $this->tokensmop = new PGameTokens($this, $tokens);
 
         $this->notify->addDecorator(function (string $message, array $args) {
-            if (!isset($args["player_id"])) {
-                $args["player_id"] = $this->getActivePlayerId();
+            if (str_contains($message, '${reason}') && !isset($args["reason"])) {
+                $args["reason"] = "";
             }
-
             return $args;
         });
     }
 
     /*
-        setupNewGame:
+        initTables:
         
-        This method is called only once, when a new game is launched.
-        In this method, you must setup the game according to the game rules, so that
-        the game is ready to be played.
+        init all game tables (players and stats init in base class)
+        called from setupNewGame
     */
-    protected function setupNewGame($players, $options = []) {
-        parent::setupNewGame($players, $options);
+    protected function initTables() {
+        $this->tokensmop->createTokens();
+        $tokens = $this->tokensmop->tokens;
+        // setup
+
+        /* 
+        1. Each player takes 1 Player Board with a Slider placed over the second column of the Storage Area (see below). 
+        They also place 1 Furnish Marker into the left-most slot of the Furnish Track, and 1 Trade Marker into the left-most slot of the Trade Track. 
+        */
+        $players = $this->loadPlayersBasicInfos();
+
+        //2. Each player takes all 9 Standard Action Tiles in their chosen player colour (see the banner in the top-right corner of each Tile).
+        //These should be placed in the correct order to the right of their Player Board so that the artwork lines up. Make sure that all Action Tiles are placed on their correct side. Each Action Tile should show 2 Resources on a tan banner along the bottom edge.
+
+        //3. Each player places all 4 of their Workers in a nearby reserve (these are not in their supply yet).
+
+        //4. Place all Resources, Roof Cards, and Extra Storage Tiles into a Main Supply.
+        //5. Each player takes 2 Skaill Knives from the Main Supply, placing them to the left of the Slider on their Player Board (each in a separate space of the Storage Area).
+        foreach ($players as $player_id => $player) {
+            $color = $this->getPlayerColorById((int) $player_id);
+            $this->effect_incCount($color, "skaill", 2, "setup");
+        }
+        //6. Place the Turn Order Tile within reach of all players.
+        //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
+        //2-Players: Include 1 more Turn Marker of an unused colour.
+        //Solo: Return the Turn Order Tile and all Turn Markers to the box.
+
+        //7. Shuffle all Village Cards, placing them into a facedown Draw Pile.
+        $tokens->shuffle("deck_village");
+        /*
+         * 8. Solo games only: Shuffle the Focus Cards, placing 1 faceup above the Player Board. Return the rest to box. Shuffle the Task Cards, placing 4 faceup above the Player Board. Return the rest to box.
+         */
+        /*
+         * 9. Shuffle all Special Action Tiles and deal 2 to each player. Players must select 1 to keep, returning the other to the box.
+         * 1-2 Players: If desired, 3 Special Action Tiles can be dealt to each player instead, with each player returning 2 of them.
+         */
+        $tokens->shuffle("deck_action"); // XXX
+        foreach ($players as $player_id => $player) {
+            $color = $this->getPlayerColorById((int) $player_id);
+            $tokens->pickTokensForLocation(1, "deck_action", "tableau_$color");
+        }
+
         $this->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
         $this->globals->set(Game::ROUNDS_NUMBER_GLOBAL, 0);
         $this->machine->push("round", $this->getPlayerColorById((int) $this->getActivePlayerId()));
@@ -77,26 +115,7 @@ class Game extends Base {
     */
     protected function getAllDatas(): array {
         $result = parent::getAllDatas();
-        $table_options = $this->getTableOptions();
-        $result["table_options"] = [];
-        foreach ($table_options as $option_id => $option) {
-            $value = $this->tableOptions->get($option_id) ?? ($option["default"] ?? 0);
-            $result["table_options"][$option_id] = $option;
-            $result["table_options"][$option_id]["value"] = $value;
-        }
-        //$result["CON"] = $this->game->getPhpConstants("MA_");
 
-        // Get information about players
-        // Note: this is needed because basic does not have the score
-
-        $players = $this->loadPlayersBasicInfosWithBots();
-
-        foreach ($players as $player_id => $player) {
-            foreach ($player as $pkey => $value) {
-                $key = str_replace("player_", "", $pkey);
-                $result["players"][$player_id][$key] = $value;
-            }
-        }
         $result = array_merge($result, $this->tokensmop->getAllDatas());
         return $result;
     }
@@ -125,16 +144,51 @@ class Game extends Base {
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
     ////////////
-    /*
-     * In this space, you can put any utility methods useful for your game logic
-     */
 
     function effect_incCount(string $color, string $type, int $inc = 1, string $reason, array $options = []) {
         $message = array_get($options, "message", "*");
         unset($options["message"]);
+
+        $min = array_get($options, "min", 0);
+        $check = array_get($options, "check", true);
+        unset($options["min"]);
+        unset($options["check"]);
+
         $token_id = $this->tokensmop->getTrackerId($color, $type);
-        //$this->createCounterToken($token_id);
-        $this->tokensmop->dbResourceInc($token_id, $inc, $message, ["reason" => $reason], $this->getPlayerIdByColor($color), $options);
+        $current = $this->tokensmop->getTrackerValue($color, $type);
+        $value = $current + $inc;
+        if ($inc < 0) {
+            if ($value < $min && $check) {
+                $message = new NotificationMessage(clienttranslate('Not enough ${token_name} to pay: ${value} of ${absInc}'), [
+                    "token_name" => $this->getTokenName($token_id),
+                    "value" => $current,
+                    "absInc" => -$inc,
+                ]);
+                $this->userAssert($message, false);
+            }
+        }
+        if (array_get($options, "onlyCheck")) {
+            return;
+        }
+
+        $this->tokensmop->dbResourceInc($token_id, $inc, $message, ["reason" => $reason] + $options, $this->getPlayerIdByColor($color));
+    }
+
+    function effect_incTrack(string $color, string $type, int $inc = 1, string $reason, array $args = []) {
+        $message = array_get($args, "message", "*");
+        unset($args["message"]);
+        $token_id = $this->tokensmop->getTrackerId($color, $type);
+        $value = $this->tokensmop->getTrackerValue($color, $type);
+        $value = $value + $inc;
+        $location = "slot_{$type}_{$value}_{$color}";
+        $this->tokensmop->dbSetTokenLocation(
+            $token_id,
+            $location,
+            $value,
+            $message,
+            $args + ["reason" => $reason],
+            $this->getPlayerIdByColor($color)
+        );
     }
 
     function getRulesFor($token_id, $field = "r", $default = "") {
@@ -178,6 +232,32 @@ class Game extends Base {
         return $this->debug_playAutomatically(1);
     }
 
+    function debug_maxRes() {
+        $color = $this->getCurrentPlayerColor();
+        $ress = [
+            "shell",
+            "rabbit",
+            "barley",
+            "fish",
+            "seaweed",
+            "sheep",
+            "wool",
+            "deer",
+            "stone",
+            "cow",
+            "wood",
+            "skaill",
+            "hide",
+            "food",
+            "bone",
+        ];
+        foreach ($ress as $res) {
+            $this->effect_incCount($color, $res, 2, "debug");
+        }
+
+        $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
+    }
+
     function debug_initTables() {
         $this->DbQuery("DELETE FROM token");
         $this->DbQuery("DELETE FROM machine");
@@ -188,5 +268,24 @@ class Game extends Base {
         $this->notify->all("message", "setup is done", []);
         $this->notify->all("undoRestorePoint", "", []);
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
+    }
+
+    function debug_dumpMachine() {
+        $t = $this->machine->gettableexpr();
+        $this->debugLog("all stack", ["t" => $t]);
+        return $t;
+    }
+    function debug_dumpMachineDb() {
+        $t = $this->machine->gettablearr();
+        $this->debugLog("all stack", ["t" => $t]);
+        return $t;
+    }
+    function debugConsole($info, $args = []) {
+        $this->notifyAllPlayers("log", $info, $args);
+        $this->warn($info);
+    }
+    function debugLog($info, $args = []) {
+        $this->notifyAllPlayers("log", "", $args + ["info" => $info]);
+        $this->warn($info);
     }
 }

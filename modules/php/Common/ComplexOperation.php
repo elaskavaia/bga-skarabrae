@@ -57,12 +57,12 @@ abstract class ComplexOperation extends Operation {
         return $stored;
     }
 
-    function auto() {
+    function auto(): bool {
         if ($this->storeDelegates()) {
-            return;
+            return true;
         }
 
-        return PlayerTurn::class;
+        return false;
     }
 
     function getPossibleMoves() {

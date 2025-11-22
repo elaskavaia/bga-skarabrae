@@ -1,0 +1,27 @@
+mtype|name|state|php
+
+#player counters
+#set id=tracker_{mtype}
+#set type=tracker wooden {mtype}
+#set create=4
+#set location=miniboard_{COLOR}
+#set state=0
+
+shell|Shell
+rabbit|Rabbit
+barley|Barley
+fish|Fish
+seaweed|Seaweed
+sheep|Sheep
+wool|Wool
+deer|Deer
+stone|Stone
+cow|Cow
+wood|Wood
+skaill|Skaill
+hide|Hide
+food|Food
+bone|Bone
+midden|Midden
+
+

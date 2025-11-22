@@ -22,10 +22,27 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_nop extends Operation {
-    /** User does the action */
+/** Standard action */
+class Op_act extends Operation {
+    function getArgType() {
+        return Operation::ARG_TOKEN;
+    }
+
+    function getPossibleMoves() {
+        $owner = $this->getOwner();
+        return array_keys($this->game->tokensmop->getTokensOfTypeInLocation("action", "tableau_$owner"));
+    }
     function resolve(mixed $data = []) {
-        $this->notifyMessage(""); // empty message
-        return;
+        $action_tile = $this->getCheckedArg($data);
+        $r = $this->game->getRulesFor($action_tile);
+        if ($r) {
+            $this->queue($r);
+        } else {
+            $this->game->userAssert("not implemented yet $action_tile");
+        }
+    }
+
+    public function getPrompt() {
+        return clienttranslate("Select an action for worker");
     }
 }

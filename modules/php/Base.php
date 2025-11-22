@@ -50,14 +50,18 @@ class Base extends Table {
             //    "my_second_game_variant" => 101,
             //      ...
         ]);
-
-        // $this->notify->addDecorator(function (string $message, array $args) {
-        //     if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
-        //         $args["player_name"] = $this->getPlayerNameById($args["player_id"]);
-        //     }
-
-        //     return $args;
-        // });
+        $this->notify->addDecorator(function (string $message, array $args) {
+            if (!isset($args["player_id"])) {
+                $args["player_id"] = $this->getActivePlayerId();
+            }
+            if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
+                $args["player_name"] = $args["player_id"]; // replaced on client side, this is for reply
+            }
+            if (str_contains($message, '${you}')) {
+                $args["you"] = "You"; // translated on client side, this is for replay after
+            }
+            return $args;
+        });
     }
 
     /*
@@ -109,10 +113,44 @@ class Base extends Table {
         // TODO: setup the initial game situation here
 
         // Activate first player (which is in general a good idea :) )
-        $this->activeNextPlayer();
+        $this->gamestate->changeActivePlayer($this->getFirstPlayer());
 
-        /************ End of the game initialization *****/
+        $this->initStats();
+        // Setup the initial game situation here
+        return $this->initTables();
+        /**
+         * ********** End of the game initialization ****
+         */
     }
+    public function initStats() {
+        // INIT GAME STATISTIC
+        $all_stats = $this->getStatTypes();
+        $player_stats = $all_stats["player"];
+        // auto-initialize all stats that starts with game_
+        // we need a prefix because there is some other system stuff
+        foreach ($player_stats as $key => $value) {
+            if (startsWith($key, "game_")) {
+                $this->initStat("player", $key, 0);
+            }
+            if ($key === "turns_number") {
+                $this->initStat("player", $key, 0);
+            }
+        }
+        $table_stats = $all_stats["table"];
+        foreach ($table_stats as $key => $value) {
+            if (startsWith($key, "game_")) {
+                $this->initStat("table", $key, 0);
+            }
+            if ($key === "turns_number") {
+                $this->initStat("table", $key, 0);
+            }
+        }
+    }
+
+    /**
+     * override to setup all custom tables
+     */
+    protected function initTables() {}
 
     /*
         getAllDatas: 
@@ -131,8 +169,27 @@ class Base extends Table {
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result["players"] = self::getCollectionFromDb($sql);
 
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        //$result["CON"] = $this->game->getPhpConstants("MA_");
 
+        // Get information about players
+        // Note: this is needed because basic does not have the score
+
+        $players = $this->loadPlayersBasicInfosWithBots();
+
+        foreach ($players as $player_id => $player) {
+            foreach ($player as $pkey => $value) {
+                $key = str_replace("player_", "", $pkey);
+                $result["players"][$player_id][$key] = $value;
+            }
+        }
+        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        $table_options = $this->getTableOptions();
+        $result["table_options"] = [];
+        foreach ($table_options as $option_id => $option) {
+            $value = $this->tableOptions->get($option_id) ?? ($option["default"] ?? 0);
+            $result["table_options"][$option_id] = $option;
+            $result["table_options"][$option_id]["value"] = $value;
+        }
         return $result;
     }
 
@@ -253,9 +310,9 @@ class Base extends Table {
      *
      * @return integer player id based on hex $color, player is not in the list return 0
      */
-    function getPlayerIdByColor(?string $color) {
+    function getPlayerIdByColor(?string $color): int {
         if (!$color) {
-            return $this->getActivePlayerId();
+            return (int) $this->getActivePlayerId();
         }
 
         $players = $this->loadPlayersBasicInfosWithBots();
@@ -268,7 +325,7 @@ class Base extends Table {
         if (!isset($this->player_colors[$color])) {
             return 0;
         }
-        return $this->player_colors[$color];
+        return (int) $this->player_colors[$color];
     }
 
     /**
@@ -285,6 +342,10 @@ class Base extends Table {
     function userAssert(string|NotificationMessage $message, $cond = false) {
         if ($cond) {
             return;
+        }
+
+        if ($message instanceof NotificationMessage) {
+            throw new BgaUserException($message->message, args: $message->args);
         }
 
         throw new BgaUserException($message);
@@ -409,9 +470,9 @@ class Base extends Table {
             unset($args["_private"]);
         }
         if ($private) {
-            $this->notifyPlayer($player_id, $type, $message, $args);
+            $this->notify->player($player_id, $type, $message, $args);
         } else {
-            $this->notifyAllPlayers($type, $message, $args);
+            $this->notify->all($type, $message, $args);
         }
     }
 

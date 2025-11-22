@@ -135,15 +135,15 @@ final class GameTest extends TestCase {
     public function testBind() {
         $game = $this->game();
         $color = PCOLOR;
-        $game->machine->push("hello/pass", $color);
+        $game->machine->push("play/pass", $color);
         $tops = $game->machine->getTopOperations($color);
         $op = array_shift($tops);
-        $this->assertEquals("hello/pass", $op["type"]);
+        $this->assertEquals("play/pass", $op["type"]);
 
         $game->machine->dispatchOne();
         $tops = $game->machine->getTopOperations($color);
         $op = array_shift($tops);
-        $this->assertEquals("hello", $op["type"]);
+        $this->assertEquals("play", $op["type"]);
         $data = Operation::decodeData($op["data"]);
         $this->assertEquals("or", $data["parent"]);
         $op = array_shift($tops);

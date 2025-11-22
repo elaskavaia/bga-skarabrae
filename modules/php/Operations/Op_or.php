@@ -43,7 +43,7 @@ class Op_or extends ComplexOperation {
         return clienttranslate('${actplayer} chooses one of the options');
     }
     function getOpName() {
-        $name = $this->game->getTokenName($this->getClassId(), "");
+        $name = $this->game->getTokenName($this->getOpId(), "");
         if ($name) {
             return $name;
         }

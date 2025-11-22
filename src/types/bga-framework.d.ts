@@ -15,7 +15,7 @@ declare const ebg: {
 };
 
 declare const dojo: Dojo;
-
+declare const dijit;
 declare const gameui: GameGui;
 
 /**
@@ -222,6 +222,9 @@ declare class GameGui<G = Gamedatas> {
 
   statusBar: StatusBar;
   sounds: Sounds;
+  last_server_state: any;
+  page_is_unloading: any;
+  tooltips: any[];
 
   /**
    * Setup the whole game GUI with datas from the game
@@ -722,6 +725,7 @@ declare class GameGui<G = Gamedatas> {
   ): void;
 
   clienttranslate_string(text: string): string;
+  inherited(args: any): any;
 }
 
 declare interface Notif<T = any> {

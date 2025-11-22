@@ -1,0 +1,97 @@
+@use "variables" as v;
+
+.tracker {
+  height: 32px;
+  width: 32px;
+
+  .log &,
+  #page-title & {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+.miniboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .tracker {
+    margin-left: 14px;
+    &::after {
+      content: attr(data-state);
+      position: relative;
+      left: -10px;
+      top: 5px;
+    }
+  }
+}
+
+.wooden {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+}
+
+.furnish {
+  background-position: 89% 97%;
+  background-size: auto 453%;
+}
+.trade {
+  background-position: 81% 97%;
+  background-size: auto 453%;
+}
+.wooden.shell {
+  background-position: 0% 34%;
+}
+.wooden.barley {
+  background-position: 8% 34%;
+  background-size: auto 488%;
+}
+.wooden.food {
+  background-position: 16% 34%;
+}
+.wooden.hide {
+  background-position: 24% 34%;
+}
+.wooden.seaweed {
+  background-position: 31.5% 34%;
+  background-size: auto 530%;
+}
+.wooden.skaill {
+  background-position: 39% 38%;
+  background-size: auto 530%;
+}
+.wooden.rabbit {
+  background-position: 55% 33%;
+  background-size: auto 479%;
+}
+.wooden.fish {
+  background-position: 62% 34%;
+  background-size: auto 488%;
+}
+.wooden.sheep {
+  background-position: 10% 66%;
+}
+.wooden.wool {
+  background-position: 48% 34%;
+}
+.wooden.deer {
+  background-position: 20% 63%;
+}
+.wooden.stone {
+  background-position: 80% 34%;
+}
+.wooden.cow {
+  background-position: 40% 64%;
+}
+.wooden.wood {
+  background-position: 50% 67%;
+}
+.wooden.bone {
+  background-position: 71% 37%;
+  background-size: auto 490%;
+}
+.wooden.midden {
+  background-position: 0% 64%;
+}

@@ -21,12 +21,11 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
-use Bga\Games\skarabrae\Game;
 
 class Op_turn extends Operation {
-    function auto() {
-        $this->game->machine->push("play/pass", $this->getOwner());
-
+    function auto(): bool {
+        $this->game->machine->push("act", $this->getOwner());
         $this->game->undoSavepoint();
+        return true;
     }
 }

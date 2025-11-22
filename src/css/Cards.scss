@@ -1,0 +1,100 @@
+@use "variables" as v;
+
+.card,
+.action {
+  height: 30em;
+  aspect-ratio: 638 / 1016;
+  box-shadow: v.$boxShadowBlack;
+}
+.card {
+  border-radius: 5%;
+}
+#mainarea {
+  .card {
+    height: 200px;
+  }
+  .cardset {
+    position: relative;
+    display: block;
+    & > * {
+      display: inline-block;
+      position: relative;
+      vertical-align: top;
+    }
+  }
+}
+.action.main {
+  background-image: url(img/action_Purple_front.jpg);
+  &[data-state="1"] {
+    background-image: url(img/action_Purple_back.jpg);
+  }
+  $cols: 5;
+  $rows: 2;
+
+  background-size: calc($cols * 100%) auto;
+
+  @for $num from 1 through 9 {
+    $i: $num - 1;
+    $col: $i % $cols;
+    $row: calc(($i - $col) / $cols);
+
+    &.action_main_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) calc($row * 100% / ($rows - 1));
+    }
+  }
+}
+.action.special {
+  background-image: url(img/action_Neutral_front.jpg);
+  &[data-state="1"] {
+    background-image: url(img/action_Neutral_back.jpg);
+  }
+  $cols: 8;
+  $rows: 1;
+
+  background-size: calc($cols * 100%) auto;
+
+  @for $num from 1 through 8 {
+    $i: $num - 1;
+    $col: $i % $cols;
+    $row: calc(($i - $col) / $cols);
+
+    &.action_special_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) 0;
+    }
+  }
+}
+.card.setl {
+  background-image: url(img/set_cards.jpg);
+
+  $cols: 15;
+  $rows: 4;
+
+  background-size: calc($cols * 100%) auto;
+
+  @for $num from 1 through 60 {
+    $i: $num - 1;
+    $col: $i % $cols;
+    $row: calc(($i - $col) / $cols);
+
+    &.card_setl_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) calc($row * 100% / ($rows - 1));
+    }
+  }
+}
+
+.card.roof {
+  background-image: url(img/nset_cards.jpg);
+  background-position: calc(3 * 100% / 7) 0;
+  background-size: 800% auto;
+}
+
+.card.util {
+  background-image: url(img/nset_cards.jpg);
+  background-size: 800% auto;
+}
+
+.card.ball {
+  background-image: url(img/nset_cards.jpg);
+  background-size: 800% auto;
+  background-position: calc(4 * 100% / 7) 0;
+}

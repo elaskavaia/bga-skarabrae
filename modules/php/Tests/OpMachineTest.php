@@ -8,6 +8,7 @@ use Bga\Games\skarabrae\Operations\Op_hello;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\Common\CountableOperation;
 use Bga\Games\skarabrae\Operations\Op_or;
+use Bga\Games\skarabrae\Operations\Op_play;
 use Bga\Games\skarabrae\OpMachine;
 use PHPUnit\Framework\TestCase;
 
@@ -24,15 +25,15 @@ class OpMachineTest extends TestCase {
     }
 
     public function testInstanciateOperation() {
-        $op = $this->factory->instanciateOperation("hello", "aaa");
+        $op = $this->factory->instanciateOperation("play", "aaa");
 
-        $this->assertTrue($op instanceof Op_hello);
+        $this->assertTrue($op instanceof Op_play);
         $this->assertEquals($op->getId(), 0);
-        $this->assertEquals($op->getType(), "hello");
+        $this->assertEquals($op->getType(), "play");
     }
 
     public function testInstanciateComplexOperation() {
-        $op = $this->factory->instanciateOperation("hello/pass", "aaa");
+        $op = $this->factory->instanciateOperation("play/pass", "aaa");
 
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals($op->getId(), 0);

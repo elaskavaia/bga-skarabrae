@@ -22,17 +22,8 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_hello extends Operation {
-    function auto() {
-        $this->resolve();
-    }
-
+class Op_gather1 extends Operation {
     function resolve(mixed $data = []) {
-        $this->game->notify->all("message", clienttranslate('${player_name} says hello'));
-        return;
-    }
-
-    function getDescription() {
-        return '${actplayer} saying hello';
+        $this->queue("shell/seaweed", $this->getOwner());
     }
 }

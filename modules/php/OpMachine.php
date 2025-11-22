@@ -76,11 +76,7 @@ class OpMachine {
             return $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withExpr($expr);
         }
 
-        $unrangedType = $type;
-        if (!$expr->isUnranged()) {
-            $unrangedType = OpExpression::str($expr->toUnranged());
-        }
-
+        $unrangedType = OpExpression::str($expr->toUnranged());
         $matches = null;
         $params = null;
         if (preg_match("/^(\w+)\((.*)\)$/", $unrangedType, $matches)) {
@@ -197,8 +193,14 @@ class OpMachine {
         if (!$op) {
             return StateConstants::STATE_MACHINE_HALTED;
         }
-        $this->game->notify->all("message", "starting op " . $op->getType());
+        //$this->game->notify->all("message", "starting op " . $op->getType());
         return $op->onEnteringGameState();
+    }
+
+    /** Debug functions */
+
+    function gettablearr() {
+        return $this->db->gettablearr();
     }
 
     // STATE FUNCTIONS
@@ -230,6 +232,7 @@ class OpMachine {
     function action_undo(int $player_id, int $move_id = 0) {
         $op = $this->createTopOperationFromDb($player_id);
         $op->undo($move_id);
+        $this->push("nop", $this->game->getActivePlayerColor());
         return GameDispatch::class;
     }
 }

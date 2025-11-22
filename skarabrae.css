@@ -1,4 +1,563 @@
 @charset "UTF-8";
+.card,
+.action {
+  height: 30em;
+  aspect-ratio: 638/1016;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5019607843);
+}
+
+.card {
+  border-radius: 5%;
+}
+
+#mainarea .card {
+  height: 200px;
+}
+#mainarea .cardset {
+  position: relative;
+  display: block;
+}
+#mainarea .cardset > * {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+}
+
+.action.main {
+  background-image: url(img/action_Purple_front.jpg);
+  background-size: 500% auto;
+}
+.action.main[data-state="1"] {
+  background-image: url(img/action_Purple_back.jpg);
+}
+.action.main.action_main_1 {
+  background-position: 0% 0%;
+}
+.action.main.action_main_2 {
+  background-position: 25% 0%;
+}
+.action.main.action_main_3 {
+  background-position: 50% 0%;
+}
+.action.main.action_main_4 {
+  background-position: 75% 0%;
+}
+.action.main.action_main_5 {
+  background-position: 100% 0%;
+}
+.action.main.action_main_6 {
+  background-position: 0% 100%;
+}
+.action.main.action_main_7 {
+  background-position: 25% 100%;
+}
+.action.main.action_main_8 {
+  background-position: 50% 100%;
+}
+.action.main.action_main_9 {
+  background-position: 75% 100%;
+}
+
+.action.special {
+  background-image: url(img/action_Neutral_front.jpg);
+  background-size: 800% auto;
+}
+.action.special[data-state="1"] {
+  background-image: url(img/action_Neutral_back.jpg);
+}
+.action.special.action_special_1 {
+  background-position: 0% 0;
+}
+.action.special.action_special_2 {
+  background-position: 14.2857142857% 0;
+}
+.action.special.action_special_3 {
+  background-position: 28.5714285714% 0;
+}
+.action.special.action_special_4 {
+  background-position: 42.8571428571% 0;
+}
+.action.special.action_special_5 {
+  background-position: 57.1428571429% 0;
+}
+.action.special.action_special_6 {
+  background-position: 71.4285714286% 0;
+}
+.action.special.action_special_7 {
+  background-position: 85.7142857143% 0;
+}
+.action.special.action_special_8 {
+  background-position: 100% 0;
+}
+
+.card.setl {
+  background-image: url(img/set_cards.jpg);
+  background-size: 1500% auto;
+}
+.card.setl.card_setl_1 {
+  background-position: 0% 0%;
+}
+.card.setl.card_setl_2 {
+  background-position: 7.1428571429% 0%;
+}
+.card.setl.card_setl_3 {
+  background-position: 14.2857142857% 0%;
+}
+.card.setl.card_setl_4 {
+  background-position: 21.4285714286% 0%;
+}
+.card.setl.card_setl_5 {
+  background-position: 28.5714285714% 0%;
+}
+.card.setl.card_setl_6 {
+  background-position: 35.7142857143% 0%;
+}
+.card.setl.card_setl_7 {
+  background-position: 42.8571428571% 0%;
+}
+.card.setl.card_setl_8 {
+  background-position: 50% 0%;
+}
+.card.setl.card_setl_9 {
+  background-position: 57.1428571429% 0%;
+}
+.card.setl.card_setl_10 {
+  background-position: 64.2857142857% 0%;
+}
+.card.setl.card_setl_11 {
+  background-position: 71.4285714286% 0%;
+}
+.card.setl.card_setl_12 {
+  background-position: 78.5714285714% 0%;
+}
+.card.setl.card_setl_13 {
+  background-position: 85.7142857143% 0%;
+}
+.card.setl.card_setl_14 {
+  background-position: 92.8571428571% 0%;
+}
+.card.setl.card_setl_15 {
+  background-position: 100% 0%;
+}
+.card.setl.card_setl_16 {
+  background-position: 0% 33.3333333333%;
+}
+.card.setl.card_setl_17 {
+  background-position: 7.1428571429% 33.3333333333%;
+}
+.card.setl.card_setl_18 {
+  background-position: 14.2857142857% 33.3333333333%;
+}
+.card.setl.card_setl_19 {
+  background-position: 21.4285714286% 33.3333333333%;
+}
+.card.setl.card_setl_20 {
+  background-position: 28.5714285714% 33.3333333333%;
+}
+.card.setl.card_setl_21 {
+  background-position: 35.7142857143% 33.3333333333%;
+}
+.card.setl.card_setl_22 {
+  background-position: 42.8571428571% 33.3333333333%;
+}
+.card.setl.card_setl_23 {
+  background-position: 50% 33.3333333333%;
+}
+.card.setl.card_setl_24 {
+  background-position: 57.1428571429% 33.3333333333%;
+}
+.card.setl.card_setl_25 {
+  background-position: 64.2857142857% 33.3333333333%;
+}
+.card.setl.card_setl_26 {
+  background-position: 71.4285714286% 33.3333333333%;
+}
+.card.setl.card_setl_27 {
+  background-position: 78.5714285714% 33.3333333333%;
+}
+.card.setl.card_setl_28 {
+  background-position: 85.7142857143% 33.3333333333%;
+}
+.card.setl.card_setl_29 {
+  background-position: 92.8571428571% 33.3333333333%;
+}
+.card.setl.card_setl_30 {
+  background-position: 100% 33.3333333333%;
+}
+.card.setl.card_setl_31 {
+  background-position: 0% 66.6666666667%;
+}
+.card.setl.card_setl_32 {
+  background-position: 7.1428571429% 66.6666666667%;
+}
+.card.setl.card_setl_33 {
+  background-position: 14.2857142857% 66.6666666667%;
+}
+.card.setl.card_setl_34 {
+  background-position: 21.4285714286% 66.6666666667%;
+}
+.card.setl.card_setl_35 {
+  background-position: 28.5714285714% 66.6666666667%;
+}
+.card.setl.card_setl_36 {
+  background-position: 35.7142857143% 66.6666666667%;
+}
+.card.setl.card_setl_37 {
+  background-position: 42.8571428571% 66.6666666667%;
+}
+.card.setl.card_setl_38 {
+  background-position: 50% 66.6666666667%;
+}
+.card.setl.card_setl_39 {
+  background-position: 57.1428571429% 66.6666666667%;
+}
+.card.setl.card_setl_40 {
+  background-position: 64.2857142857% 66.6666666667%;
+}
+.card.setl.card_setl_41 {
+  background-position: 71.4285714286% 66.6666666667%;
+}
+.card.setl.card_setl_42 {
+  background-position: 78.5714285714% 66.6666666667%;
+}
+.card.setl.card_setl_43 {
+  background-position: 85.7142857143% 66.6666666667%;
+}
+.card.setl.card_setl_44 {
+  background-position: 92.8571428571% 66.6666666667%;
+}
+.card.setl.card_setl_45 {
+  background-position: 100% 66.6666666667%;
+}
+.card.setl.card_setl_46 {
+  background-position: 0% 100%;
+}
+.card.setl.card_setl_47 {
+  background-position: 7.1428571429% 100%;
+}
+.card.setl.card_setl_48 {
+  background-position: 14.2857142857% 100%;
+}
+.card.setl.card_setl_49 {
+  background-position: 21.4285714286% 100%;
+}
+.card.setl.card_setl_50 {
+  background-position: 28.5714285714% 100%;
+}
+.card.setl.card_setl_51 {
+  background-position: 35.7142857143% 100%;
+}
+.card.setl.card_setl_52 {
+  background-position: 42.8571428571% 100%;
+}
+.card.setl.card_setl_53 {
+  background-position: 50% 100%;
+}
+.card.setl.card_setl_54 {
+  background-position: 57.1428571429% 100%;
+}
+.card.setl.card_setl_55 {
+  background-position: 64.2857142857% 100%;
+}
+.card.setl.card_setl_56 {
+  background-position: 71.4285714286% 100%;
+}
+.card.setl.card_setl_57 {
+  background-position: 78.5714285714% 100%;
+}
+.card.setl.card_setl_58 {
+  background-position: 85.7142857143% 100%;
+}
+.card.setl.card_setl_59 {
+  background-position: 92.8571428571% 100%;
+}
+.card.setl.card_setl_60 {
+  background-position: 100% 100%;
+}
+
+.card.roof {
+  background-image: url(img/nset_cards.jpg);
+  background-position: 42.8571428571% 0;
+  background-size: 800% auto;
+}
+
+.card.util {
+  background-image: url(img/nset_cards.jpg);
+  background-size: 800% auto;
+}
+
+.card.ball {
+  background-image: url(img/nset_cards.jpg);
+  background-size: 800% auto;
+  background-position: 57.1428571429% 0;
+}
+
+.tableau {
+  position: relative;
+}
+.tableau > * {
+  position: relative;
+  height: 500px;
+  display: inline-block;
+  vertical-align: top;
+}
+.tableau .pboard {
+  aspect-ratio: 332/273;
+  background-image: url(img/pboard.jpg);
+  background-size: cover;
+}
+.tableau .action_area {
+  aspect-ratio: 25/16;
+}
+.tableau .action_area .action {
+  position: absolute;
+  width: 20%;
+  height: 50%;
+}
+.tableau .action_area .action.active_slot {
+  z-index: 2;
+}
+.tableau .action_area .action.special {
+  right: 0;
+  bottom: 0;
+}
+.tableau .action_area .action_main_1 {
+  left: 0%;
+  top: 0%;
+}
+.tableau .action_area .action_main_2 {
+  left: 20%;
+  top: 0%;
+}
+.tableau .action_area .action_main_3 {
+  left: 40%;
+  top: 0%;
+}
+.tableau .action_area .action_main_4 {
+  left: 60%;
+  top: 0%;
+}
+.tableau .action_area .action_main_5 {
+  left: 80%;
+  top: 0%;
+}
+.tableau .action_area .action_main_6 {
+  left: 0%;
+  top: 50%;
+}
+.tableau .action_area .action_main_7 {
+  left: 20%;
+  top: 50%;
+}
+.tableau .action_area .action_main_8 {
+  left: 40%;
+  top: 50%;
+}
+.tableau .action_area .action_main_9 {
+  left: 60%;
+  top: 50%;
+}
+
+.track_furnish {
+  position: absolute;
+  left: 5%;
+  top: 26%;
+  width: 44%;
+  height: 20%;
+}
+
+.track_furnish .slot_furnish {
+  display: inline-block;
+  width: 10%;
+  aspect-ratio: 1/1;
+  margin-left: 3.4%;
+  top: 6%;
+  position: relative;
+}
+
+.track_trade {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 50%;
+  height: 20%;
+}
+
+.slot_trade {
+  display: inline-block;
+  width: 8%;
+  aspect-ratio: 1/1;
+  margin-left: 4.1%;
+  top: 13%;
+  position: relative;
+}
+
+.tracker {
+  height: 32px;
+  width: 32px;
+}
+.log .tracker, #page-title .tracker {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.miniboard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.miniboard .tracker {
+  margin-left: 14px;
+}
+.miniboard .tracker::after {
+  content: attr(data-state);
+  position: relative;
+  left: -10px;
+  top: 5px;
+}
+
+.wooden {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+}
+
+.furnish {
+  background-position: 89% 97%;
+  background-size: auto 453%;
+}
+
+.trade {
+  background-position: 81% 97%;
+  background-size: auto 453%;
+}
+
+.wooden.shell {
+  background-position: 0% 34%;
+}
+
+.wooden.barley {
+  background-position: 8% 34%;
+  background-size: auto 488%;
+}
+
+.wooden.food {
+  background-position: 16% 34%;
+}
+
+.wooden.hide {
+  background-position: 24% 34%;
+}
+
+.wooden.seaweed {
+  background-position: 31.5% 34%;
+  background-size: auto 530%;
+}
+
+.wooden.skaill {
+  background-position: 39% 38%;
+  background-size: auto 530%;
+}
+
+.wooden.rabbit {
+  background-position: 55% 33%;
+  background-size: auto 479%;
+}
+
+.wooden.fish {
+  background-position: 62% 34%;
+  background-size: auto 488%;
+}
+
+.wooden.sheep {
+  background-position: 10% 66%;
+}
+
+.wooden.wool {
+  background-position: 48% 34%;
+}
+
+.wooden.deer {
+  background-position: 20% 63%;
+}
+
+.wooden.stone {
+  background-position: 80% 34%;
+}
+
+.wooden.cow {
+  background-position: 40% 64%;
+}
+
+.wooden.wood {
+  background-position: 50% 67%;
+}
+
+.wooden.bone {
+  background-position: 71% 37%;
+  background-size: auto 490%;
+}
+
+.wooden.midden {
+  background-position: 0% 64%;
+}
+
+/* tooltips */
+.midSizeDialog {
+  max-width: 700px;
+  min-width: 400px;
+}
+
+.tundra .dijitTooltipContainer,
+.tooltipcontainer {
+  background: white;
+  color: black;
+  border: unset;
+  border-radius: unset;
+  padding: unset;
+  margin: 0;
+}
+
+.tundra .dijitTooltipContainer {
+  box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5019607843);
+}
+
+.tooltipcontainer {
+  background-size: cover;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.tooltipcontainer .tooltiptitle {
+  position: relative;
+  font-weight: bold;
+  padding: 0.1em;
+  font-size: x-large;
+}
+.tooltipcontainer .tooltip-body {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.tooltipcontainer li {
+  list-style: circle;
+}
+.tooltipcontainer .tooltiptext {
+  max-width: 500px;
+  top: unset;
+}
+
+.tooltip-left {
+  padding: 0.5em;
+}
+
+.tooltip-right {
+  padding: 0.5em;
+  padding-left: 0em;
+}
+
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -11,5 +570,103 @@
  * skarabrae.scss
  *
  */
-@import url(../../../css/csslayer.css); /* Note: you must not use any @import directive other than this one */
-/********* You can start writing your CSS below this line: **********/
+#oversurface {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#oversurface > * {
+  position: absolute;
+  transition-property: all;
+  transition-duration: 500ms;
+  transition-timing-function: ease-in-out;
+  /* background-color: blue; */
+  transform-origin: center center;
+}
+
+.phantom {
+  animation: pulse 500ms ease-in-out;
+}
+
+.limbo {
+  display: none;
+}
+
+#thething {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bgabutton_orange {
+  background-color: #b17300;
+}
+
+a.bgabutton_white {
+  background-color: white;
+  color: darkgrey;
+}
+
+.bgabutton_targetcolor {
+  background-color: rgba(33, 150, 243, 0.7803921569);
+}
+
+.bgabutton_purple {
+  background-color: rgb(43, 15, 76);
+}
+
+.bgabutton.disabled {
+  pointer-events: unset;
+}
+
+.bgabutton.disabled:active {
+  pointer-events: unset;
+}
+
+.active_slot {
+  cursor: pointer;
+  outline: 4px dashed #19bedb;
+}
+
+.gg_selected,
+.gg_selected_alt {
+  box-shadow: 0px 0px 5px 5px #3f51b5 !important;
+}
+
+.gg_selected_alt.segment {
+  margin-top: 0em !important;
+}
+.gg_selected_alt.target_container_card {
+  margin-top: 0em !important;
+}
+
+.gg_selected_alt[data-count] {
+  box-shadow: 0 0 0 2px white, 0.3em 0.3em 1em gray !important;
+}
+
+#undoredo_wrap {
+  margin-left: 5px;
+  margin-right: 5px;
+  float: right;
+}
+
+#go_to_next_table_active_player,
+#go_to_next_table_inactive_player {
+  top: 0px;
+}
+
+.button_undo {
+  min-width: 2em;
+  background-image: none;
+}
+
+html {
+  background-image: url(img/stonex.jpg);
+}

@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Db;
 
 use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\StateConstants;
-use Bga\GameFramework\States\PossibleAction;
-use Bga\Games\skarabrae\Operations\Operation;
-use Bga\Games\skarabrae\States\GameDispatch;
+use Bga\Games\skarabrae\Common\Operation;
 use BgaSystemException;
-use BgaUserException;
 use Throwable;
 
 /**
@@ -67,6 +63,11 @@ class DbMachine {
                 return false;
             }
         }
+    }
+
+    function gettablearr() {
+        $arr = $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0");
+        return array_values($arr);
     }
 
     /**

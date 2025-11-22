@@ -31,6 +31,10 @@ use Exception;
 
 abstract class Operation {
     const ARG_TARGET = "target";
+    const ARG_TOKEN = "token";
+    const TTYPE_AUTO = "auto";
+    const TARGET_AUTO = "auto";
+    const TARGET_CONFIRM = "confirm";
     protected Game $game;
     protected int $player_id = 0;
     private mixed $data = null;
@@ -51,7 +55,7 @@ abstract class Operation {
     final function getType() {
         return $this->type;
     }
-    final function getClassId() {
+    final function getOpId() {
         return "Op_" . $this->type;
     }
     final function getOwner() {
@@ -137,7 +141,7 @@ abstract class Operation {
             $owner = $this->getOwner();
         }
         if ($reason === null) {
-            $reason = $this->getClassId();
+            $reason = $this->getOpId();
         }
 
         if ($reason) {
@@ -163,6 +167,12 @@ abstract class Operation {
         if ($target !== null) {
             if ($target === $possible_targets) {
                 return $possible_targets;
+            }
+            if ($target === Operation::TTYPE_AUTO) {
+                return $possible_targets[0] ?? [];
+            }
+            if (count($possible_targets) == 1) {
+                return $possible_targets[0];
             }
             if (is_array($target)) {
                 $multi = $target;
@@ -212,8 +222,8 @@ abstract class Operation {
         if ($this->cachedArgs !== null) {
             return $this->cachedArgs;
         }
-        $res = [];
-        $this->cachedArgs = $res;
+        $this->cachedArgs = [];
+        $res = &$this->cachedArgs;
 
         $res["id"] = $this->getId();
         $res["owner"] = $this->getOwner();
@@ -239,6 +249,9 @@ abstract class Operation {
 
         // cleanup nulls to optimize of data transfer
         foreach ($res as $key => $value) {
+            if ($key == Operation::ARG_TARGET) {
+                continue;
+            }
             if ($value === null || $value === false || $value === "") {
                 unset($res[$key]);
             }
@@ -255,7 +268,7 @@ abstract class Operation {
         return $this->getOpName();
     }
     function getOpName() {
-        return $this->game->getTokenName($this->getClassId(), $this->getType());
+        return $this->game->getTokenName($this->getOpId(), $this->getType());
     }
     private function extractPossibleMoves(array &$res, array $details) {
         $targets = [];
@@ -389,19 +402,50 @@ abstract class Operation {
 
     /** Called on game state to see if we can do this one automatically and if not change players and return state we want to be in */
     function onEnteringGameState() {
-        $state = $this->auto();
-        $this->game->systemAssert("Cannot return game dispatch state, return void of false", $state !== GameDispatch::class);
-        if ($state) {
-            return $state;
+        $isAuto = $this->auto();
+
+        if (!$isAuto) {
+            // switch to player state
+            return PlayerTurn::class;
         }
         $this->destroy();
         return;
     }
 
     /** Automatic action perform in game state, if cannot be done automatically turn one of player's states */
-    function auto() {
-        // switch to player state
-        return PlayerTurn::class;
+    function auto(): bool {
+        if (!$this->canResolveAutomatically()) {
+            return false;
+        }
+        $this->checkVoid();
+        $this->action_resolve([]);
+        return true;
+    }
+
+    function checkVoid() {
+        if ($this->isVoid()) {
+            $this->game->userAssert($this->getError());
+        }
+    }
+
+    function canResolveAutomatically() {
+        if ($this->requireConfirmation()) {
+            return false;
+        }
+        if ($this->noValidTargets()) {
+            if ($this->canSkip()) {
+                return true;
+            }
+            return false;
+        }
+
+        if ($this->getArgType() == Operation::TTYPE_AUTO) {
+            return true;
+        }
+        if ($this->isOneChoice()) {
+            return true;
+        }
+        return false;
     }
 
     /** Call onEnteringPlauerState if we go to player's state*/
@@ -410,7 +454,7 @@ abstract class Operation {
     }
 
     function action_resolve(mixed $data) {
-        if (is_string($data) || !$data) {
+        if (!is_array($data)) {
             throw new BgaSystemException("data encoding issues");
         }
         return $this->resolve($data) ?: $this->destroy();

@@ -1,12 +1,8 @@
 <?php
-namespace Bga\Games\skarabrae;
+namespace Bga\Games\skarabrae\Common;
 
-use Bga\GameFramework\NotificationMessage;
 use Bga\Games\skarabrae\Db\DbTokens;
 use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\StateConstants;
-use Bga\Games\skarabrae\States\GameDispatch;
-use Exception;
 
 use function Bga\Games\skarabrae\array_get;
 use function Bga\Games\skarabrae\endsWith;
@@ -24,7 +20,7 @@ class PGameTokens {
     }
 
     protected function setCounter(&$array, $key, $value) {
-        $array[$key] = ["counter_value" => $value, "counter_name" => $key];
+        $array[$key] = ["value" => $value, "name" => $key];
     }
 
     protected function counterNameOf($location) {
@@ -215,12 +211,13 @@ class PGameTokens {
             }
             $location = array_get($info, "location", "limbo");
             $state = array_get($info, "state", 0);
+            $start = array_get($info, "start", 1);
             if (strpos($token_id, "{COLOR}") === false) {
-                $this->tokens->createTokensPack($token_id, $location, $count, 1, null, $state);
+                $this->tokens->createTokensPack($token_id, $location, $count, $start, null, $state);
             } else {
-                $this->tokens->createTokensPack($token_id, $location, $count, 1, $this->game->getPlayerColors(), $state);
+                $this->tokens->createTokensPack($token_id, $location, $count, $start, $this->game->getPlayerColors(), $state);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->game->systemAssert("Failed to create tokens in location $token_id $location x $count ");
         }
     }
@@ -291,7 +288,7 @@ class PGameTokens {
         }
         $this->game->systemAssert("token_id is null/empty $token_id, $place_id $notif", $token_id != null && $token_id != "");
         if ($notif === "*") {
-            $notif = clienttranslate('${player_name} moves ${token_name} into ${place_name}');
+            $notif = clienttranslate('${player_name} moves ${token_name} into ${place_name} ${reason}');
         }
         if ($state === null) {
             $state = $this->tokens->getTokenState($token_id) ?? 0;
@@ -311,10 +308,8 @@ class PGameTokens {
             "new_state" => $state,
             "place_from" => $place_from,
         ];
-        if (strstr($notif, '${you}')) {
-            $notifyArgs["you"] = "You"; // translated on client side, this is for replay after
-        }
-        if (strstr($notif, '${token_div}')) {
+
+        if (str_contains($notif, '${token_div}')) {
             $notifyArgs["token_div"] = $token_id;
         }
         $args = array_merge($notifyArgs, $args);
@@ -360,7 +355,7 @@ class PGameTokens {
         }
         $this->game->systemAssert("place_id cannot be null", $place_id != null);
         if ($notif === "*") {
-            $notif = clienttranslate('${player_name} moves ${token_names} into ${place_name}');
+            $notif = clienttranslate('${player_name} moves ${token_names} into ${place_name} ${reason}');
         }
         $keys = [];
         $states = [];
@@ -442,53 +437,26 @@ class PGameTokens {
      *            - optional $place, only used in notification to show where "resource"
      *            is gain or where it "goes" when its paid, used in client for animation
      */
-    function dbResourceInc($token_id, $num, $message = "*", $args = [], $player_id = null, $options = []) {
-        $current = $this->tokens->getTokenState($token_id);
+    function dbResourceInc($token_id, $num, $message = "*", $args = [], $player_id = null) {
+        $current = $this->tokens->getTokenState($token_id, 0);
         $value = $current + $num;
 
-        $min = array_get($options, "min", 0);
-        $check = array_get($options, "check", true);
-        $ifpossible = array_get($options, "ifpossible", false);
-
-        if ($num < 0) {
-            if ($value < $min && $ifpossible) {
-                $num = 0;
-                $value = $min;
-            } elseif ($value < $min && $check) {
-                $message = new NotificationMessage(clienttranslate('Not enough ${token_name} to pay: ${count} of ${mod}'), [
-                    "token_name" => $this->getTokenName($token_id),
-                    "count" => $current,
-                    "mod" => -$num,
-                ]);
-                $this->game->userAssert($message, false, $token_id);
-            }
-        }
-        if (array_get($options, "onlyCheck")) {
-            return;
-        }
         $this->tokens->setTokenState($token_id, $value);
 
         if ($message == "*") {
             if ($num <= 0) {
-                $message = clienttranslate('${player_name} pays ${token_div} x ${count} ${reason}');
+                $message = clienttranslate('${player_name} pays ${token_div} x ${absInc} ${reason}');
             } else {
-                $message = clienttranslate('${player_name} gains ${token_div} x ${count} ${reason}');
+                $message = clienttranslate('${player_name} gains ${token_div} x ${absInc} ${reason}');
             }
         }
 
         $args = array_merge($args, [
-            "count" => $num,
+            "inc" => $num,
+            "absInc" => abs($num),
             "token_div" => $token_id,
         ]);
-        if (!array_get($args, "reason")) {
-            $reason = array_get($options, "reason", "");
-            $args["reason"] = $reason;
-        }
 
-        $nod = array_get($options, "nod", "");
-        if ($nod) {
-            $args["nod"] = $nod;
-        }
         $this->notifyCounterDirect($token_id, $value, $message, $args, $player_id);
     }
 
@@ -499,7 +467,7 @@ class PGameTokens {
     }
 
     function notifyCounterDirect($key, $value, $message, $notifyArgs = null, $player_id = null) {
-        $args = ["counter_name" => $key, "counter_value" => $value];
+        $args = ["name" => $key, "value" => $value];
         if ($notifyArgs != null) {
             $args = array_merge($notifyArgs, $args);
         }
@@ -529,5 +497,9 @@ class PGameTokens {
         }
         $args["token_name"] = $card_id;
         return $this->game->notifyMessage($message, $args, $this->game->getPlayerIdByColor($player_color));
+    }
+
+    function getTokensOfTypeInLocation($type, $location = null, $state = null, $order_by = null) {
+        return $this->tokens->getTokensOfTypeInLocation($type, $location, $state, $order_by);
     }
 }

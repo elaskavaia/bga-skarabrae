@@ -9,6 +9,6 @@
     "typeRoots": ["src/types", "./node_modules/@types"]
   },
 
-  "include": ["src/**/GameBasics.ts", "src/**/*.ts"],
+  "include": ["src/Game0Basics.ts", "src/**/*.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
