@@ -18,8 +18,7 @@ GameGui = /** @class */ (function () {
  */
 
 class Game0Basics extends GameGui<any> {
-  CON: { [key: string]: string }; // constants from php
-
+  player_color: string;
   defaultTooltipDelay: number = 800;
 
   constructor() {
@@ -30,6 +29,9 @@ class Game0Basics extends GameGui<any> {
   // state hooks
   setup(gamedatas: any) {
     console.log("Starting game setup", gamedatas);
+    const first_player_id = Object.keys(gamedatas.players)[0];
+    if (!this.isSpectator) this.player_color = gamedatas.players[this.player_id].color;
+    else this.player_color = gamedatas.players[first_player_id].color;
   }
 
   onEnteringState(stateName: string, eargs: { args: any }) {

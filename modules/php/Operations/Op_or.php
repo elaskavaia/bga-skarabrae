@@ -22,8 +22,8 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\Common\ComplexOperation;
 
 class Op_or extends ComplexOperation {
-    function resolve(mixed $data = []) {
-        $target = $this->getCheckedArg($data);
+    function resolve() {
+        $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
                 // XXX
@@ -34,6 +34,26 @@ class Op_or extends ComplexOperation {
         }
 
         return;
+    }
+
+    function getPossibleMoves() {
+        $res = [];
+        foreach ($this->delegates as $sub) {
+            $err = "";
+            if ($sub->isVoid()) {
+                $err = $sub->getError();
+            }
+            $q = 0;
+            if ($err) {
+                $q = 1;
+            }
+            $res[$sub->getId()] = [
+                "name" => $sub->getButtonName(),
+                "err" => $err,
+                "q" => $q,
+            ];
+        }
+        return $res;
     }
 
     function getPrompt() {

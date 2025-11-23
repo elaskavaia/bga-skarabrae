@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Tests;
 
-use Bga\Games\skarabrae\Operations\Op_hello;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\Operations\Op_gain;
 use Bga\Games\skarabrae\Operations\Op_or;
-use Bga\Games\skarabrae\Operations\Op_play;
+use Bga\Games\skarabrae\Operations\Op_pay;
 use Bga\Games\skarabrae\OpMachine;
 use PHPUnit\Framework\TestCase;
 
@@ -25,15 +25,15 @@ class OpMachineTest extends TestCase {
     }
 
     public function testInstanciateOperation() {
-        $op = $this->factory->instanciateOperation("play", "aaa");
+        $op = $this->factory->instanciateOperation("fish", "aaa");
 
-        $this->assertTrue($op instanceof Op_play);
+        $this->assertTrue($op instanceof Op_gain);
         $this->assertEquals($op->getId(), 0);
-        $this->assertEquals($op->getType(), "play");
+        $this->assertEquals($op->getType(), "fish");
     }
 
     public function testInstanciateComplexOperation() {
-        $op = $this->factory->instanciateOperation("play/pass", "aaa");
+        $op = $this->factory->instanciateOperation("fish/pass", "aaa");
 
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals($op->getId(), 0);

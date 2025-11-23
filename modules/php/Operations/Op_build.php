@@ -20,12 +20,11 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\Common\Operation;
 
-class Op_gain extends CountableOperation {
+// special action
+class Op_build extends Operation {
     function resolve() {
-        $count = (int) $this->getCheckedArg();
-        $this->game->effect_incCount($this->getOwner(), $this->getType(), $count, $this->getReason());
-        return;
+        $this->game->systemAssert("Not implemented");
     }
 }

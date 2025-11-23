@@ -39,6 +39,16 @@ abstract class ComplexOperation extends Operation {
         return $this;
     }
 
+    function canSkip() {
+        if (count($this->delegates) == 0) {
+            return true;
+        }
+        if ($this->getDataField("mcount", 1) == 0) {
+            return true;
+        }
+        return parent::canSkip();
+    }
+
     function withSub(Operation $sub) {
         $this->delegates[] = $sub;
         $sub->withDataField("parent", $this->getType());
@@ -61,8 +71,12 @@ abstract class ComplexOperation extends Operation {
         if ($this->storeDelegates()) {
             return true;
         }
-
-        return false;
+        if (!$this->canResolveAutomatically()) {
+            return false;
+        }
+        $this->checkVoid();
+        $this->action_resolve([]);
+        return true;
     }
 
     function getPossibleMoves() {

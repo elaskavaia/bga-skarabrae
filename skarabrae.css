@@ -2,7 +2,7 @@
 .card,
 .action {
   height: 30em;
-  aspect-ratio: 638/1016;
+  aspect-ratio: 640/1000;
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5019607843);
 }
 
@@ -306,6 +306,15 @@
   background-image: url(img/pboard.jpg);
   background-size: cover;
 }
+.tableau .pboard .breakroom {
+  position: absolute;
+  width: 20%;
+  height: 10%;
+  top: 15%;
+}
+.tableau .pboard .breakroom > * {
+  display: inline-block;
+}
 .tableau .action_area {
   aspect-ratio: 25/16;
 }
@@ -422,6 +431,10 @@
   background-size: auto 453%;
 }
 
+.hearth {
+  background-position: 47% 0%;
+}
+
 .furnish {
   background-position: 89% 97%;
   background-size: auto 453%;
@@ -500,6 +513,38 @@
 
 .wooden.midden {
   background-position: 0% 64%;
+}
+
+.worker {
+  background-position: 19% 97%;
+  background-size: auto 453%;
+  width: 26px;
+  aspect-ratio: 2/3;
+}
+.worker[data-state="0"] {
+  opacity: 0.5;
+}
+.worker.color_ff0000 {
+  background-position: 14% 97%;
+}
+.worker.color_000000 {
+  background-position: 7% 97%;
+}
+.worker.color_ffffff {
+  background-position: 0% 97%;
+}
+.worker.color_ffcc02 {
+  background-position: 21% 97%;
+}
+.worker.color_6cd0f6 {
+  background-position: 27% 97%;
+}
+.worker.color_982fff {
+  background-position: 34% 97%;
+}
+
+.worker.large {
+  width: 30px;
 }
 
 /* tooltips */

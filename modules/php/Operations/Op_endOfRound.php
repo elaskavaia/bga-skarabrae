@@ -25,8 +25,8 @@ use Bga\Games\skarabrae\Game;
 
 class Op_endOfRound extends Operation {
     function auto(): bool {
-        $cards = $this->game->tokensmop->getTokensOfTypeInLocation(null, "cardset_%");
-        $this->game->tokensmop->dbSetTokensLocation($cards, "discard_village");
+        $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_%");
+        $this->game->tokens->dbSetTokensLocation($cards, "discard_village");
         $this->queue("round");
 
         return true;

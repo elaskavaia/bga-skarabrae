@@ -20,12 +20,15 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\Common\Operation;
 
-class Op_gain extends CountableOperation {
+class Op_tradeInc extends Operation {
     function resolve() {
-        $count = (int) $this->getCheckedArg();
-        $this->game->effect_incCount($this->getOwner(), $this->getType(), $count, $this->getReason());
+        $owner = $this->getOwner();
+        $type = "trade";
+        $value = $this->game->tokens->getTrackerValue($owner, $type);
+        $this->game->userAssert("Maximum is reached", $value < 7); // NOI18N
+        $this->game->effect_incTrack($owner, $type, 1, $this->getReason());
         return;
     }
 }

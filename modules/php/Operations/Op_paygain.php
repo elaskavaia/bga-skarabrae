@@ -20,10 +20,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\Operation;
-
-class Op_gather4 extends Operation {
-    function resolve(mixed $data = []) {
-        $this->queue("barley", $this->getOwner());
+class Op_paygain extends Op_seq {
+    public function requireConfirmation() {
+        return true;
     }
 }

@@ -18,9 +18,11 @@ class GameXBody extends GameMachine {
  <div id="cardset_1" class="cardset cardset_1"></div>
  <div id="cardset_2" class="cardset cardset_2"></div>
  <div id="cardset_3" class="cardset cardset_3"></div>
+ <div id="discard_village" class="discard village"></div>
+ <div id="deck_village" class="deck village"></div>
 </div>
 </div>
-<div id="oversurface"></div>
+
 `;
   setup(gamedatas) {
     super.setup(gamedatas);
@@ -50,10 +52,9 @@ class GameXBody extends GameMachine {
       `
       <div id='tableau_${playerInfo.color}' class='tableau'>
          <div id='pboard_${playerInfo.color}' class='pboard'>
-                 <div id='track_furnish_${playerInfo.color}' class='track_furnish track'>
-                 </div>
-                 <div id='track_trade_${playerInfo.color}' class='track_trade track'>
-                 </div>
+                 <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
+                 <div id='track_trade_${playerInfo.color}' class='track_trade track'></div>
+                 <div id='breakroom_${playerInfo.color}' class='breakroom'></div>
          </div>
          <div id='action_area_${playerInfo.color}' class='action_area'></div>
       </div>`,
@@ -77,9 +78,7 @@ class GameXBody extends GameMachine {
   showHelp(id: string) {
     return false;
   }
-  onUpdateTokenInDom(tokenNode: HTMLElement, tokenInfo: Token, tokenInfoBefore: Token, animationDuration: number = 0) {
-    return;
-  }
+
   updateTokenDisplayInfo(tokenDisplayInfo: TokenDisplayInfo) {
     // override to generate dynamic tooltips and such
   }
@@ -87,24 +86,31 @@ class GameXBody extends GameMachine {
     $("limbo")?.appendChild($(tokenId));
   }
 
-  getPlaceRedirect(tokenInfo: Token): TokenMoveInfo {
-    const location = tokenInfo.location;
-
+  getPlaceRedirect(tokenInfo: Token, args: AnimArgs = {}): TokenMoveInfo {
+    const location = tokenInfo.location ?? "limbo";
+    const tokenId = tokenInfo.key;
     const result: TokenMoveInfo = {
       location: location,
-      key: tokenInfo.key,
+      key: tokenId,
       state: tokenInfo.state
     };
-    const tokenId = tokenInfo.key;
+    if (args.place_from) result.place_from = args.place_from;
 
     if (tokenId.startsWith("action") && location.startsWith("tableau")) {
       const color = getPart(location, 1);
       result.location = `action_area_${color}`;
       result.onClick = (x) => this.onToken(x);
-    } else if (location?.startsWith("discard")) {
+    } else if (location.startsWith("discard")) {
       result.onEnd = (node) => this.hideCard(node);
-    } else if (location?.startsWith("deck")) {
+    } else if (location.startsWith("deck")) {
       result.onEnd = (node) => this.hideCard(node);
+    } else if (tokenId.startsWith("slot")) {
+      result.nop = true; // do not move slots
+    } else if (location.startsWith("miniboard") && $(tokenId)) {
+      result.nop = true; // do not move
+    } else if (tokenId.startsWith("worker") && location.startsWith("tableau")) {
+      const color = getPart(location, 1);
+      result.location = `breakroom_${color}`;
     }
     return result;
   }

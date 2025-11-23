@@ -23,8 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\Common\Operation;
 
 class Op_nop extends Operation {
-    /** User does the action */
-    function resolve(mixed $data = []) {
+    function resolve() {
         $this->notifyMessage(""); // empty message
         return;
     }

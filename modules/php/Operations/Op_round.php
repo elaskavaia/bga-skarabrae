@@ -31,9 +31,19 @@ class Op_round extends Operation {
 
         $this->game->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
 
+        $players_basic = $this->game->loadPlayersBasicInfos();
+        foreach ($players_basic as $player_info) {
+            $color = $player_info["player_color"];
+            $workers = $this->game->tokens->getTokensOfTypeInLocation("worker_$roundNum", "tableau_$color", 0);
+            foreach ($workers as $worker => $info) {
+                $this->game->tokens->dbSetTokenState($worker, 1, clienttranslate('${player_name} gains worker'));
+            }
+        }
+
+        $this->notifyMessage(clienttranslate("games deals new village cards for the round"));
         for ($i = 1; $i <= 3; $i++) {
-            $cards = $this->game->tokensmop->tokens->pickTokensForLocation(4, "deck_village", "cardset_$i"); // XXX 5 for 4 ppl
-            $this->game->tokensmop->dbSetTokensLocation($cards, "cardset_$i", 0, "*", ["place_from" => "deck_village"]);
+            $cards = $this->game->tokens->tokens->pickTokensForLocation(4, "deck_village", "cardset_$i"); // XXX 5 for 4 ppl
+            $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", 0, "", ["place_from" => "deck_village"]);
             $this->queue("turnall", null, ["num" => $i]);
         }
 

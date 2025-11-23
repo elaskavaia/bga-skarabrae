@@ -22,8 +22,9 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_gather2 extends Operation {
-    function resolve(mixed $data = []) {
-        $this->queue("wool/stone", $this->getOwner());
+class Op_village extends Operation {
+    function resolve() {
+        $this->notifyMessage("Village is not implementd");
+        return;
     }
 }

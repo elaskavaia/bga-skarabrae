@@ -20,21 +20,27 @@ interface TokenDisplayInfo {
 }
 
 interface TokenMoveInfo extends Token {
-  x?: number;
-  y?: number;
-  position?: string;
+  onStart?: (node: Element) => Promise<void>;
   onEnd?: (node: Element) => void;
   onClick?: (event?: any) => void;
   animtime?: number;
-  relation?: string;
   nop?: boolean;
-  from?: string;
+  place_from?: string;
+}
+
+interface AnimArgs {
+  duration?: number;
+  noa?: boolean;
+  nop?: boolean;
+  nod?: boolean;
+  delay?: number;
+  place_from?: string;
 }
 
 type StringProperties = { [key: string]: string };
 
 class Game1Tokens extends Game0Basics {
-  player_color: string;
+  CON: { [key: string]: string }; // constants from php
   original_click_id: any;
   globlog: number = 1;
   tokenInfoCache: { [key: string]: TokenDisplayInfo } = {};
@@ -42,11 +48,13 @@ class Game1Tokens extends Game0Basics {
   defaultAnimationDuration: number = 500;
 
   classActiveSlot: string = "active_slot";
+  classActiveSlotHidden: string = "hidden_active_slot";
   classButtonDisabled: string = "disabled";
   classSelected: string = "gg_selected"; // for the purpose of multi-select operations
   classSelectedAlt: string = "gg_selected_alt"; // for the purpose of multi-select operations with alternative node
   game: Game1Tokens = this;
   animationManager: AnimationManager;
+  animationLa: LaAnimations;
 
   setupGame(gamedatas: any): void {
     this.tokenInfoCache = {};
@@ -56,9 +64,8 @@ class Game1Tokens extends Game0Basics {
       animationsActive: () => this.bgaAnimationsActive()
     });
 
-    const first_player_id = Object.keys(gamedatas.players)[0];
-    if (!this.game.isSpectator) this.player_color = gamedatas.players[this.game.player_id].color;
-    else this.player_color = gamedatas.players[first_player_id].color;
+    this.animationLa = new LaAnimations();
+
     if (!this.gamedatas.tokens) {
       console.error("Missing gamadatas.tokens!");
       this.gamedatas.tokens = {};
@@ -73,7 +80,8 @@ class Game1Tokens extends Game0Basics {
       state: 0,
       location: "thething"
     };
-    this.placeToken("limbo");
+    this.placeTokenSetup("limbo");
+    placeHtml(`<div id="oversurface"></div>`, this.getGameAreaElement());
 
     this.setupTokens();
   }
@@ -81,7 +89,7 @@ class Game1Tokens extends Game0Basics {
   onLeavingState(stateName: string): void {
     // console.log("onLeavingState: " + stateName);
     //this.disconnectAllTemp();
-    this.removeAllClasses(this.classActiveSlot, "hidden_" + this.classActiveSlot);
+    this.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
     if (!this.on_client_state) {
       this.removeAllClasses(this.classSelected, this.classSelectedAlt);
     }
@@ -90,7 +98,7 @@ class Game1Tokens extends Game0Basics {
   cancelLocalStateEffects() {
     //console.log(this.last_server_state);
 
-    this.game.removeAllClasses(this.classActiveSlot, "hidden_" + this.classActiveSlot);
+    this.game.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
     this.game.removeAllClasses(this.classSelected, this.classSelectedAlt);
     //this.restoreServerData();
     //this.updateCountersSafe(this.gamedatas.counters);
@@ -111,36 +119,30 @@ class Game1Tokens extends Game0Basics {
   }
 
   isLocationByType(id: string) {
-    return this.hasType(id, "location");
-  }
-
-  hasType(id: string, type: string): boolean {
-    const loc = this.getRulesFor(id, "type", "");
-    const split = loc.split(" ");
-    return split.indexOf(type) >= 0;
+    return this.getRulesFor(id, "type", "").indexOf("location") >= 0;
   }
 
   setupTokens() {
     console.log("Setup tokens");
 
     for (let loc of this.getAllLocations()) {
-      this.placeToken(loc);
+      this.placeTokenSetup(loc);
     }
 
     for (let token in this.gamedatas.tokens) {
       const tokenInfo = this.gamedatas.tokens[token];
       const location = tokenInfo.location;
       if (location && !this.gamedatas.tokens[location] && !$(location)) {
-        this.placeToken(location);
+        this.placeTokenSetup(location);
       }
-      this.placeToken(token);
+      this.placeTokenSetup(token);
     }
 
-    for (let loc of this.getAllLocations()) {
-      this.updateTooltip(loc);
-    }
     for (let token in this.gamedatas.tokens) {
       this.updateTooltip(token);
+    }
+    for (let loc of this.getAllLocations()) {
+      this.updateTooltip(loc);
     }
   }
 
@@ -170,24 +172,9 @@ class Game1Tokens extends Game0Basics {
     return this.gamedatas.tokens[token];
   }
 
-  setDomTokenState(tokenId: ElementOrId, newState: any) {
-    var node = $(tokenId);
-    // console.log(token + "|=>" + newState);
-    if (!node) return;
-    node.dataset.state = newState;
-  }
-
-  getDomTokenLocation(tokenId: ElementOrId) {
-    return ($(tokenId).parentNode as HTMLElement).id;
-  }
-
-  getDomTokenState(tokenId: ElementOrId) {
-    return parseInt(($(tokenId).parentNode as HTMLElement).getAttribute("data-state") || "0");
-  }
-
   createToken(placeInfo: TokenMoveInfo) {
     const tokenId = placeInfo.key;
-    const location = placeInfo.from ?? placeInfo.location ?? this.getRulesFor(tokenId, "location");
+    const location = placeInfo.place_from ?? placeInfo.location ?? this.getRulesFor(tokenId, "location");
 
     const div = document.createElement("div");
     div.id = tokenId;
@@ -198,7 +185,7 @@ class Game1Tokens extends Game0Basics {
       if (location.indexOf("{") == -1) console.error("Cannot find location [" + location + "] for ", div);
       parentNode = $("limbo");
     }
-    if (parentNode) parentNode.appendChild(div);
+    parentNode.appendChild(div);
     return div;
   }
 
@@ -254,13 +241,8 @@ class Game1Tokens extends Game0Basics {
     return false;
   }
 
-  // override to get token update "notification"
-  onUpdateTokenInDom(tokenNode: HTMLElement, tokenInfo: Token, tokenInfoBefore: Token, animationDuration: number = 0) {
-    return;
-  }
-
   // override to prove additinal animation parameters
-  getPlaceRedirect(tokenInfo: Token): TokenMoveInfo {
+  getPlaceRedirect(tokenInfo: Token, args: AnimArgs = {}): TokenMoveInfo {
     return tokenInfo;
   }
 
@@ -293,104 +275,78 @@ class Game1Tokens extends Game0Basics {
     return true;
   }
 
-  placeTokenServer(tokenId: string, location: string, state?: number, args?: any) {
+  async placeTokenServer(tokenId: string, location: string, state?: number, args?: any) {
     const tokenInfo = this.setTokenInfo(tokenId, location, state, true, args);
-    return this.placeTokenWithTips(tokenId, tokenInfo, args);
+    await this.placeToken(tokenId, tokenInfo, args);
+    this.updateTooltip(tokenId);
+    this.updateTooltip(tokenInfo.location);
   }
 
-  placeToken(token: string, tokenDbInfo?: Token, args?: any) {
+  prapareToken(tokenId: string, tokenDbInfo?: Token, args: AnimArgs = {}) {
+    if (!tokenDbInfo) {
+      tokenDbInfo = this.gamedatas.tokens[tokenId];
+    }
+
+    if (!tokenDbInfo) {
+      let tokenNode = $(tokenId);
+      if (tokenNode) {
+        const st = parseInt(tokenNode.dataset.state);
+        tokenDbInfo = this.setTokenInfo(tokenId, tokenNode.parentElement.id, st, false);
+      } else {
+        console.error("Cannot setup token for " + tokenId);
+        tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
+      }
+    }
+    const placeInfo = this.getPlaceRedirect(tokenDbInfo, args);
+    const tokenNode = $(tokenId) ?? this.createToken(placeInfo);
+    tokenNode.dataset.state = String(tokenDbInfo.state);
+    tokenNode.dataset.location = tokenDbInfo.location;
+    this.updateToken(tokenNode, placeInfo);
+    // no movement
+    if (placeInfo.nop) {
+      return undefined;
+    }
+    const location = placeInfo.location;
+    if (!$(location)) {
+      if (location) console.error(`Unknown place ${location} for ${tokenId}`);
+      return undefined;
+    }
+    return placeInfo;
+  }
+
+  placeTokenSetup(tokenId: string, tokenDbInfo?: Token) {
+    const placeInfo = this.prapareToken(tokenId, tokenDbInfo);
+
+    if (!placeInfo) {
+      return;
+    }
+    const tokenNode = $(tokenId);
+    $(placeInfo.location).appendChild(tokenNode);
+  }
+
+  async placeToken(tokenId: string, tokenDbInfo?: Token, args: AnimArgs = {}) {
     try {
-      if (args === undefined) {
-        args = {};
-      }
-      let noAnnimation = false;
-      if (args.noa) {
-        noAnnimation = true;
-      }
+      const placeInfo = this.prapareToken(tokenId, tokenDbInfo);
 
-      let tokenInfoBefore = args?._prev;
-
-      if (!tokenDbInfo) {
-        tokenDbInfo = this.gamedatas.tokens[token];
-      }
-
-      var tokenNode = $(token);
-      if (!tokenDbInfo) {
-        const rules = this.getAllRules(token);
-        if (rules) tokenDbInfo = this.setTokenInfo(token, rules.location, rules.state, false);
-        else tokenDbInfo = this.setTokenInfo(token, undefined, undefined, false);
-
-        if (tokenNode) {
-          tokenDbInfo = this.setTokenInfo(token, this.getDomTokenLocation(tokenNode), this.getDomTokenState(tokenNode), false);
-        }
-        noAnnimation = true;
-      }
-      if (!tokenDbInfo.location) {
-        if (!token.startsWith("counter")) console.log(token + ": " + " -place-> undefined " + tokenDbInfo.state);
-      }
-
-      const placeInfo = args.placeInfo ?? this.getPlaceRedirect(tokenDbInfo);
-      const location = placeInfo.location;
-
-      //console.log(token + ": " + " -place-> " + location + " " + tokenInfo.state);
-
-      //this.saveRestore(token);
-
-      if (tokenNode == null) {
-        //debugger;
-        if (!placeInfo.from && args.place_from) placeInfo.from = args.place_from;
-        tokenNode = this.createToken(placeInfo);
-      }
-      this.setDomTokenState(tokenNode, tokenDbInfo.state);
-      tokenNode.dataset.location = tokenDbInfo.location;
-      this.updateToken(tokenNode, placeInfo);
-
-      if (placeInfo.nop) {
-        // no movement
-        return this.onUpdateTokenInDom(tokenNode, tokenDbInfo, tokenInfoBefore, 0);
-      }
-      if (!$(location)) {
-        if (location) console.error("Unknown place '" + location + "' for '" + tokenDbInfo.key + "' " + token);
+      if (!placeInfo) {
         return;
       }
 
-      if (this.game.bgaAnimationsActive() == false || args.noa || placeInfo.animtime == 0) {
-        noAnnimation = true;
-      }
-      if (!tokenNode.parentNode) noAnnimation = true;
-      // console.log(token + ": " + tokenInfo.key + " -move-> " + place + " " + tokenInfo.state);
+      const tokenNode = $(tokenId);
+      let animTime = placeInfo.animtime ?? this.defaultAnimationDuration;
 
-      let animTime: number;
-      if (noAnnimation) animTime = 0;
-      else animTime = placeInfo.animtime ?? this.defaultAnimationDuration;
-
-      let mobileStyle = undefined;
-      if (placeInfo.x !== undefined || placeInfo.y !== undefined) {
-        mobileStyle = {
-          position: placeInfo.position || "absolute",
-          left: placeInfo.x + "px",
-          top: placeInfo.y + "px"
-        };
+      if (this.game.bgaAnimationsActive() == false || args.noa || placeInfo.animtime === 0 || !tokenNode.parentNode) {
+        animTime = 0;
       }
 
-      this.slideAndPlace(tokenNode, location, animTime, mobileStyle, placeInfo.onEnd);
+      if (placeInfo.onStart) await placeInfo.onStart(tokenNode);
+      await this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd);
       //if (animTime == 0) $(location).appendChild(tokenNode);
       //else void this.animationManager.slideAndAttach(tokenNode, $(location));
-      void this.onUpdateTokenInDom(tokenNode, tokenDbInfo, tokenInfoBefore, animTime);
     } catch (e) {
       console.error("Exception thrown", e, e.stack);
       // this.showMessage(token + " -> FAILED -> " + place + "\n" + e, "error");
     }
-    return tokenNode;
-  }
-
-  placeTokenWithTips(token: string, tokenInfo?: Token, args?: any) {
-    if (!tokenInfo) {
-      tokenInfo = this.gamedatas.tokens[token];
-    }
-    this.placeToken(token, tokenInfo, args);
-    this.updateTooltip(token);
-    if (tokenInfo) this.updateTooltip(tokenInfo.location);
   }
 
   updateTooltip(tokenId: string, attachTo?: ElementOrId, delay?: number) {
@@ -648,158 +604,18 @@ class Game1Tokens extends Game0Basics {
     return { log, args };
   }
 
-  slideAndPlace(
+  async slideAndPlace(
     token: ElementOrId,
     finalPlace: ElementOrId,
-    tlen?: number,
+    duration?: number,
     mobileStyle?: StringProperties,
     onEnd?: (node?: HTMLElement) => void
   ) {
     if (!$(token)) console.error(`token not found for ${token}`);
     if ($(token)?.parentNode == $(finalPlace)) return;
 
-    this.phantomMove(token, finalPlace, tlen, mobileStyle, onEnd);
-  }
-
-  getFulltransformMatrix(from: Element, to: Element) {
-    let fullmatrix = "";
-    let par = from;
-
-    while (par != to && par != null && par != document.body) {
-      var style = window.getComputedStyle(par as Element);
-      var matrix = style.transform; //|| "matrix(1,0,0,1,0,0)";
-
-      if (matrix && matrix != "none") fullmatrix += " " + matrix;
-      par = par.parentNode as Element;
-      // console.log("tranform  ",fullmatrix,par);
-    }
-
-    return fullmatrix;
-  }
-
-  projectOnto(from: ElementOrId, postfix: string, ontoWhat?: ElementOrId) {
-    const elem: Element = $(from);
-    let over: Element;
-    if (ontoWhat) over = $(ontoWhat);
-    else over = $("oversurface"); // this div has to exists with pointer-events: none and cover all area with high zIndex
-    var elemRect = elem.getBoundingClientRect();
-
-    //console.log("elemRect", elemRect);
-
-    var newId = elem.id + postfix;
-    var old = $(newId);
-    if (old) old.parentNode.removeChild(old);
-
-    var clone = elem.cloneNode(true) as HTMLElement;
-    clone.id = newId;
-    clone.classList.add("phantom");
-    clone.classList.add("phantom" + postfix);
-    clone.style.transitionDuration = "0ms"; // disable animation during projection
-    if (elemRect.width > 1) {
-      clone.style.width = elemRect.width + "px";
-      clone.style.height = elemRect.height + "px";
-    }
-
-    var fullmatrix = this.getFulltransformMatrix(elem.parentNode as Element, over.parentNode as Element);
-
-    over.appendChild(clone);
-    var cloneRect = clone.getBoundingClientRect();
-
-    const centerY = elemRect.y + elemRect.height / 2;
-    const centerX = elemRect.x + elemRect.width / 2;
-    // centerX/Y is where the center point must be
-    // I need to calculate the offset from top and left
-    // Therefore I remove half of the dimensions + the existing offset
-    const offsetX = centerX - cloneRect.width / 2 - cloneRect.x;
-    const offsetY = centerY - cloneRect.height / 2 - cloneRect.y;
-
-    // Then remove the clone's parent position (since left/top is from tthe parent)
-    //console.log("cloneRect", cloneRect);
-
-    // @ts-ignore
-    clone.style.left = offsetX + "px";
-    clone.style.top = offsetY + "px";
-    clone.style.transform = fullmatrix;
-    clone.style.transitionDuration = undefined;
-
-    return clone;
-  }
-
-  phantomMove(
-    mobileId: ElementOrId,
-    newparentId: ElementOrId,
-    duration?: number,
-    mobileStyle?: StringProperties,
-    onEnd?: (node?: HTMLElement) => void
-  ) {
-    var mobileNode = $(mobileId) as HTMLElement;
-
-    if (!mobileNode) throw new Error(`Does not exists ${mobileId}`);
-    var newparent = $(newparentId);
-    if (!newparent) throw new Error(`Does not exists ${newparentId}`);
-    if (duration === undefined) duration = this.defaultAnimationDuration;
-    if (!duration || duration < 0) duration = 0;
-    const noanimation = duration <= 0 || !mobileNode.parentNode;
-    const oldParent = mobileNode.parentElement;
-    var clone = null;
-    if (!noanimation) {
-      // do animation
-      clone = this.projectOnto(mobileNode, "_temp");
-      mobileNode.style.opacity = "0"; // hide original
-    }
-
-    const rel = mobileStyle?.relation;
-    if (rel) {
-      delete mobileStyle.relation;
-    }
-    if (rel == "first") {
-      newparent.insertBefore(mobileNode, null);
-    } else {
-      newparent.appendChild(mobileNode); // move original
-    }
-
-    setStyleAttributes(mobileNode, mobileStyle);
-    newparent.classList.add("move_target");
-    oldParent?.classList.add("move_source");
-    mobileNode.offsetHeight; // recalc
-
-    if (noanimation) {
-      setTimeout(() => {
-        newparent.offsetHeight;
-        newparent.classList.remove("move_target");
-        oldParent?.classList.remove("move_source");
-        if (onEnd) onEnd(mobileNode);
-      }, 0);
-      return;
-    }
-
-    var desti = this.projectOnto(mobileNode, "_temp2"); // invisible destination on top of new parent
-    try {
-      //setStyleAttributes(desti, mobileStyle);
-      clone.style.transitionDuration = duration + "ms";
-      clone.style.transitionProperty = "all";
-      clone.style.visibility = "visible";
-      clone.style.opacity = "1";
-      // that will cause animation
-      clone.style.left = desti.style.left;
-      clone.style.top = desti.style.top;
-      clone.style.transform = desti.style.transform;
-      // now we don't need destination anymore
-      desti.parentNode?.removeChild(desti);
-      setTimeout(() => {
-        newparent.classList.remove("move_target");
-        oldParent?.classList.remove("move_source");
-        mobileNode.style.removeProperty("opacity"); // restore visibility of original
-        clone.parentNode?.removeChild(clone); // destroy clone
-        if (onEnd) onEnd(mobileNode);
-      }, duration);
-    } catch (e) {
-      // if bad thing happen we have to clean up clones
-      console.error("ERR:C01:animation error", e);
-      desti.parentNode?.removeChild(desti);
-      clone.parentNode?.removeChild(clone); // destroy clone
-      //if (onEnd) onEnd(mobileNode);
-    }
+    this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
+    return this.wait(duration);
   }
 
   async notif_animate(args: any) {
@@ -814,6 +630,7 @@ class Game1Tokens extends Game0Basics {
     if (args.list !== undefined) {
       // move bunch of tokens
 
+      const moves = [];
       for (var i = 0; i < args.list.length; i++) {
         var one = args.list[i];
         var new_state = args.new_state;
@@ -822,12 +639,11 @@ class Game1Tokens extends Game0Basics {
             new_state = args.new_states[i];
           }
         }
-        this.placeTokenServer(one, args.place_id, new_state, args);
+        moves.push(this.placeTokenServer(one, args.place_id, new_state, args));
       }
-      return this.game.wait(500);
+      return Promise.all(moves);
     } else {
-      this.placeTokenServer(args.token_id, args.place_id, args.new_state, args);
-      return this.game.wait(500);
+      return this.placeTokenServer(args.token_id, args.place_id, args.new_state, args);
     }
   }
   async notif_counterAsync(args: any) {
@@ -852,26 +668,16 @@ player_name (only for PlayerCounter)
       const name = args.name;
       const value = args.value;
       const node = $(name);
-
+      console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
       if (node && this.gamedatas.tokens[name]) {
         args.nop = true; // no move animation
-        this.placeTokenServer(name, this.gamedatas.tokens[name].location, value, args);
+        return this.placeTokenServer(name, this.gamedatas.tokens[name].location, value, args);
       } else if (node) {
-        this.setDomTokenState(name, value);
+        node.dataset.state = value;
       }
-      console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
     } catch (ex) {
       console.error("Cannot update " + args.counter_name, ex, ex.stack);
     }
     return this.game.wait(500);
-  }
-
-  // HTML MANIPULATIONS
-}
-function setStyleAttributes(element: HTMLElement, attrs: { [key: string]: string }): void {
-  if (attrs !== undefined) {
-    Object.keys(attrs).forEach((key: string) => {
-      element.style.setProperty(key, attrs[key]);
-    });
   }
 }

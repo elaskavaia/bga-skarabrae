@@ -6,6 +6,7 @@ namespace Bga\Games\skarabrae\Db;
 
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Common\OpExpression;
 use BgaSystemException;
 use Throwable;
 
@@ -232,7 +233,7 @@ class DbMachine {
 
     function createRow($type, $owner = null, $data = null) {
         // sanity check
-        //$this->parseOpExpression($type);
+        OpExpression::parseExpression($type);
 
         $record = [
             "type" => $this->escapeStringForDB($type),

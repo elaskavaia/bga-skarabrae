@@ -11,6 +11,17 @@
     aspect-ratio: 332 / 273;
     background-image: url(img/pboard.jpg);
     background-size: cover;
+
+    .breakroom {
+      position: absolute;
+      width: 20%;
+      height: 10%;
+
+      top: 15%;
+      & > * {
+        display: inline-block;
+      }
+    }
   }
   .action_area {
     aspect-ratio: 25 / 16;

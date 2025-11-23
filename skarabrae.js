@@ -52,6 +52,11 @@ var Game0Basics = /** @class */ (function (_super) {
     // state hooks
     Game0Basics.prototype.setup = function (gamedatas) {
         console.log("Starting game setup", gamedatas);
+        var first_player_id = Object.keys(gamedatas.players)[0];
+        if (!this.isSpectator)
+            this.player_color = gamedatas.players[this.player_id].color;
+        else
+            this.player_color = gamedatas.players[first_player_id].color;
     };
     Game0Basics.prototype.onEnteringState = function (stateName, eargs) {
         console.log("onEnteringState", stateName, eargs, this.debugStateInfo());
@@ -447,12 +452,12 @@ var Game1Tokens = /** @class */ (function (_super) {
         _this.tokenInfoCache = {};
         _this.defaultAnimationDuration = 500;
         _this.classActiveSlot = "active_slot";
+        _this.classActiveSlotHidden = "hidden_active_slot";
         _this.classButtonDisabled = "disabled";
         _this.classSelected = "gg_selected"; // for the purpose of multi-select operations
         _this.classSelectedAlt = "gg_selected_alt"; // for the purpose of multi-select operations with alternative node
         _this.game = _this;
         return _this;
-        // HTML MANIPULATIONS
     }
     Game1Tokens.prototype.setupGame = function (gamedatas) {
         var _this = this;
@@ -461,11 +466,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         this.animationManager = new BgaAnimations.Manager({
             animationsActive: function () { return _this.bgaAnimationsActive(); }
         });
-        var first_player_id = Object.keys(gamedatas.players)[0];
-        if (!this.game.isSpectator)
-            this.player_color = gamedatas.players[this.game.player_id].color;
-        else
-            this.player_color = gamedatas.players[first_player_id].color;
+        this.animationLa = new LaAnimations();
         if (!this.gamedatas.tokens) {
             console.error("Missing gamadatas.tokens!");
             this.gamedatas.tokens = {};
@@ -479,20 +480,21 @@ var Game1Tokens = /** @class */ (function (_super) {
             state: 0,
             location: "thething"
         };
-        this.placeToken("limbo");
+        this.placeTokenSetup("limbo");
+        placeHtml("<div id=\"oversurface\"></div>", this.getGameAreaElement());
         this.setupTokens();
     };
     Game1Tokens.prototype.onLeavingState = function (stateName) {
         // console.log("onLeavingState: " + stateName);
         //this.disconnectAllTemp();
-        this.removeAllClasses(this.classActiveSlot, "hidden_" + this.classActiveSlot);
+        this.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
         if (!this.on_client_state) {
             this.removeAllClasses(this.classSelected, this.classSelectedAlt);
         }
     };
     Game1Tokens.prototype.cancelLocalStateEffects = function () {
         //console.log(this.last_server_state);
-        this.game.removeAllClasses(this.classActiveSlot, "hidden_" + this.classActiveSlot);
+        this.game.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
         this.game.removeAllClasses(this.classSelected, this.classSelectedAlt);
         //this.restoreServerData();
         //this.updateCountersSafe(this.gamedatas.counters);
@@ -513,33 +515,28 @@ var Game1Tokens = /** @class */ (function (_super) {
         return res;
     };
     Game1Tokens.prototype.isLocationByType = function (id) {
-        return this.hasType(id, "location");
-    };
-    Game1Tokens.prototype.hasType = function (id, type) {
-        var loc = this.getRulesFor(id, "type", "");
-        var split = loc.split(" ");
-        return split.indexOf(type) >= 0;
+        return this.getRulesFor(id, "type", "").indexOf("location") >= 0;
     };
     Game1Tokens.prototype.setupTokens = function () {
         console.log("Setup tokens");
         for (var _i = 0, _a = this.getAllLocations(); _i < _a.length; _i++) {
             var loc = _a[_i];
-            this.placeToken(loc);
+            this.placeTokenSetup(loc);
         }
         for (var token in this.gamedatas.tokens) {
             var tokenInfo = this.gamedatas.tokens[token];
             var location_1 = tokenInfo.location;
             if (location_1 && !this.gamedatas.tokens[location_1] && !$(location_1)) {
-                this.placeToken(location_1);
+                this.placeTokenSetup(location_1);
             }
-            this.placeToken(token);
+            this.placeTokenSetup(token);
+        }
+        for (var token in this.gamedatas.tokens) {
+            this.updateTooltip(token);
         }
         for (var _b = 0, _c = this.getAllLocations(); _b < _c.length; _b++) {
             var loc = _c[_b];
             this.updateTooltip(loc);
-        }
-        for (var token in this.gamedatas.tokens) {
-            this.updateTooltip(token);
         }
     };
     Game1Tokens.prototype.setTokenInfo = function (token_id, place_id, new_state, serverdata, args) {
@@ -564,23 +561,10 @@ var Game1Tokens = /** @class */ (function (_super) {
         //if (serverdata && this.gamedatas_server) this.gamedatas_server.tokens[token] = dojo.clone(this.gamedatas.tokens[token]);
         return this.gamedatas.tokens[token];
     };
-    Game1Tokens.prototype.setDomTokenState = function (tokenId, newState) {
-        var node = $(tokenId);
-        // console.log(token + "|=>" + newState);
-        if (!node)
-            return;
-        node.dataset.state = newState;
-    };
-    Game1Tokens.prototype.getDomTokenLocation = function (tokenId) {
-        return $(tokenId).parentNode.id;
-    };
-    Game1Tokens.prototype.getDomTokenState = function (tokenId) {
-        return parseInt($(tokenId).parentNode.getAttribute("data-state") || "0");
-    };
     Game1Tokens.prototype.createToken = function (placeInfo) {
         var _a, _b;
         var tokenId = placeInfo.key;
-        var location = (_b = (_a = placeInfo.from) !== null && _a !== void 0 ? _a : placeInfo.location) !== null && _b !== void 0 ? _b : this.getRulesFor(tokenId, "location");
+        var location = (_b = (_a = placeInfo.place_from) !== null && _a !== void 0 ? _a : placeInfo.location) !== null && _b !== void 0 ? _b : this.getRulesFor(tokenId, "location");
         var div = document.createElement("div");
         div.id = tokenId;
         var parentNode = $(location);
@@ -589,8 +573,7 @@ var Game1Tokens = /** @class */ (function (_super) {
                 console.error("Cannot find location [" + location + "] for ", div);
             parentNode = $("limbo");
         }
-        if (parentNode)
-            parentNode.appendChild(div);
+        parentNode.appendChild(div);
         return div;
     };
     Game1Tokens.prototype.updateToken = function (tokenNode, placeInfo) {
@@ -644,13 +627,9 @@ var Game1Tokens = /** @class */ (function (_super) {
     Game1Tokens.prototype.showHelp = function (id) {
         return false;
     };
-    // override to get token update "notification"
-    Game1Tokens.prototype.onUpdateTokenInDom = function (tokenNode, tokenInfo, tokenInfoBefore, animationDuration) {
-        if (animationDuration === void 0) { animationDuration = 0; }
-        return;
-    };
     // override to prove additinal animation parameters
-    Game1Tokens.prototype.getPlaceRedirect = function (tokenInfo) {
+    Game1Tokens.prototype.getPlaceRedirect = function (tokenInfo, args) {
+        if (args === void 0) { args = {}; }
         return tokenInfo;
     };
     Game1Tokens.prototype.checkActivePlayer = function () {
@@ -682,99 +661,99 @@ var Game1Tokens = /** @class */ (function (_super) {
         return true;
     };
     Game1Tokens.prototype.placeTokenServer = function (tokenId, location, state, args) {
-        var tokenInfo = this.setTokenInfo(tokenId, location, state, true, args);
-        return this.placeTokenWithTips(tokenId, tokenInfo, args);
-    };
-    Game1Tokens.prototype.placeToken = function (token, tokenDbInfo, args) {
-        var _a, _b;
-        try {
-            if (args === undefined) {
-                args = {};
-            }
-            var noAnnimation = false;
-            if (args.noa) {
-                noAnnimation = true;
-            }
-            var tokenInfoBefore = args === null || args === void 0 ? void 0 : args._prev;
-            if (!tokenDbInfo) {
-                tokenDbInfo = this.gamedatas.tokens[token];
-            }
-            var tokenNode = $(token);
-            if (!tokenDbInfo) {
-                var rules = this.getAllRules(token);
-                if (rules)
-                    tokenDbInfo = this.setTokenInfo(token, rules.location, rules.state, false);
-                else
-                    tokenDbInfo = this.setTokenInfo(token, undefined, undefined, false);
-                if (tokenNode) {
-                    tokenDbInfo = this.setTokenInfo(token, this.getDomTokenLocation(tokenNode), this.getDomTokenState(tokenNode), false);
+        return __awaiter(this, void 0, void 0, function () {
+            var tokenInfo;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tokenInfo = this.setTokenInfo(tokenId, location, state, true, args);
+                        return [4 /*yield*/, this.placeToken(tokenId, tokenInfo, args)];
+                    case 1:
+                        _a.sent();
+                        this.updateTooltip(tokenId);
+                        this.updateTooltip(tokenInfo.location);
+                        return [2 /*return*/];
                 }
-                noAnnimation = true;
-            }
-            if (!tokenDbInfo.location) {
-                if (!token.startsWith("counter"))
-                    console.log(token + ": " + " -place-> undefined " + tokenDbInfo.state);
-            }
-            var placeInfo = (_a = args.placeInfo) !== null && _a !== void 0 ? _a : this.getPlaceRedirect(tokenDbInfo);
-            var location_2 = placeInfo.location;
-            //console.log(token + ": " + " -place-> " + location + " " + tokenInfo.state);
-            //this.saveRestore(token);
-            if (tokenNode == null) {
-                //debugger;
-                if (!placeInfo.from && args.place_from)
-                    placeInfo.from = args.place_from;
-                tokenNode = this.createToken(placeInfo);
-            }
-            this.setDomTokenState(tokenNode, tokenDbInfo.state);
-            tokenNode.dataset.location = tokenDbInfo.location;
-            this.updateToken(tokenNode, placeInfo);
-            if (placeInfo.nop) {
-                // no movement
-                return this.onUpdateTokenInDom(tokenNode, tokenDbInfo, tokenInfoBefore, 0);
-            }
-            if (!$(location_2)) {
-                if (location_2)
-                    console.error("Unknown place '" + location_2 + "' for '" + tokenDbInfo.key + "' " + token);
-                return;
-            }
-            if (this.game.bgaAnimationsActive() == false || args.noa || placeInfo.animtime == 0) {
-                noAnnimation = true;
-            }
-            if (!tokenNode.parentNode)
-                noAnnimation = true;
-            // console.log(token + ": " + tokenInfo.key + " -move-> " + place + " " + tokenInfo.state);
-            var animTime = void 0;
-            if (noAnnimation)
-                animTime = 0;
-            else
-                animTime = (_b = placeInfo.animtime) !== null && _b !== void 0 ? _b : this.defaultAnimationDuration;
-            var mobileStyle = undefined;
-            if (placeInfo.x !== undefined || placeInfo.y !== undefined) {
-                mobileStyle = {
-                    position: placeInfo.position || "absolute",
-                    left: placeInfo.x + "px",
-                    top: placeInfo.y + "px"
-                };
-            }
-            this.slideAndPlace(tokenNode, location_2, animTime, mobileStyle, placeInfo.onEnd);
-            //if (animTime == 0) $(location).appendChild(tokenNode);
-            //else void this.animationManager.slideAndAttach(tokenNode, $(location));
-            void this.onUpdateTokenInDom(tokenNode, tokenDbInfo, tokenInfoBefore, animTime);
-        }
-        catch (e) {
-            console.error("Exception thrown", e, e.stack);
-            // this.showMessage(token + " -> FAILED -> " + place + "\n" + e, "error");
-        }
-        return tokenNode;
+            });
+        });
     };
-    Game1Tokens.prototype.placeTokenWithTips = function (token, tokenInfo, args) {
-        if (!tokenInfo) {
-            tokenInfo = this.gamedatas.tokens[token];
+    Game1Tokens.prototype.prapareToken = function (tokenId, tokenDbInfo, args) {
+        var _a;
+        if (args === void 0) { args = {}; }
+        if (!tokenDbInfo) {
+            tokenDbInfo = this.gamedatas.tokens[tokenId];
         }
-        this.placeToken(token, tokenInfo, args);
-        this.updateTooltip(token);
-        if (tokenInfo)
-            this.updateTooltip(tokenInfo.location);
+        if (!tokenDbInfo) {
+            var tokenNode_1 = $(tokenId);
+            if (tokenNode_1) {
+                var st = parseInt(tokenNode_1.dataset.state);
+                tokenDbInfo = this.setTokenInfo(tokenId, tokenNode_1.parentElement.id, st, false);
+            }
+            else {
+                console.error("Cannot setup token for " + tokenId);
+                tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
+            }
+        }
+        var placeInfo = this.getPlaceRedirect(tokenDbInfo, args);
+        var tokenNode = (_a = $(tokenId)) !== null && _a !== void 0 ? _a : this.createToken(placeInfo);
+        tokenNode.dataset.state = String(tokenDbInfo.state);
+        tokenNode.dataset.location = tokenDbInfo.location;
+        this.updateToken(tokenNode, placeInfo);
+        // no movement
+        if (placeInfo.nop) {
+            return undefined;
+        }
+        var location = placeInfo.location;
+        if (!$(location)) {
+            if (location)
+                console.error("Unknown place ".concat(location, " for ").concat(tokenId));
+            return undefined;
+        }
+        return placeInfo;
+    };
+    Game1Tokens.prototype.placeTokenSetup = function (tokenId, tokenDbInfo) {
+        var placeInfo = this.prapareToken(tokenId, tokenDbInfo);
+        if (!placeInfo) {
+            return;
+        }
+        var tokenNode = $(tokenId);
+        $(placeInfo.location).appendChild(tokenNode);
+    };
+    Game1Tokens.prototype.placeToken = function (tokenId, tokenDbInfo, args) {
+        var _a;
+        if (args === void 0) { args = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            var placeInfo, tokenNode, animTime, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 4, , 5]);
+                        placeInfo = this.prapareToken(tokenId, tokenDbInfo);
+                        if (!placeInfo) {
+                            return [2 /*return*/];
+                        }
+                        tokenNode = $(tokenId);
+                        animTime = (_a = placeInfo.animtime) !== null && _a !== void 0 ? _a : this.defaultAnimationDuration;
+                        if (this.game.bgaAnimationsActive() == false || args.noa || placeInfo.animtime === 0 || !tokenNode.parentNode) {
+                            animTime = 0;
+                        }
+                        if (!placeInfo.onStart) return [3 /*break*/, 2];
+                        return [4 /*yield*/, placeInfo.onStart(tokenNode)];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [4 /*yield*/, this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd)];
+                    case 3:
+                        _b.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_1 = _b.sent();
+                        console.error("Exception thrown", e_1, e_1.stack);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
     };
     Game1Tokens.prototype.updateTooltip = function (tokenId, attachTo, delay) {
         if (attachTo === undefined) {
@@ -1015,142 +994,18 @@ var Game1Tokens = /** @class */ (function (_super) {
         }
         return { log: log, args: args };
     };
-    Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, tlen, mobileStyle, onEnd) {
+    Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, duration, mobileStyle, onEnd) {
         var _a;
-        if (!$(token))
-            console.error("token not found for ".concat(token));
-        if (((_a = $(token)) === null || _a === void 0 ? void 0 : _a.parentNode) == $(finalPlace))
-            return;
-        this.phantomMove(token, finalPlace, tlen, mobileStyle, onEnd);
-    };
-    Game1Tokens.prototype.getFulltransformMatrix = function (from, to) {
-        var fullmatrix = "";
-        var par = from;
-        while (par != to && par != null && par != document.body) {
-            var style = window.getComputedStyle(par);
-            var matrix = style.transform; //|| "matrix(1,0,0,1,0,0)";
-            if (matrix && matrix != "none")
-                fullmatrix += " " + matrix;
-            par = par.parentNode;
-            // console.log("tranform  ",fullmatrix,par);
-        }
-        return fullmatrix;
-    };
-    Game1Tokens.prototype.projectOnto = function (from, postfix, ontoWhat) {
-        var elem = $(from);
-        var over;
-        if (ontoWhat)
-            over = $(ontoWhat);
-        else
-            over = $("oversurface"); // this div has to exists with pointer-events: none and cover all area with high zIndex
-        var elemRect = elem.getBoundingClientRect();
-        //console.log("elemRect", elemRect);
-        var newId = elem.id + postfix;
-        var old = $(newId);
-        if (old)
-            old.parentNode.removeChild(old);
-        var clone = elem.cloneNode(true);
-        clone.id = newId;
-        clone.classList.add("phantom");
-        clone.classList.add("phantom" + postfix);
-        clone.style.transitionDuration = "0ms"; // disable animation during projection
-        if (elemRect.width > 1) {
-            clone.style.width = elemRect.width + "px";
-            clone.style.height = elemRect.height + "px";
-        }
-        var fullmatrix = this.getFulltransformMatrix(elem.parentNode, over.parentNode);
-        over.appendChild(clone);
-        var cloneRect = clone.getBoundingClientRect();
-        var centerY = elemRect.y + elemRect.height / 2;
-        var centerX = elemRect.x + elemRect.width / 2;
-        // centerX/Y is where the center point must be
-        // I need to calculate the offset from top and left
-        // Therefore I remove half of the dimensions + the existing offset
-        var offsetX = centerX - cloneRect.width / 2 - cloneRect.x;
-        var offsetY = centerY - cloneRect.height / 2 - cloneRect.y;
-        // Then remove the clone's parent position (since left/top is from tthe parent)
-        //console.log("cloneRect", cloneRect);
-        // @ts-ignore
-        clone.style.left = offsetX + "px";
-        clone.style.top = offsetY + "px";
-        clone.style.transform = fullmatrix;
-        clone.style.transitionDuration = undefined;
-        return clone;
-    };
-    Game1Tokens.prototype.phantomMove = function (mobileId, newparentId, duration, mobileStyle, onEnd) {
-        var _a, _b, _c;
-        var mobileNode = $(mobileId);
-        if (!mobileNode)
-            throw new Error("Does not exists ".concat(mobileId));
-        var newparent = $(newparentId);
-        if (!newparent)
-            throw new Error("Does not exists ".concat(newparentId));
-        if (duration === undefined)
-            duration = this.defaultAnimationDuration;
-        if (!duration || duration < 0)
-            duration = 0;
-        var noanimation = duration <= 0 || !mobileNode.parentNode;
-        var oldParent = mobileNode.parentElement;
-        var clone = null;
-        if (!noanimation) {
-            // do animation
-            clone = this.projectOnto(mobileNode, "_temp");
-            mobileNode.style.opacity = "0"; // hide original
-        }
-        var rel = mobileStyle === null || mobileStyle === void 0 ? void 0 : mobileStyle.relation;
-        if (rel) {
-            delete mobileStyle.relation;
-        }
-        if (rel == "first") {
-            newparent.insertBefore(mobileNode, null);
-        }
-        else {
-            newparent.appendChild(mobileNode); // move original
-        }
-        setStyleAttributes(mobileNode, mobileStyle);
-        newparent.classList.add("move_target");
-        oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.add("move_source");
-        mobileNode.offsetHeight; // recalc
-        if (noanimation) {
-            setTimeout(function () {
-                newparent.offsetHeight;
-                newparent.classList.remove("move_target");
-                oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.remove("move_source");
-                if (onEnd)
-                    onEnd(mobileNode);
-            }, 0);
-            return;
-        }
-        var desti = this.projectOnto(mobileNode, "_temp2"); // invisible destination on top of new parent
-        try {
-            //setStyleAttributes(desti, mobileStyle);
-            clone.style.transitionDuration = duration + "ms";
-            clone.style.transitionProperty = "all";
-            clone.style.visibility = "visible";
-            clone.style.opacity = "1";
-            // that will cause animation
-            clone.style.left = desti.style.left;
-            clone.style.top = desti.style.top;
-            clone.style.transform = desti.style.transform;
-            // now we don't need destination anymore
-            (_a = desti.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(desti);
-            setTimeout(function () {
-                var _a;
-                newparent.classList.remove("move_target");
-                oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.remove("move_source");
-                mobileNode.style.removeProperty("opacity"); // restore visibility of original
-                (_a = clone.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(clone); // destroy clone
-                if (onEnd)
-                    onEnd(mobileNode);
-            }, duration);
-        }
-        catch (e) {
-            // if bad thing happen we have to clean up clones
-            console.error("ERR:C01:animation error", e);
-            (_b = desti.parentNode) === null || _b === void 0 ? void 0 : _b.removeChild(desti);
-            (_c = clone.parentNode) === null || _c === void 0 ? void 0 : _c.removeChild(clone); // destroy clone
-            //if (onEnd) onEnd(mobileNode);
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_b) {
+                if (!$(token))
+                    console.error("token not found for ".concat(token));
+                if (((_a = $(token)) === null || _a === void 0 ? void 0 : _a.parentNode) == $(finalPlace))
+                    return [2 /*return*/];
+                this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
+                return [2 /*return*/, this.wait(duration)];
+            });
+        });
     };
     Game1Tokens.prototype.notif_animate = function (args) {
         var _a;
@@ -1170,10 +1025,10 @@ var Game1Tokens = /** @class */ (function (_super) {
     };
     Game1Tokens.prototype.notif_tokenMoved = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var i, one, new_state;
+            var moves, i, one, new_state;
             return __generator(this, function (_a) {
                 if (args.list !== undefined) {
-                    // move bunch of tokens
+                    moves = [];
                     for (i = 0; i < args.list.length; i++) {
                         one = args.list[i];
                         new_state = args.new_state;
@@ -1182,13 +1037,12 @@ var Game1Tokens = /** @class */ (function (_super) {
                                 new_state = args.new_states[i];
                             }
                         }
-                        this.placeTokenServer(one, args.place_id, new_state, args);
+                        moves.push(this.placeTokenServer(one, args.place_id, new_state, args));
                     }
-                    return [2 /*return*/, this.game.wait(500)];
+                    return [2 /*return*/, Promise.all(moves)];
                 }
                 else {
-                    this.placeTokenServer(args.token_id, args.place_id, args.new_state, args);
-                    return [2 /*return*/, this.game.wait(500)];
+                    return [2 /*return*/, this.placeTokenServer(args.token_id, args.place_id, args.new_state, args)];
                 }
                 return [2 /*return*/];
             });
@@ -1223,14 +1077,14 @@ var Game1Tokens = /** @class */ (function (_super) {
                     name_1 = args.name;
                     value = args.value;
                     node = $(name_1);
+                    console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
                     if (node && this.gamedatas.tokens[name_1]) {
                         args.nop = true; // no move animation
-                        this.placeTokenServer(name_1, this.gamedatas.tokens[name_1].location, value, args);
+                        return [2 /*return*/, this.placeTokenServer(name_1, this.gamedatas.tokens[name_1].location, value, args)];
                     }
                     else if (node) {
-                        this.setDomTokenState(name_1, value);
+                        node.dataset.state = value;
                     }
-                    console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
                 }
                 catch (ex) {
                     console.error("Cannot update " + args.counter_name, ex, ex.stack);
@@ -1241,13 +1095,6 @@ var Game1Tokens = /** @class */ (function (_super) {
     };
     return Game1Tokens;
 }(Game0Basics));
-function setStyleAttributes(element, attrs) {
-    if (attrs !== undefined) {
-        Object.keys(attrs).forEach(function (key) {
-            element.style.setProperty(key, attrs[key]);
-        });
-    }
-}
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
@@ -1266,7 +1113,7 @@ var GameMachine = /** @class */ (function (_super) {
     }
     GameMachine.prototype.onEnteringState_PlayerTurn = function (args) {
         var _this = this;
-        var _a;
+        var _a, _b;
         if (!this.isCurrentPlayerActive()) {
             if (args === null || args === void 0 ? void 0 : args.description)
                 this.statusBar.setTitle(args.description, args);
@@ -1276,37 +1123,50 @@ var GameMachine = /** @class */ (function (_super) {
         if (args.descriptionOnMyTurn) {
             this.statusBar.setTitle(args.descriptionOnMyTurn, args);
         }
+        var sortedTargets = Object.keys(args.info);
+        sortedTargets.sort(function (a, b) { return args.info[a].o - args.info[b].o; });
         var _loop_1 = function (target) {
             var paramInfo = args.info[target];
             var div = $(target);
+            var q = paramInfo.q;
+            var active = q == 0;
             var name_2 = paramInfo.name;
             if (div) {
-                (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
+                if (active)
+                    (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
                 if (!name_2)
                     name_2 = div.dataset.name;
             }
             if (!name_2)
                 name_2 = target;
-            this_1.statusBar.addActionButton(this_1.getTr(name_2), function () { return _this.resolveAction({ target: target }); });
-        };
-        var this_1 = this;
-        for (var _i = 0, _b = args.target; _i < _b.length; _i++) {
-            var target = _b[_i];
-            _loop_1(target);
-        }
-        var _loop_2 = function (target) {
-            var paramInfo = args.info[target];
+            var handler = void 0;
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
-                this_2.statusBar.addActionButton(this_2.getTr(paramInfo.name), function () { return _this.bgaPerformAction("action_".concat(target), {}); });
+                handler = function () { return _this.bgaPerformAction("action_".concat(target), {}); };
+            }
+            else {
+                handler = function () { return _this.resolveAction({ target: target }); };
+            }
+            var button = this_1.statusBar.addActionButton(this_1.getTr(name_2), handler, {
+                color: active ? "primary" : "alert",
+                disabled: !active
+            });
+            if (!active) {
+                button.title = this_1.getTr((_b = paramInfo.err) !== null && _b !== void 0 ? _b : _("Operation cannot be performed now"));
             }
         };
-        var this_2 = this;
-        for (var target in args.info) {
-            _loop_2(target);
+        var this_1 = this;
+        for (var _i = 0, sortedTargets_1 = sortedTargets; _i < sortedTargets_1.length; _i++) {
+            var target = sortedTargets_1[_i];
+            _loop_1(target);
         }
         // need a global condition when this can be added
         this.addUndoButton();
+    };
+    GameMachine.prototype.onLeavingState = function (stateName) {
+        var _a;
+        _super.prototype.onLeavingState.call(this, stateName);
+        (_a = $("button_undo")) === null || _a === void 0 ? void 0 : _a.remove();
     };
     /** default click processor */
     GameMachine.prototype.onToken = function (event, fromMethod) {
@@ -1422,7 +1282,7 @@ var GameXBody = /** @class */ (function (_super) {
     __extends(GameXBody, _super);
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n</div>\n</div>\n<div id=\"oversurface\"></div>\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n</div>\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1447,7 +1307,7 @@ var GameXBody = /** @class */ (function (_super) {
         var pp = "player_panel_content_".concat(playerInfo.color);
         document.querySelectorAll("#".concat(pp, ">.miniboard")).forEach(function (node) { return node.remove(); });
         placeHtml("<div id='miniboard_".concat(playerInfo.color, "' class='miniboard'></div>"), pp);
-        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n         <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'>\n                 </div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'>\n                 </div>\n         </div>\n         <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n      </div>"), "players_panels");
+        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n         <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n         </div>\n         <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n      </div>"), "players_panels");
         for (var i = 0; i <= 6; i++) {
             placeHtml("<div id='slot_furnish_".concat(i, "_").concat(playerInfo.color, "' class='slot_furnish slot_furnish_").concat(i, "'></div>"), "track_furnish_".concat(playerInfo.color));
         }
@@ -1458,10 +1318,6 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.showHelp = function (id) {
         return false;
     };
-    GameXBody.prototype.onUpdateTokenInDom = function (tokenNode, tokenInfo, tokenInfoBefore, animationDuration) {
-        if (animationDuration === void 0) { animationDuration = 0; }
-        return;
-    };
     GameXBody.prototype.updateTokenDisplayInfo = function (tokenDisplayInfo) {
         // override to generate dynamic tooltips and such
     };
@@ -1469,25 +1325,39 @@ var GameXBody = /** @class */ (function (_super) {
         var _a;
         (_a = $("limbo")) === null || _a === void 0 ? void 0 : _a.appendChild($(tokenId));
     };
-    GameXBody.prototype.getPlaceRedirect = function (tokenInfo) {
+    GameXBody.prototype.getPlaceRedirect = function (tokenInfo, args) {
         var _this = this;
-        var location = tokenInfo.location;
+        var _a;
+        if (args === void 0) { args = {}; }
+        var location = (_a = tokenInfo.location) !== null && _a !== void 0 ? _a : "limbo";
+        var tokenId = tokenInfo.key;
         var result = {
             location: location,
-            key: tokenInfo.key,
+            key: tokenId,
             state: tokenInfo.state
         };
-        var tokenId = tokenInfo.key;
+        if (args.place_from)
+            result.place_from = args.place_from;
         if (tokenId.startsWith("action") && location.startsWith("tableau")) {
             var color = getPart(location, 1);
             result.location = "action_area_".concat(color);
             result.onClick = function (x) { return _this.onToken(x); };
         }
-        else if (location === null || location === void 0 ? void 0 : location.startsWith("discard")) {
+        else if (location.startsWith("discard")) {
             result.onEnd = function (node) { return _this.hideCard(node); };
         }
-        else if (location === null || location === void 0 ? void 0 : location.startsWith("deck")) {
+        else if (location.startsWith("deck")) {
             result.onEnd = function (node) { return _this.hideCard(node); };
+        }
+        else if (tokenId.startsWith("slot")) {
+            result.nop = true; // do not move slots
+        }
+        else if (location.startsWith("miniboard") && $(tokenId)) {
+            result.nop = true; // do not move
+        }
+        else if (tokenId.startsWith("worker") && location.startsWith("tableau")) {
+            var color = getPart(location, 1);
+            result.location = "breakroom_".concat(color);
         }
         return result;
     };
@@ -1541,6 +1411,148 @@ var GameXBody = /** @class */ (function (_super) {
     };
     return GameXBody;
 }(GameMachine));
+var LaAnimations = /** @class */ (function () {
+    function LaAnimations() {
+        this.defaultAnimationDuration = 500;
+    }
+    LaAnimations.prototype.phantomMove = function (mobileId, newparentId, duration, mobileStyle, onEnd) {
+        var _a, _b, _c;
+        var mobileNode = $(mobileId);
+        if (!mobileNode)
+            throw new Error("Does not exists ".concat(mobileId));
+        var newparent = $(newparentId);
+        if (!newparent)
+            throw new Error("Does not exists ".concat(newparentId));
+        if (duration === undefined)
+            duration = this.defaultAnimationDuration;
+        if (!duration || duration < 0)
+            duration = 0;
+        var noanimation = duration <= 0 || !mobileNode.parentNode;
+        var oldParent = mobileNode.parentElement;
+        var clone = null;
+        if (!noanimation) {
+            // do animation
+            clone = this.projectOnto(mobileNode, "_temp");
+            mobileNode.style.opacity = "0"; // hide original
+        }
+        var rel = mobileStyle === null || mobileStyle === void 0 ? void 0 : mobileStyle.relation;
+        if (rel) {
+            delete mobileStyle.relation;
+        }
+        if (rel == "first") {
+            newparent.insertBefore(mobileNode, null);
+        }
+        else {
+            newparent.appendChild(mobileNode); // move original
+        }
+        setStyleAttributes(mobileNode, mobileStyle);
+        newparent.classList.add("move_target");
+        oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.add("move_source");
+        mobileNode.offsetHeight; // recalc
+        if (noanimation) {
+            setTimeout(function () {
+                newparent.offsetHeight;
+                newparent.classList.remove("move_target");
+                oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.remove("move_source");
+                if (onEnd)
+                    onEnd(mobileNode);
+            }, 0);
+            return;
+        }
+        var desti = this.projectOnto(mobileNode, "_temp2"); // invisible destination on top of new parent
+        try {
+            //setStyleAttributes(desti, mobileStyle);
+            clone.style.transitionDuration = duration + "ms";
+            clone.style.transitionProperty = "all";
+            clone.style.visibility = "visible";
+            clone.style.opacity = "1";
+            // that will cause animation
+            clone.style.left = desti.style.left;
+            clone.style.top = desti.style.top;
+            clone.style.transform = desti.style.transform;
+            // now we don't need destination anymore
+            (_a = desti.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(desti);
+            setTimeout(function () {
+                var _a;
+                newparent.classList.remove("move_target");
+                oldParent === null || oldParent === void 0 ? void 0 : oldParent.classList.remove("move_source");
+                mobileNode.style.removeProperty("opacity"); // restore visibility of original
+                (_a = clone.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(clone); // destroy clone
+                if (onEnd)
+                    onEnd(mobileNode);
+            }, duration);
+        }
+        catch (e) {
+            // if bad thing happen we have to clean up clones
+            console.error("ERR:C01:animation error", e);
+            (_b = desti.parentNode) === null || _b === void 0 ? void 0 : _b.removeChild(desti);
+            (_c = clone.parentNode) === null || _c === void 0 ? void 0 : _c.removeChild(clone); // destroy clone
+            //if (onEnd) onEnd(mobileNode);
+        }
+    };
+    LaAnimations.prototype.getFulltransformMatrix = function (from, to) {
+        var fullmatrix = "";
+        var par = from;
+        while (par != to && par != null && par != document.body) {
+            var style = window.getComputedStyle(par);
+            var matrix = style.transform; //|| "matrix(1,0,0,1,0,0)";
+            if (matrix && matrix != "none")
+                fullmatrix += " " + matrix;
+            par = par.parentNode;
+            // console.log("tranform  ",fullmatrix,par);
+        }
+        return fullmatrix;
+    };
+    LaAnimations.prototype.projectOnto = function (from, postfix, ontoWhat) {
+        var elem = $(from);
+        var over;
+        if (ontoWhat)
+            over = $(ontoWhat);
+        else
+            over = $("oversurface"); // this div has to exists with pointer-events: none and cover all area with high zIndex
+        var elemRect = elem.getBoundingClientRect();
+        //console.log("elemRect", elemRect);
+        var newId = elem.id + postfix;
+        var old = $(newId);
+        if (old)
+            old.parentNode.removeChild(old);
+        var clone = elem.cloneNode(true);
+        clone.id = newId;
+        clone.classList.add("phantom");
+        clone.classList.add("phantom" + postfix);
+        clone.style.transitionDuration = "0ms"; // disable animation during projection
+        if (elemRect.width > 1) {
+            clone.style.width = elemRect.width + "px";
+            clone.style.height = elemRect.height + "px";
+        }
+        var fullmatrix = this.getFulltransformMatrix(elem.parentNode, over.parentNode);
+        over.appendChild(clone);
+        var cloneRect = clone.getBoundingClientRect();
+        var centerY = elemRect.y + elemRect.height / 2;
+        var centerX = elemRect.x + elemRect.width / 2;
+        // centerX/Y is where the center point must be
+        // I need to calculate the offset from top and left
+        // Therefore I remove half of the dimensions + the existing offset
+        var offsetX = centerX - cloneRect.width / 2 - cloneRect.x;
+        var offsetY = centerY - cloneRect.height / 2 - cloneRect.y;
+        // Then remove the clone's parent position (since left/top is from tthe parent)
+        //console.log("cloneRect", cloneRect);
+        // @ts-ignore
+        clone.style.left = offsetX + "px";
+        clone.style.top = offsetY + "px";
+        clone.style.transform = fullmatrix;
+        clone.style.transitionDuration = undefined;
+        return clone;
+    };
+    return LaAnimations;
+}());
+function setStyleAttributes(element, attrs) {
+    if (attrs !== undefined) {
+        Object.keys(attrs).forEach(function (key) {
+            element.style.setProperty(key, attrs[key]);
+        });
+    }
+}
 /**
  * This is only code that has to use dojo
  * Note: this only works when targeting ES5

@@ -21,35 +21,83 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
-use Bga\Games\skarabrae\States\PlayerTurn;
+use Bga\Games\skarabrae\Material;
 
 class Op_craft extends Operation {
     function getArgType() {
         return Operation::ARG_TOKEN;
     }
-    function auto(): bool {
-        if ($this->isPaid()) {
-            return true;
-        }
-        return false;
+
+    public function getPrompt() {
+        return "Select an Action Tile to turn over";
     }
+
     function getPossibleMoves() {
+        $card = $this->getCard();
+        if ($this->isPaid() && $card) {
+            return [$card];
+        }
         $owner = $this->getOwner();
-        return array_keys($this->game->tokensmop->getTokensOfTypeInLocation("action", "tableau_$owner"));
+        if ($card) {
+            $cost = $this->getCost();
+            if ($this->game->machine->instanciateOperation($cost, $owner)->isVoid()) {
+                return ["q" => Material::MA_ERR_COST];
+            }
+            return [$card];
+        }
+        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
+
+        $res = [];
+        foreach ($keys as $card) {
+            $res[$card] = [
+                "name" => $this->game->tokens->getTokenName($card),
+                "q" => 0,
+            ];
+            $state = $this->game->tokens->tokens->getTokenState($card);
+
+            if ($state) {
+                // already flipped
+                $res[$card]["q"] = Material::MA_ERR_NOT_APPLICABLE;
+                continue;
+            }
+            $cost = $this->game->getRulesFor($card, "craft");
+            $this->game->systemAssert("Cannot determine cost for $card", $cost);
+            $op = $this->game->machine->instanciateOperation($cost, $owner);
+
+            if ($op->isVoid()) {
+                $res[$card]["err"] = $op->getError();
+                $res[$card]["q"] = 1;
+            }
+            $res[$card]["cost"] = $cost;
+        }
+        return $res;
     }
 
     function isPaid() {
-        return $this->getDataField("paid", false);
+        return $this->getDataField("paid", false) || $this->getParams() == "paid";
     }
-    function resolve(mixed $data = []) {
+    function getCard() {
+        return $this->getDataField("card", false);
+    }
+    function getCost() {
         if ($this->isPaid()) {
-            $action = $this->getDataField("card");
-            $this->game->tokensmop->dbSetTokenState($action, 1, clienttranslate('${player_name} crafts ${token_name}'));
+            return "nop";
+        }
+        $card = $this->getCard();
+        $cost = $this->game->getRulesFor($card, "craft");
+        $this->game->systemAssert("Cannot determine cost for $card", $cost);
+        return $cost;
+    }
+
+    function resolve() {
+        if ($this->isPaid()) {
+            $card = $this->getDataField("card");
+            $this->game->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} crafts ${token_name}'));
         } else {
-            $action = $this->getCheckedArg($data);
-            $cost = $this->game->getRulesFor($action, "craft", "n_bone");
+            $card = $this->getCheckedArg();
+            $cost = $this->game->getRulesFor($card, "craft", "");
             $this->queue($cost, $this->getOwner(), [], $this->getOpId());
-            $this->queue($this->getType(), $this->getOwner(), ["paid" => true, "card" => $action]);
+            $this->queue($this->getType(), $this->getOwner(), ["paid" => true, "card" => $card]);
         }
         return;
     }

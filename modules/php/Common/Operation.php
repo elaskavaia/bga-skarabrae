@@ -39,7 +39,7 @@ abstract class Operation {
     protected int $player_id = 0;
     private mixed $data = null;
     private $cachedArgs = null;
-    protected $user_args = null;
+    protected $userArgs = null;
 
     protected $queueRank = 1;
 
@@ -109,19 +109,30 @@ abstract class Operation {
         return $this->data[$field];
     }
 
-    // complex operation can be instanciated from op expr
-    function withExpr(OpExpression $expr) {
+    function withCounts(OpExpression $expr) {
         if ($expr instanceof OpExpressionRanged) {
             $count = $expr->to;
             $mcount = $expr->from;
-            $this->withDataField("count", $count);
-            $this->withDataField("mcount", $mcount);
+            if ($count != 1) {
+                $this->withDataField("count", $count);
+            }
+            if ($mcount != 1) {
+                $this->withDataField("mcount", $mcount);
+            }
         }
+        return $this;
+    }
+    // complex operation can be instanciated from op expr
+    function withExpr(OpExpression $expr) {
         return $this;
     }
 
     function withParams(?string $params) {
         return $this->withDataField("params", $params);
+    }
+
+    function getParams() {
+        return $this->getDataField("params", null);
     }
 
     final function isTrancient() {
@@ -137,6 +148,7 @@ abstract class Operation {
     }
 
     function queue($type, $owner = null, $data = null, $reason = null) {
+        $this->game->systemAssert("empty op pushed", $type);
         if ($owner === null) {
             $owner = $this->getOwner();
         }
@@ -153,8 +165,8 @@ abstract class Operation {
         $this->game->machine->insert($type, $owner, $data, $this->queueRank);
     }
 
-    protected function getCheckedArg($args) {
-        $this->user_args = $args;
+    protected function getCheckedArg() {
+        $args = $this->userArgs;
         $key = Operation::ARG_TARGET;
         $possible_targets = $this->getArgs()[$key];
         $this->game->systemAssert("ERR:getCheckedArg:1", is_array($possible_targets));
@@ -212,7 +224,7 @@ abstract class Operation {
     }
 
     protected function getUncheckedArg($args, $key = Operation::ARG_TARGET, $def = null) {
-        $this->user_args = $args;
+        $this->userArgs = $args;
         $target = $args[$key] ?? $def;
         return $target;
     }
@@ -229,6 +241,7 @@ abstract class Operation {
         $res["owner"] = $this->getOwner();
         $res["data"] = $this->getData();
         $res["type"] = $this->getType();
+        $res["ttype"] = $this->getArgType();
 
         $movesInfo = $this->getPossibleMoves();
         $this->extractPossibleMoves($res, $movesInfo);
@@ -277,6 +290,12 @@ abstract class Operation {
             if ($target == "err") {
                 // top level error
                 $error = $info;
+                unset($details[$target]);
+                continue;
+            }
+            if ($target == "q") {
+                // top level error
+                $error = $this->game->getRulesFor("err_$info", "name", "code $info");
                 unset($details[$target]);
                 continue;
             }
@@ -438,7 +457,9 @@ abstract class Operation {
             }
             return false;
         }
-
+        if ($this->canSkip()) {
+            return false;
+        }
         if ($this->getArgType() == Operation::TTYPE_AUTO) {
             return true;
         }
@@ -457,11 +478,12 @@ abstract class Operation {
         if (!is_array($data)) {
             throw new BgaSystemException("data encoding issues");
         }
+        $this->userArgs = $data;
         return $this->resolve($data) ?: $this->destroy();
     }
 
     /** User does the action. If this return false or void or 0 we will end the operation, and return the state */
-    function resolve(mixed $data = []) {
+    function resolve() {
         return;
     }
 

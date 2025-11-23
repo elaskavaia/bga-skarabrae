@@ -55,7 +55,7 @@ class Base extends Table {
                 $args["player_id"] = $this->getActivePlayerId();
             }
             if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
-                $args["player_name"] = $args["player_id"]; // replaced on client side, this is for reply
+                $args["player_name"] = $this->getPlayerNameById($args["player_id"]);
             }
             if (str_contains($message, '${you}')) {
                 $args["you"] = "You"; // translated on client side, this is for replay after

@@ -1,0 +1,9 @@
+id|name|location|scope|counter|content|php
+#set type=location
+#set showtooltip=0
+#set create=0
+deck_village|Village Deck|supply|global|public|hidden|
+discard_village|Village Discard|supply|global|public|hidden|
+limbo|Limbo||global|hidden|hidden|
+tableau|Player Area|players_panels|player|hidden|public|
+

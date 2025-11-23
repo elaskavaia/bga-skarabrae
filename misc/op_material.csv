@@ -2,17 +2,17 @@ type|name|php
 #set id=Op_{type}
 
 #set class=
-gather1|Gather Shore
 
 furnish|Furnish
+furnishPay|Furnish
 cook|Cook
 craft|Craft
 clean|Clean
 trade|Trade
-gather1|Gather Shore
-gather2|Gather Hills
-gather3|Gather Thickets
-gather4|Gather Fields
+tradePay|Trade
+build|Build
+endOfRound|End of Round
+
 
 #set class=Op_gain
 
@@ -32,6 +32,7 @@ hide|Gain Hide
 food|Gain Food
 bone|Gain Bone
 midden|Gain Midden
+boar|Gain Boar
 
 #set class=Op_pay
 n_shell|Pay Shell
@@ -49,7 +50,27 @@ n_skaill|Pay Skaill
 n_hide|Pay Hide
 n_food|Pay Food
 n_bone|Pay Bone
-n_midden|Pay Midden
+n_midden|Clean Midden
+n_boar|Pay Boar
+
 
 #set class=
 nop|None
+
+or|Choice
+unique|Unique Choice
+order|Choose Order
+seq|Execution
+payAny|Pay Any Resource
+act|Worker Action
+gain|Gain
+pay|Pay
+paygain|Trade
+recall|Return Workers
+pass|Delay
+round|Round
+turn|Turn
+turnall|Turn
+village|Gain Village Card
+tradeGood|Trade Market Resource
+tradeInc|Move up on Trade track

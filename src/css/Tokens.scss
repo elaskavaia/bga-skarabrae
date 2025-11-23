@@ -33,6 +33,10 @@
   background-size: auto 453%;
 }
 
+.hearth {
+  background-position: 47% 0%;
+}
+
 .furnish {
   background-position: 89% 97%;
   background-size: auto 453%;
@@ -94,4 +98,35 @@
 }
 .wooden.midden {
   background-position: 0% 64%;
+}
+.worker {
+  background-position: 19% 97%;
+  background-size: auto 453%;
+  width: 26px;
+  aspect-ratio: 2 / 3;
+  &[data-state="0"] {
+    opacity: 0.5;
+  }
+
+  &.color_ff0000 {
+    background-position: 14% 97%;
+  }
+  &.color_000000 {
+    background-position: 7% 97%;
+  }
+  &.color_ffffff {
+    background-position: 0% 97%;
+  }
+  &.color_ffcc02 {
+    background-position: 21% 97%;
+  }
+  &.color_6cd0f6 {
+    background-position: 27% 97%;
+  }
+  &.color_982fff {
+    background-position: 34% 97%;
+  }
+}
+.worker.large {
+  width: 30px;
 }

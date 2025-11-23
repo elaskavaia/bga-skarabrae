@@ -45,9 +45,28 @@ class Op_seq extends ComplexOperation {
         if ($this->storeDelegates()) {
             return true;
         }
+        if (count($this->delegates) == 0) {
+            return true;
+        }
+        if (!$this->canResolveAutomatically()) {
+            return false;
+        }
 
         $this->game->machine->interrupt();
         $this->game->machine->renice($this->delegates[0], 1);
         return true;
+    }
+
+    function getPossibleMoves() {
+        if (count($this->delegates) == 0) {
+            return ["err" => "No moves"];
+        }
+        foreach ($this->delegates as $i => $sub) {
+            if ($sub->isVoid()) {
+                return ["err" => $sub->getError()];
+            }
+        }
+        $sub = $this->delegates[0];
+        return $sub->getPossibleMoves();
     }
 }

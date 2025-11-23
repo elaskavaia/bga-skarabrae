@@ -14,7 +14,7 @@ use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 
 use BgaSystemException;
-
+use Exception;
 use ReflectionClass;
 
 class OpMachine {
@@ -59,32 +59,36 @@ class OpMachine {
         return $this->instanciateOperation($dop["type"], $dop["owner"], $dop["data"], $dop["id"]);
     }
 
-    function instanciateOperation(string $type, string $owner, mixed $data = null, mixed $id = 0): Operation {
-        $expr = OpExpression::parseExpression($type);
-        $operand = OpExpression::getop($expr);
+    function instanciateOperation(string $type, ?string $owner = null, mixed $data = null, mixed $id = 0): Operation {
+        try {
+            $expr = OpExpression::parseExpression($type);
+            $operand = OpExpression::getop($expr);
 
-        if ($id) {
-            $id = (int) $id;
-        }
-        //[op min max arg1 arg2 arg3]...
-
-        if (!$expr->isSimple()) {
-            $mnemonic = self::opToMnemonic($operand);
-            if ($mnemonic == $type) {
-                throw new BgaSystemException("infinite rec $type");
+            if ($id) {
+                $id = (int) $id;
             }
-            return $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withExpr($expr);
-        }
+            //[op min max arg1 arg2 arg3]...
 
-        $unrangedType = OpExpression::str($expr->toUnranged());
-        $matches = null;
-        $params = null;
-        if (preg_match("/^(\w+)\((.*)\)$/", $unrangedType, $matches)) {
-            // function call
-            $params = $matches[2];
-            $unrangedType = $matches[1];
+            if (!$expr->isSimple()) {
+                $mnemonic = self::opToMnemonic($operand);
+                if ($mnemonic == $type) {
+                    throw new BgaSystemException("infinite rec $type");
+                }
+                return $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withExpr($expr)->withCounts($expr);
+            }
+
+            $unrangedType = OpExpression::str($expr->toUnranged());
+            $matches = null;
+            $params = null;
+            if (preg_match("/^(\w+)\((.*)\)$/", $unrangedType, $matches)) {
+                // function call
+                $params = $matches[2];
+                $unrangedType = $matches[1];
+            }
+            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params)->withCounts($expr);
+        } catch (Exception $e) {
+            throw new BgaSystemException("Cannot instanciate '$type': " . $e->getMessage());
         }
-        return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params)->withExpr($expr);
     }
     static function opToMnemonic(string $operand) {
         return match ($operand) {
@@ -99,7 +103,7 @@ class OpMachine {
         };
     }
 
-    function instanciateSimpleOperation(string $type, string $owner, mixed $data = null, int $id = 0): Operation {
+    function instanciateSimpleOperation(string $type, ?string $owner = null, mixed $data = null, int $id = 0): Operation {
         if (strlen($type) > 80) {
             throw new BgaSystemException("Cannot instantice op");
         }
@@ -110,6 +114,9 @@ class OpMachine {
         $args["type"] = $type;
 
         // Instantiate the class with constructor arguments
+        if ($owner === null) {
+            $owner = $this->game->getActivePlayerColor();
+        }
         $instance = $reflectionClass->newInstance($type, $owner, $data);
         $instance->withId($id);
 

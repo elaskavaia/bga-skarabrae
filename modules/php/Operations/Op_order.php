@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\Common\ComplexOperation;
 class Op_order extends ComplexOperation {
-    function resolve(mixed $data = []) {
-        $target = $this->getCheckedArg($data);
+    function resolve() {
+        $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
                 // XXX

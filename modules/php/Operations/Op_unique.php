@@ -30,8 +30,8 @@ class Op_unique extends ComplexOperation {
         return $this->getDataField("mcount", 1);
     }
 
-    function resolve(mixed $data = []) {
-        $target = $this->getCheckedArg($data);
+    function resolve() {
+        $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
                 // XXX

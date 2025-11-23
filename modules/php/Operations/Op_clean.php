@@ -22,8 +22,8 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_gather3 extends Operation {
-    function resolve(mixed $data = []) {
-        $this->queue("wood", $this->getOwner());
+class Op_clean extends Operation {
+    function resolve() {
+        $this->game->systemAssert("Not implemented");
     }
 }

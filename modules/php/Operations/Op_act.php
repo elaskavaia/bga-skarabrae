@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Material;
 
 /** Standard action */
 class Op_act extends Operation {
@@ -30,19 +31,83 @@ class Op_act extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        return array_keys($this->game->tokensmop->getTokensOfTypeInLocation("action", "tableau_$owner"));
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
+        if (count($workers) == 0) {
+            return ["err" => clienttranslate("No available workers")];
+        }
+        $largeWorker = null;
+        $anyWorker = null;
+        foreach ($workers as $worker => $info) {
+            if (str_starts_with($worker, "worker_1")) {
+                $largeWorker = $worker;
+            } else {
+                $anyWorker = $worker;
+            }
+        }
+        if ($anyWorker == null) {
+            $anyWorker = $largeWorker;
+        }
+        $workersf = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
+        $locs = $this->game->tokens->getReverseLocationTokensMapping($workersf);
+        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
+        $res = [];
+        foreach ($keys as $act) {
+            $res[$act] = [
+                "name" => $this->game->tokens->getTokenName($act),
+                "q" => 0,
+            ];
+            $occupied = $locs[$act] ?? [];
+            $countw = count($occupied);
+            if ($countw >= 2) {
+                $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
+                continue;
+            }
+
+            if ($countw >= 1) {
+                if (!$largeWorker) {
+                    $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
+                    continue;
+                }
+                $res[$act]["worker"] = $largeWorker;
+            } else {
+                $res[$act]["worker"] = $anyWorker;
+            }
+            $state = $this->game->tokens->tokens->getTokenState($act);
+            $rulesField = "r";
+            if ($state) {
+                $rulesField = "rb";
+            }
+            $rules = $this->game->getRulesFor($act, $rulesField, "nop");
+            $op = $this->game->machine->instanciateOperation($rules, $owner);
+
+            if ($op->isVoid()) {
+                $res[$act]["err"] = $op->getError();
+                $res[$act]["q"] = 1;
+            }
+        }
+        return $res;
     }
-    function resolve(mixed $data = []) {
-        $action_tile = $this->getCheckedArg($data);
+    function resolve() {
+        $owner = $this->getOwner();
+        $args = $this->getArgs();
+
+        $action_tile = $this->getCheckedArg();
+        $worker = $args["info"][$action_tile]["worker"];
         $r = $this->game->getRulesFor($action_tile);
-        if ($r) {
-            $this->queue($r);
-        } else {
-            $this->game->userAssert("not implemented yet $action_tile");
+        $this->queue($r, $owner, [], $action_tile);
+        $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
+        $worker = array_shift($workers);
+        if ($worker) {
+            $this->queue($this->getType(), $owner);
         }
     }
 
     public function getPrompt() {
         return clienttranslate("Select an action for worker");
+    }
+
+    public function canSkip() {
+        return true;
     }
 }

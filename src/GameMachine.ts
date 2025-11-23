@@ -62,27 +62,43 @@ class GameMachine extends Game1Tokens {
       this.statusBar.setTitle(args.descriptionOnMyTurn, args);
     }
 
-    for (const target of args.target) {
+    const sortedTargets = Object.keys(args.info);
+    sortedTargets.sort((a, b) => args.info[a].o - args.info[b].o);
+
+    for (const target of sortedTargets) {
       const paramInfo = args.info[target];
       const div = $(target);
+      const q = paramInfo.q;
+      const active = q == 0;
       let name = paramInfo.name;
       if (div) {
-        div.classList?.add(this.classActiveSlot);
+        if (active) div.classList?.add(this.classActiveSlot);
         if (!name) name = div.dataset.name;
       }
       if (!name) name = target;
-      this.statusBar.addActionButton(this.getTr(name), () => this.resolveAction({ target }));
-    }
-    for (const target in args.info) {
-      const paramInfo = args.info[target];
+      let handler: any;
       if (paramInfo.sec) {
         // skip, whatever TODO: anytime
-        this.statusBar.addActionButton(this.getTr(paramInfo.name), () => this.bgaPerformAction(`action_${target}`, {}));
+        handler = () => this.bgaPerformAction(`action_${target}`, {});
+      } else {
+        handler = () => this.resolveAction({ target });
+      }
+      const button = this.statusBar.addActionButton(this.getTr(name), handler, {
+        color: active ? "primary" : "alert",
+        disabled: !active
+      });
+      if (!active) {
+        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"));
       }
     }
 
     // need a global condition when this can be added
     this.addUndoButton();
+  }
+
+  onLeavingState(stateName: string): void {
+    super.onLeavingState(stateName);
+    $("button_undo")?.remove();
   }
 
   /** default click processor */

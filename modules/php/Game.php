@@ -31,7 +31,7 @@ class Game extends Base {
     public static Game $instance;
     public OpMachine $machine;
     public Material $material;
-    public PGameTokens $tokensmop;
+    public PGameTokens $tokens;
 
     function __construct() {
         parent::__construct();
@@ -40,7 +40,7 @@ class Game extends Base {
         $this->material = new Material();
         $this->machine = new OpMachine();
         $tokens = new DbTokens($this);
-        $this->tokensmop = new PGameTokens($this, $tokens);
+        $this->tokens = new PGameTokens($this, $tokens);
 
         $this->notify->addDecorator(function (string $message, array $args) {
             if (str_contains($message, '${reason}') && !isset($args["reason"])) {
@@ -57,8 +57,8 @@ class Game extends Base {
         called from setupNewGame
     */
     protected function initTables() {
-        $this->tokensmop->createTokens();
-        $tokens = $this->tokensmop->tokens;
+        $this->tokens->createTokens();
+        $tokens = $this->tokens->tokens;
         // setup
 
         /* 
@@ -77,6 +77,7 @@ class Game extends Base {
         foreach ($players as $player_id => $player) {
             $color = $this->getPlayerColorById((int) $player_id);
             $this->effect_incCount($color, "skaill", 2, "setup");
+            $this->effect_incCount($color, "hearth", 4, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
@@ -116,7 +117,7 @@ class Game extends Base {
     protected function getAllDatas(): array {
         $result = parent::getAllDatas();
 
-        $result = array_merge($result, $this->tokensmop->getAllDatas());
+        $result = array_merge($result, $this->tokens->getAllDatas());
         return $result;
     }
 
@@ -154,8 +155,8 @@ class Game extends Base {
         unset($options["min"]);
         unset($options["check"]);
 
-        $token_id = $this->tokensmop->getTrackerId($color, $type);
-        $current = $this->tokensmop->getTrackerValue($color, $type);
+        $token_id = $this->tokens->getTrackerId($color, $type);
+        $current = $this->tokens->getTrackerValue($color, $type);
         $value = $current + $inc;
         if ($inc < 0) {
             if ($value < $min && $check) {
@@ -171,17 +172,17 @@ class Game extends Base {
             return;
         }
 
-        $this->tokensmop->dbResourceInc($token_id, $inc, $message, ["reason" => $reason] + $options, $this->getPlayerIdByColor($color));
+        $this->tokens->dbResourceInc($token_id, $inc, $message, ["reason" => $reason] + $options, $this->getPlayerIdByColor($color));
     }
 
     function effect_incTrack(string $color, string $type, int $inc = 1, string $reason, array $args = []) {
         $message = array_get($args, "message", "*");
         unset($args["message"]);
-        $token_id = $this->tokensmop->getTrackerId($color, $type);
-        $value = $this->tokensmop->getTrackerValue($color, $type);
+        $token_id = $this->tokens->getTrackerId($color, $type);
+        $value = $this->tokens->getTrackerValue($color, $type);
         $value = $value + $inc;
         $location = "slot_{$type}_{$value}_{$color}";
-        $this->tokensmop->dbSetTokenLocation(
+        $this->tokens->dbSetTokenLocation(
             $token_id,
             $location,
             $value,
@@ -234,24 +235,8 @@ class Game extends Base {
 
     function debug_maxRes() {
         $color = $this->getCurrentPlayerColor();
-        $ress = [
-            "shell",
-            "rabbit",
-            "barley",
-            "fish",
-            "seaweed",
-            "sheep",
-            "wool",
-            "deer",
-            "stone",
-            "cow",
-            "wood",
-            "skaill",
-            "hide",
-            "food",
-            "bone",
-        ];
-        foreach ($ress as $res) {
+
+        foreach (Material::getAllNonPoopResources() as $res) {
             $this->effect_incCount($color, $res, 2, "debug");
         }
 

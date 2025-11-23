@@ -9,16 +9,19 @@ id|name|count|type|create|location|php
 # 6 - custom placeholders
 
 #4 Large Workers (1 per player colour) 
-worker|Large Worker|1|worker wooden large|5|tableau_{COLOR}
+worker_1|Large Worker|1|worker wooden large|4|tableau_{COLOR}|
 #15 Small Workers (3 Black + 3 per player colour) 
-worker|Small Worker|3|worker wooden small|5|tableau_{COLOR}|'start'=>2
-worker_{INDEX}_000000|Small Black Worker|3|worker wooden small|6|supply|'start'=>2
+worker_2|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
+worker_3|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
+worker_4|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
+worker_{INDEX}_000000|Small Black Worker|3|worker wooden small color_000000|6|supply|'start'=>2
 #4 Turn Markers (1 per player colour) 
 turnmarker|Turn Marker|1|wooden|4|tableau_{COLOR}
 #4 Furnish Markers 
 #4 Trade Markers 
 tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
 tracker_trade|Trade Marker|1|wooden tracker trade|4|slot_trade_0_{COLOR}
+tracker_hearth|Hearth Limit|1|wooden tracker hearth|4|miniboard_{COLOR}
 
 #3 Boar
 
@@ -32,5 +35,6 @@ card_roofi|Roof Card|40|card roof|2|deck_roof
 
 
 #create=0
+
 
 

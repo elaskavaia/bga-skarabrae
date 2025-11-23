@@ -6,12 +6,16 @@ use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Notify;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Operations\Op_paygain;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Tests\MachineInMem;
 use PHPUnit\Framework\TestCase;
+
+use function Bga\Games\skarabrae\array_get;
+use function Bga\Games\skarabrae\startsWith;
 
 //    'player_colors' => ["ef58a2", "a0d28c", "6cd0f6", "ffcc02"],
 define("PCOLOR", "a0d28c");
@@ -113,7 +117,7 @@ class GameUT extends Game {
 }
 
 final class GameTest extends TestCase {
-    private $game;
+    private GameUT $game;
     function dispatchOneStep($done = null) {
         $game = $this->game;
         $state = $game->machine->dispatchOne();
@@ -132,18 +136,93 @@ final class GameTest extends TestCase {
         return $game;
     }
 
+    protected function setUp(): void {
+        $this->game();
+    }
+    public function testInstanciateAllOperations() {
+        $this->game();
+        $token_types = $this->game->material->get();
+        $tested = [];
+        foreach ($token_types as $key => $info) {
+            $this->assertTrue(!!$key);
+            if (!startsWith($key, "Op_")) {
+                continue;
+            }
+            echo "testing op $key\n";
+            $this->subTestOp($key, $info);
+            $tested[$key] = 1;
+        }
+
+        $dir = dirname(dirname(__FILE__));
+        $files = glob("$dir/Operations/*.php");
+
+        foreach ($files as $file) {
+            $base = basename($file);
+            $this->assertTrue(!!$base);
+            if (!startsWith($base, "Op_")) {
+                continue;
+            }
+            $mne = preg_replace("/Op_(.*).php/", "\\1", $base);
+            $key = "Op_{$mne}";
+            if (array_key_exists($key, $tested)) {
+                continue;
+            }
+            echo "testing op $key\n";
+            $this->subTestOp($key, ["type" => $mne]);
+        }
+    }
+
+    function subTestOp($key, $info = []) {
+        $type = array_get($info, "type", substr($key, 3));
+        $this->assertTrue(!!$type);
+
+        /** @var Operation */
+        $op = $this->game->machine->instanciateOperation($type, PCOLOR);
+
+        $args = $op->getArgs();
+        $ttype = array_get($args, "ttype");
+        $this->assertTrue($ttype != "", "empty ttype for $key");
+
+        $propt = array_get($args, "prompt");
+        if (isset($info["prompt"])) {
+            $this->assertEquals($info["prompt"], $propt, $type);
+        }
+
+        $this->assertFalse(str_contains($op->getOpName(), "?"), $op->getOpName());
+        $this->assertFalse($op->getOpName() == $op->getType(), $op->getType());
+        return $op;
+    }
+
+    public function testAllActions() {
+        $this->game();
+        $token_types = $this->game->material->get();
+
+        foreach ($token_types as $key => $info) {
+            $this->assertTrue(!!$key);
+            if (!startsWith($key, "action_")) {
+                continue;
+            }
+            echo "testing action $key\n";
+            $r = $info["r"] ?? "";
+            $this->assertTrue($r != "", "empty r for $key");
+            $this->game->machine->instanciateOperation($r, PCOLOR);
+            $r = $info["rb"] ?? "";
+            $this->assertTrue($r != "", "empty rb for $key");
+            $this->game->machine->instanciateOperation($r, PCOLOR);
+        }
+    }
     public function testBind() {
-        $game = $this->game();
+        $game = $this->game;
         $color = PCOLOR;
-        $game->machine->push("play/pass", $color);
+        $game->machine->push("fish/pass", $color);
         $tops = $game->machine->getTopOperations($color);
         $op = array_shift($tops);
-        $this->assertEquals("play/pass", $op["type"]);
+        $this->assertEquals("fish/pass", $op["type"]);
 
         $game->machine->dispatchOne();
         $tops = $game->machine->getTopOperations($color);
         $op = array_shift($tops);
-        $this->assertEquals("play", $op["type"]);
+        $this->assertEquals("fish", $op["type"]);
         $data = Operation::decodeData($op["data"]);
         $this->assertEquals("or", $data["parent"]);
         $op = array_shift($tops);
@@ -153,8 +232,8 @@ final class GameTest extends TestCase {
         $this->assertEquals("or", $op->getType());
     }
 
-    public function testGold() {
-        $game = $this->game();
+    public function testFish() {
+        $game = $this->game;
         $color = PCOLOR;
         $game->machine->push("[0,3]fish", $color);
         $tops = $this->dispatchOneStep(PlayerTurn::class);
@@ -167,10 +246,27 @@ final class GameTest extends TestCase {
     }
 
     public function testGold2() {
-        $game = $this->game();
         $color = PCOLOR;
-        $game->machine->push("2fish", $color);
+        $this->game->machine->push("2fish", $color);
         $this->dispatchOneStep(GameDispatch::class);
         $this->dispatchOneStep(42);
+    }
+
+    public function testFishSoup() {
+        $op = $this->game->machine->instanciateOperation("n_fish:food", PCOLOR);
+        $this->assertTrue($op->isVoid());
+    }
+
+    public function testOr() {
+        $op = $this->game->machine->instanciateOperation("or");
+        $this->assertTrue($op->canSkip());
+    }
+
+    public function testTradeGood() {
+        $rule = "?(skaill:tradeGood)";
+        $op = $this->game->machine->instanciateOperation($rule);
+        $this->assertTrue($op instanceof Op_paygain);
+        $this->assertTrue($op->canSkip());
+        $this->assertFalse($op->canResolveAutomatically());
     }
 }

@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\Material;
 
 class Op_pay extends CountableOperation {
     function getResType() {
@@ -28,17 +29,23 @@ class Op_pay extends CountableOperation {
         return substr($type, 2); // n_XYZ -> XYZ
     }
 
-    public function requireConfirmation() {
-        return true;
+    function getPossibleMoves() {
+        $owner = $this->getOwner();
+        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+        if ($current < $this->getCount()) {
+            return ["q" => Material::MA_ERR_COST];
+        }
+        return [$this->getResType()];
     }
-    function resolve(mixed $data = []) {
-        $count = (int) $this->getCheckedArg($data);
+
+    function resolve() {
+        $count = $this->getCount();
         $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason());
         return;
     }
 
     public function getExtraArgs() {
-        return parent::getExtraArgs() + ["token_div" => $this->game->tokensmop->getTrackerId($this->getOwner(), $this->getResType())];
+        return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getResType())];
     }
 
     public function getPrompt() {

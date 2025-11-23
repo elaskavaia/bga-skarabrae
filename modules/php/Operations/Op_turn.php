@@ -24,7 +24,9 @@ use Bga\Games\skarabrae\Common\Operation;
 
 class Op_turn extends Operation {
     function auto(): bool {
-        $this->game->machine->push("act", $this->getOwner());
+        $this->queue("village", $this->getOwner());
+        $this->queue("act", $this->getOwner());
+        $this->queue("recall", $this->getOwner());
         $this->game->undoSavepoint();
         return true;
     }

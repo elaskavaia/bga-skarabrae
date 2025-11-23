@@ -22,18 +22,14 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Common\Operation;
 
-class Op_play extends Operation {
-    function auto(): bool {
-        $this->resolve();
-        return true;
-    }
-
-    function resolve(mixed $data = []) {
-        $this->game->notify->all("message", clienttranslate('${player_name} says hello'));
-        return;
-    }
-
-    function getDescription() {
-        return '${actplayer} saying hello';
+class Op_tradeGood extends Operation {
+    function resolve() {
+        $owner = $this->getOwner();
+        $type = "trade";
+        $value = $this->game->tokens->getTrackerValue($owner, $type);
+        $slot = "slot_trade_$value";
+        $good = $this->game->getRulesFor($slot, "craft");
+        $this->game->systemAssert("hello $slot");
+        $this->queue($good);
     }
 }
