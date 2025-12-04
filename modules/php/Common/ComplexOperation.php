@@ -20,63 +20,46 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Common;
 
-use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\States\PlayerTurn;
-use Bga\Games\skarabrae\Common\OpExpression;
-
-abstract class ComplexOperation extends Operation {
+abstract class ComplexOperation extends CountableOperation {
     /** @var Operation[] */
     protected array $delegates = [];
 
-    public function withExpr(OpExpression $expr) {
-        parent::withExpr($expr);
-        $machine = Game::$instance->machine;
-        $this->delegates = [];
-        foreach ($expr->args as $arg) {
-            $sub = $machine->instanciateOperation(OpExpression::str($arg), $this->getOwner(), $this->getData());
-            $this->withSub($sub);
-        }
-        return $this;
-    }
-
-    function canSkip() {
-        if (count($this->delegates) == 0) {
-            return true;
-        }
-        if ($this->getDataField("mcount", 1) == 0) {
-            return true;
-        }
-        return parent::canSkip();
-    }
-
-    function withSub(Operation $sub) {
-        $this->delegates[] = $sub;
-        $sub->withDataField("parent", $this->getType());
-        return $this;
-    }
-
-    function storeDelegates() {
+    function expandOperation() {
         $stored = false;
+
+        $ranged = $this->isRanged();
         foreach ($this->delegates as $sub) {
             if ($sub->isTrancient()) {
-                $this->game->machine->store($sub, 1);
                 $stored = true;
+                if ($ranged) {
+                    // can only store itself
+                    // $this->game->machine->put(
+                    //     $sub->getDataField("orig", $this->getType()),
+                    //     $sub->getOwner(),
+                    //     ["xop" => $sub->getDataField("xop", ",")],
+                    //     1
+                    // );
+                    // break;
+                    return false;
+                } else {
+                    $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), 1);
+                }
             }
         }
 
         return $stored;
     }
 
-    function auto(): bool {
-        if ($this->storeDelegates()) {
+    function canSkip() {
+        if (count($this->delegates) == 0) {
             return true;
         }
-        if (!$this->canResolveAutomatically()) {
-            return false;
-        }
-        $this->checkVoid();
-        $this->action_resolve([]);
-        return true;
+        return parent::canSkip();
+    }
+
+    function withDelegate(Operation $sub) {
+        $this->delegates[] = $sub;
+        return $this;
     }
 
     function getPossibleMoves() {

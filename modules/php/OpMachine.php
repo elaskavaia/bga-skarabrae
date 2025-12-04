@@ -7,6 +7,7 @@ namespace Bga\Games\skarabrae;
 use Bga\Games\skarabrae\Common\Operation;
 use Bga\Games\skarabrae\Common\ComplexOperation;
 use Bga\Games\skarabrae\Common\OpExpression;
+use Bga\Games\skarabrae\Common\UnresolvedOperation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\Db\DbMachine;
@@ -16,6 +17,7 @@ use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 use BgaSystemException;
 use Exception;
 use ReflectionClass;
+use Throwable;
 
 class OpMachine {
     protected Game $game;
@@ -42,12 +44,13 @@ class OpMachine {
 
         if (count($ops) > 1) {
             $data = Operation::decodeData($dop["data"]);
-            $mnemonic = $data["parent"] ?? "seq";
+            $operand = $data["xop"] ?? ",";
+            $mnemonic = self::opToMnemonic($operand);
             /** @var ComplexOperation */
             $top = $this->instanciateSimpleOperation($mnemonic, $dop["owner"]);
             foreach ($ops as $sub) {
-                $subOp = $this->instanciateOperationFromDbRow($sub);
-                $top->withSub($subOp);
+                $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
+                $top->withDelegate($subOp);
             }
             return $top;
         }
@@ -74,7 +77,13 @@ class OpMachine {
                 if ($mnemonic == $type) {
                     throw new BgaSystemException("infinite rec $type");
                 }
-                return $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withExpr($expr)->withCounts($expr);
+                /** @var ComplexOperation */
+                $op = $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withCounts($expr)->withDataField("orig", $type);
+                foreach ($expr->args as $arg) {
+                    $sub = $this->instanciateSimpleOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
+                    $op->withDelegate($sub);
+                }
+                return $op;
             }
 
             $unrangedType = OpExpression::str($expr->toUnranged());
@@ -85,7 +94,10 @@ class OpMachine {
                 $params = $matches[2];
                 $unrangedType = $matches[1];
             }
-            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params)->withCounts($expr);
+            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)
+                ->withParams($params)
+                ->withCounts($expr)
+                ->withDataField("orig", $type);
         } catch (Exception $e) {
             throw new BgaSystemException("Cannot instanciate '$type': " . $e->getMessage());
         }
@@ -107,17 +119,24 @@ class OpMachine {
         if (strlen($type) > 80) {
             throw new BgaSystemException("Cannot instantice op");
         }
-
-        $operandclass = array_get($this->getOperationRules($type), "class", "Op_$type");
-
-        $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\Operations\\$operandclass");
-        $args["type"] = $type;
-
-        // Instantiate the class with constructor arguments
         if ($owner === null) {
             $owner = $this->game->getActivePlayerColor();
         }
-        $instance = $reflectionClass->newInstance($type, $owner, $data);
+
+        $expr = OpExpression::parseExpression($type);
+        if ($expr->isSimple()) {
+            $operandclass = array_get($this->getOperationRules($type), "class", "Op_$type");
+
+            // Instantiate the class with constructor arguments
+            try {
+                $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\Operations\\$operandclass");
+                $instance = $reflectionClass->newInstance($type, $owner, $data);
+            } catch (Throwable $e) {
+                $instance = new UnresolvedOperation($type, $owner, $data);
+            }
+        } else {
+            $instance = new UnresolvedOperation($type, $owner, $data);
+        }
         $instance->withId($id);
 
         return $instance;
@@ -132,16 +151,8 @@ class OpMachine {
         return $ops;
     }
 
-    function store(Operation $op, int $rank) {
-        $oprow = $this->db->createRow($op->getType(), $op->getOwner(), $op->getData());
-        $this->db->insertRow($rank, $oprow);
-    }
-
     function destroy(Operation $op) {
-        $id = $op->getId();
-        if ($id > 0) {
-            $this->db->hide($id);
-        }
+        $op->destroy();
     }
 
     function hide(int $id) {
@@ -200,8 +211,42 @@ class OpMachine {
         if (!$op) {
             return StateConstants::STATE_MACHINE_HALTED;
         }
+        if ($this->expandOperation($op)) {
+            $this->destroy($op);
+            return GameDispatch::class;
+        }
         //$this->game->notify->all("message", "starting op " . $op->getType());
         return $op->onEnteringGameState();
+    }
+
+    function expandOperation(Operation $op, $count = null) {
+        $type = $op->getType();
+        if ($count !== null) {
+            // user resolved the count
+            // $this->machine->checkValidCountForOp($op, $count);
+            // $op["count"] = $count;
+            // $op["mcount"] = $count;
+            $this->game->systemAssert("Not implemented");
+        }
+        // if (!$this->isAtomicOperation($type) && $op["count"] == $op["mcount"]) {
+        if ($op->expandOperation()) {
+            //$this->machine->hide($op);
+            // sanity to prevent recursion
+            $operations = $this->getTopOperations(null);
+            if (count($operations) == 0) {
+                $this->game->systemAssert("Failed expand for $type. Halt");
+            }
+
+            // restore orignal rank
+            //$this->machine->renice($operations, $op['rank']);
+
+            // $nop = array_shift($operations);
+            // if ($nop["type"] == $type && $nop["mcount"] == $op["mcount"] && $nop["count"] == $op["count"]) {
+            //     $this->game->systemAssert("Failed expand for $type. Recursion");
+            // }
+            return true;
+        }
+        return false;
     }
 
     /** Debug functions */

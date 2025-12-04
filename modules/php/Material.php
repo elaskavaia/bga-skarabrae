@@ -104,284 +104,284 @@ class Material {
             ],
             /* --- gen php end loc_material --- */
             /* --- gen php begin op_material --- */
-    "Op_furnish" => [ 
-        "type" => "furnish",
-        "name" => clienttranslate("Furnish"),
-],
-    "Op_furnishPay" => [ 
-        "type" => "furnishPay",
-        "name" => clienttranslate("Furnish"),
-],
-    "Op_cook" => [ 
-        "type" => "cook",
-        "name" => clienttranslate("Cook"),
-],
-    "Op_craft" => [ 
-        "type" => "craft",
-        "name" => clienttranslate("Craft"),
-],
-    "Op_clean" => [ 
-        "type" => "clean",
-        "name" => clienttranslate("Clean"),
-],
-    "Op_trade" => [ 
-        "type" => "trade",
-        "name" => clienttranslate("Trade"),
-],
-    "Op_tradePay" => [ 
-        "type" => "tradePay",
-        "name" => clienttranslate("Trade"),
-],
-    "Op_build" => [ 
-        "type" => "build",
-        "name" => clienttranslate("Build"),
-],
-    "Op_endOfRound" => [ 
-        "type" => "endOfRound",
-        "name" => clienttranslate("End of Round"),
-],
-    "Op_shell" => [ 
-        "class" => "Op_gain",
-        "type" => "shell",
-        "name" => clienttranslate("Gain Shell"),
-],
-    "Op_rabbit" => [ 
-        "class" => "Op_gain",
-        "type" => "rabbit",
-        "name" => clienttranslate("Gain Rabbit"),
-],
-    "Op_barley" => [ 
-        "class" => "Op_gain",
-        "type" => "barley",
-        "name" => clienttranslate("Gain Barley"),
-],
-    "Op_fish" => [ 
-        "class" => "Op_gain",
-        "type" => "fish",
-        "name" => clienttranslate("Gain Fish"),
-],
-    "Op_seaweed" => [ 
-        "class" => "Op_gain",
-        "type" => "seaweed",
-        "name" => clienttranslate("Gain Seaweed"),
-],
-    "Op_sheep" => [ 
-        "class" => "Op_gain",
-        "type" => "sheep",
-        "name" => clienttranslate("Gain Sheep"),
-],
-    "Op_wool" => [ 
-        "class" => "Op_gain",
-        "type" => "wool",
-        "name" => clienttranslate("Gain Wool"),
-],
-    "Op_deer" => [ 
-        "class" => "Op_gain",
-        "type" => "deer",
-        "name" => clienttranslate("Gain Deer"),
-],
-    "Op_stone" => [ 
-        "class" => "Op_gain",
-        "type" => "stone",
-        "name" => clienttranslate("Gain Stone"),
-],
-    "Op_cow" => [ 
-        "class" => "Op_gain",
-        "type" => "cow",
-        "name" => clienttranslate("Gain Cow"),
-],
-    "Op_wood" => [ 
-        "class" => "Op_gain",
-        "type" => "wood",
-        "name" => clienttranslate("Gain Wood"),
-],
-    "Op_skaill" => [ 
-        "class" => "Op_gain",
-        "type" => "skaill",
-        "name" => clienttranslate("Gain Skaill"),
-],
-    "Op_hide" => [ 
-        "class" => "Op_gain",
-        "type" => "hide",
-        "name" => clienttranslate("Gain Hide"),
-],
-    "Op_food" => [ 
-        "class" => "Op_gain",
-        "type" => "food",
-        "name" => clienttranslate("Gain Food"),
-],
-    "Op_bone" => [ 
-        "class" => "Op_gain",
-        "type" => "bone",
-        "name" => clienttranslate("Gain Bone"),
-],
-    "Op_midden" => [ 
-        "class" => "Op_gain",
-        "type" => "midden",
-        "name" => clienttranslate("Gain Midden"),
-],
-    "Op_boar" => [ 
-        "class" => "Op_gain",
-        "type" => "boar",
-        "name" => clienttranslate("Gain Boar"),
-],
-    "Op_n_shell" => [ 
-        "class" => "Op_pay",
-        "type" => "n_shell",
-        "name" => clienttranslate("Pay Shell"),
-],
-    "Op_n_rabbit" => [ 
-        "class" => "Op_pay",
-        "type" => "n_rabbit",
-        "name" => clienttranslate("Pay Rabbit"),
-],
-    "Op_n_barley" => [ 
-        "class" => "Op_pay",
-        "type" => "n_barley",
-        "name" => clienttranslate("Pay Barley"),
-],
-    "Op_n_fish" => [ 
-        "class" => "Op_pay",
-        "type" => "n_fish",
-        "name" => clienttranslate("Pay Fish"),
-],
-    "Op_n_seaweed" => [ 
-        "class" => "Op_pay",
-        "type" => "n_seaweed",
-        "name" => clienttranslate("Pay Seaweed"),
-],
-    "Op_n_sheep" => [ 
-        "class" => "Op_pay",
-        "type" => "n_sheep",
-        "name" => clienttranslate("Pay Sheep"),
-],
-    "Op_n_wool" => [ 
-        "class" => "Op_pay",
-        "type" => "n_wool",
-        "name" => clienttranslate("Pay Wool"),
-],
-    "Op_n_deer" => [ 
-        "class" => "Op_pay",
-        "type" => "n_deer",
-        "name" => clienttranslate("Pay Deer"),
-],
-    "Op_n_stone" => [ 
-        "class" => "Op_pay",
-        "type" => "n_stone",
-        "name" => clienttranslate("Pay Stone"),
-],
-    "Op_n_cow" => [ 
-        "class" => "Op_pay",
-        "type" => "n_cow",
-        "name" => clienttranslate("Pay Cow"),
-],
-    "Op_n_wood" => [ 
-        "class" => "Op_pay",
-        "type" => "n_wood",
-        "name" => clienttranslate("Pay Wood"),
-],
-    "Op_n_skaill" => [ 
-        "class" => "Op_pay",
-        "type" => "n_skaill",
-        "name" => clienttranslate("Pay Skaill"),
-],
-    "Op_n_hide" => [ 
-        "class" => "Op_pay",
-        "type" => "n_hide",
-        "name" => clienttranslate("Pay Hide"),
-],
-    "Op_n_food" => [ 
-        "class" => "Op_pay",
-        "type" => "n_food",
-        "name" => clienttranslate("Pay Food"),
-],
-    "Op_n_bone" => [ 
-        "class" => "Op_pay",
-        "type" => "n_bone",
-        "name" => clienttranslate("Pay Bone"),
-],
-    "Op_n_midden" => [ 
-        "class" => "Op_pay",
-        "type" => "n_midden",
-        "name" => clienttranslate("Clean Midden"),
-],
-    "Op_n_boar" => [ 
-        "class" => "Op_pay",
-        "type" => "n_boar",
-        "name" => clienttranslate("Pay Boar"),
-],
-    "Op_nop" => [ 
-        "type" => "nop",
-        "name" => clienttranslate("None"),
-],
-    "Op_or" => [ 
-        "type" => "or",
-        "name" => clienttranslate("Choice"),
-],
-    "Op_unique" => [ 
-        "type" => "unique",
-        "name" => clienttranslate("Unique Choice"),
-],
-    "Op_order" => [ 
-        "type" => "order",
-        "name" => clienttranslate("Choose Order"),
-],
-    "Op_seq" => [ 
-        "type" => "seq",
-        "name" => clienttranslate("Execution"),
-],
-    "Op_payAny" => [ 
-        "type" => "payAny",
-        "name" => clienttranslate("Pay Any Resource"),
-],
-    "Op_act" => [ 
-        "type" => "act",
-        "name" => clienttranslate("Worker Action"),
-],
-    "Op_gain" => [ 
-        "type" => "gain",
-        "name" => clienttranslate("Gain"),
-],
-    "Op_pay" => [ 
-        "type" => "pay",
-        "name" => clienttranslate("Pay"),
-],
-    "Op_paygain" => [ 
-        "type" => "paygain",
-        "name" => clienttranslate("Trade"),
-],
-    "Op_recall" => [ 
-        "type" => "recall",
-        "name" => clienttranslate("Return Workers"),
-],
-    "Op_pass" => [ 
-        "type" => "pass",
-        "name" => clienttranslate("Delay"),
-],
-    "Op_round" => [ 
-        "type" => "round",
-        "name" => clienttranslate("Round"),
-],
-    "Op_turn" => [ 
-        "type" => "turn",
-        "name" => clienttranslate("Turn"),
-],
-    "Op_turnall" => [ 
-        "type" => "turnall",
-        "name" => clienttranslate("Turn"),
-],
-    "Op_village" => [ 
-        "type" => "village",
-        "name" => clienttranslate("Gain Village Card"),
-],
-    "Op_tradeGood" => [ 
-        "type" => "tradeGood",
-        "name" => clienttranslate("Trade Market Resource"),
-],
-    "Op_tradeInc" => [ 
-        "type" => "tradeInc",
-        "name" => clienttranslate("Move up on Trade track"),
-],
+            "Op_furnish" => [
+                "type" => "furnish",
+                "name" => clienttranslate("Furnish"),
+            ],
+            "Op_furnishPay" => [
+                "type" => "furnishPay",
+                "name" => clienttranslate("Furnish"),
+            ],
+            "Op_cook" => [
+                "type" => "cook",
+                "name" => clienttranslate("Cook"),
+            ],
+            "Op_craft" => [
+                "type" => "craft",
+                "name" => clienttranslate("Craft"),
+            ],
+            "Op_clean" => [
+                "type" => "clean",
+                "name" => clienttranslate("Clean"),
+            ],
+            "Op_trade" => [
+                "type" => "trade",
+                "name" => clienttranslate("Trade"),
+            ],
+            "Op_tradePay" => [
+                "type" => "tradePay",
+                "name" => clienttranslate("Trade"),
+            ],
+            "Op_build" => [
+                "type" => "build",
+                "name" => clienttranslate("Build"),
+            ],
+            "Op_endOfRound" => [
+                "type" => "endOfRound",
+                "name" => clienttranslate("End of Round"),
+            ],
+            "Op_shell" => [
+                "class" => "Op_gain",
+                "type" => "shell",
+                "name" => clienttranslate("Gain Shell"),
+            ],
+            "Op_rabbit" => [
+                "class" => "Op_gain",
+                "type" => "rabbit",
+                "name" => clienttranslate("Gain Rabbit"),
+            ],
+            "Op_barley" => [
+                "class" => "Op_gain",
+                "type" => "barley",
+                "name" => clienttranslate("Gain Barley"),
+            ],
+            "Op_fish" => [
+                "class" => "Op_gain",
+                "type" => "fish",
+                "name" => clienttranslate("Gain Fish"),
+            ],
+            "Op_seaweed" => [
+                "class" => "Op_gain",
+                "type" => "seaweed",
+                "name" => clienttranslate("Gain Seaweed"),
+            ],
+            "Op_sheep" => [
+                "class" => "Op_gain",
+                "type" => "sheep",
+                "name" => clienttranslate("Gain Sheep"),
+            ],
+            "Op_wool" => [
+                "class" => "Op_gain",
+                "type" => "wool",
+                "name" => clienttranslate("Gain Wool"),
+            ],
+            "Op_deer" => [
+                "class" => "Op_gain",
+                "type" => "deer",
+                "name" => clienttranslate("Gain Deer"),
+            ],
+            "Op_stone" => [
+                "class" => "Op_gain",
+                "type" => "stone",
+                "name" => clienttranslate("Gain Stone"),
+            ],
+            "Op_cow" => [
+                "class" => "Op_gain",
+                "type" => "cow",
+                "name" => clienttranslate("Gain Cow"),
+            ],
+            "Op_wood" => [
+                "class" => "Op_gain",
+                "type" => "wood",
+                "name" => clienttranslate("Gain Wood"),
+            ],
+            "Op_skaill" => [
+                "class" => "Op_gain",
+                "type" => "skaill",
+                "name" => clienttranslate("Gain Skaill"),
+            ],
+            "Op_hide" => [
+                "class" => "Op_gain",
+                "type" => "hide",
+                "name" => clienttranslate("Gain Hide"),
+            ],
+            "Op_food" => [
+                "class" => "Op_gain",
+                "type" => "food",
+                "name" => clienttranslate("Gain Food"),
+            ],
+            "Op_bone" => [
+                "class" => "Op_gain",
+                "type" => "bone",
+                "name" => clienttranslate("Gain Bone"),
+            ],
+            "Op_midden" => [
+                "class" => "Op_gain",
+                "type" => "midden",
+                "name" => clienttranslate("Gain Midden"),
+            ],
+            "Op_boar" => [
+                "class" => "Op_gain",
+                "type" => "boar",
+                "name" => clienttranslate("Gain Boar"),
+            ],
+            "Op_n_shell" => [
+                "class" => "Op_pay",
+                "type" => "n_shell",
+                "name" => clienttranslate("Pay Shell"),
+            ],
+            "Op_n_rabbit" => [
+                "class" => "Op_pay",
+                "type" => "n_rabbit",
+                "name" => clienttranslate("Pay Rabbit"),
+            ],
+            "Op_n_barley" => [
+                "class" => "Op_pay",
+                "type" => "n_barley",
+                "name" => clienttranslate("Pay Barley"),
+            ],
+            "Op_n_fish" => [
+                "class" => "Op_pay",
+                "type" => "n_fish",
+                "name" => clienttranslate("Pay Fish"),
+            ],
+            "Op_n_seaweed" => [
+                "class" => "Op_pay",
+                "type" => "n_seaweed",
+                "name" => clienttranslate("Pay Seaweed"),
+            ],
+            "Op_n_sheep" => [
+                "class" => "Op_pay",
+                "type" => "n_sheep",
+                "name" => clienttranslate("Pay Sheep"),
+            ],
+            "Op_n_wool" => [
+                "class" => "Op_pay",
+                "type" => "n_wool",
+                "name" => clienttranslate("Pay Wool"),
+            ],
+            "Op_n_deer" => [
+                "class" => "Op_pay",
+                "type" => "n_deer",
+                "name" => clienttranslate("Pay Deer"),
+            ],
+            "Op_n_stone" => [
+                "class" => "Op_pay",
+                "type" => "n_stone",
+                "name" => clienttranslate("Pay Stone"),
+            ],
+            "Op_n_cow" => [
+                "class" => "Op_pay",
+                "type" => "n_cow",
+                "name" => clienttranslate("Pay Cow"),
+            ],
+            "Op_n_wood" => [
+                "class" => "Op_pay",
+                "type" => "n_wood",
+                "name" => clienttranslate("Pay Wood"),
+            ],
+            "Op_n_skaill" => [
+                "class" => "Op_pay",
+                "type" => "n_skaill",
+                "name" => clienttranslate("Pay Skaill"),
+            ],
+            "Op_n_hide" => [
+                "class" => "Op_pay",
+                "type" => "n_hide",
+                "name" => clienttranslate("Pay Hide"),
+            ],
+            "Op_n_food" => [
+                "class" => "Op_pay",
+                "type" => "n_food",
+                "name" => clienttranslate("Pay Food"),
+            ],
+            "Op_n_bone" => [
+                "class" => "Op_pay",
+                "type" => "n_bone",
+                "name" => clienttranslate("Pay Bone"),
+            ],
+            "Op_n_midden" => [
+                "class" => "Op_pay",
+                "type" => "n_midden",
+                "name" => clienttranslate("Clean Midden"),
+            ],
+            "Op_n_boar" => [
+                "class" => "Op_pay",
+                "type" => "n_boar",
+                "name" => clienttranslate("Pay Boar"),
+            ],
+            "Op_nop" => [
+                "type" => "nop",
+                "name" => clienttranslate("None"),
+            ],
+            "Op_or" => [
+                "type" => "or",
+                "name" => clienttranslate("Choice"),
+            ],
+            "Op_unique" => [
+                "type" => "unique",
+                "name" => clienttranslate("Unique Choice"),
+            ],
+            "Op_order" => [
+                "type" => "order",
+                "name" => clienttranslate("Choose Order"),
+            ],
+            "Op_seq" => [
+                "type" => "seq",
+                "name" => clienttranslate("Execution"),
+            ],
+            "Op_payAny" => [
+                "type" => "payAny",
+                "name" => clienttranslate("Pay Any Resource"),
+            ],
+            "Op_act" => [
+                "type" => "act",
+                "name" => clienttranslate("Worker Action"),
+            ],
+            "Op_gain" => [
+                "type" => "gain",
+                "name" => clienttranslate("Gain"),
+            ],
+            "Op_pay" => [
+                "type" => "pay",
+                "name" => clienttranslate("Pay"),
+            ],
+            "Op_paygain" => [
+                "type" => "paygain",
+                "name" => clienttranslate("Trade"),
+            ],
+            "Op_recall" => [
+                "type" => "recall",
+                "name" => clienttranslate("Return Workers"),
+            ],
+            "Op_pass" => [
+                "type" => "pass",
+                "name" => clienttranslate("Delay"),
+            ],
+            "Op_round" => [
+                "type" => "round",
+                "name" => clienttranslate("Round"),
+            ],
+            "Op_turn" => [
+                "type" => "turn",
+                "name" => clienttranslate("Turn"),
+            ],
+            "Op_turnall" => [
+                "type" => "turnall",
+                "name" => clienttranslate("Turn"),
+            ],
+            "Op_village" => [
+                "type" => "village",
+                "name" => clienttranslate("Gain Village Card"),
+            ],
+            "Op_tradeGood" => [
+                "type" => "tradeGood",
+                "name" => clienttranslate("Trade Market Resource"),
+            ],
+            "Op_tradeInc" => [
+                "type" => "tradeInc",
+                "name" => clienttranslate("Move up on Trade track"),
+            ],
             /* --- gen php end op_material --- */
             /* --- gen php begin token_material --- */
             // # create is one of the numbers
@@ -771,6 +771,16 @@ class Material {
         "r" => "n_boar:2food,hide,bone",
         "tooltip" => clienttranslate("Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide."),
 ],
+    "slot_trade_0" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "nop",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 0"),
+        "num" => 0,
+        "r" => 0,
+],
     "slot_trade_1" => [ 
         "create" => 0,
         "type" => "recipe",
@@ -781,15 +791,65 @@ class Material {
         "num" => 1,
         "r" => 1,
 ],
-    "slot_trade_1" => [ 
+    "slot_trade_2" => [ 
         "create" => 0,
         "type" => "recipe",
         "location" => "limbo",
         "craft" => "deer",
         "rb" => "nop",
-        "name" => clienttranslate("Trade level 1"),
-        "num" => 1,
+        "name" => clienttranslate("Trade level 2"),
+        "num" => 2,
         "r" => 3,
+],
+    "slot_trade_3" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "sheep",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 3"),
+        "num" => 3,
+        "r" => 5,
+],
+    "slot_trade_4" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "rabbit",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 4"),
+        "num" => 4,
+        "r" => 8,
+],
+    "slot_trade_5" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "fish",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 5"),
+        "num" => 5,
+        "r" => 11,
+],
+    "slot_trade_6" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "2shell",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 6"),
+        "num" => 6,
+        "r" => 15,
+],
+    "slot_trade_7" => [ 
+        "create" => 0,
+        "type" => "recipe",
+        "location" => "limbo",
+        "craft" => "2barley",
+        "rb" => "nop",
+        "name" => clienttranslate("Trade level 7"),
+        "num" => 7,
+        "r" => 20,
 ],
             /* --- gen php end action_material --- */
             /* --- gen php begin tracker_material --- */

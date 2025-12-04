@@ -23,7 +23,10 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\Common\ComplexOperation;
 
 class Op_seq extends ComplexOperation {
-    function storeDelegates() {
+    function expandOperation() {
+        if ($this->isRanged()) {
+            return parent::expandOperation();
+        }
         $stored = false;
         foreach ($this->delegates as $sub) {
             if ($sub->isTrancient()) {
@@ -35,16 +38,13 @@ class Op_seq extends ComplexOperation {
         $rank = 1;
         foreach ($this->delegates as $sub) {
             $sub->destroy();
-            $this->game->machine->store($sub, $rank);
+            $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), $rank);
             $rank++;
         }
-
+        //$this->game->debug_dumpMachineDb();
         return $stored;
     }
     function auto(): bool {
-        if ($this->storeDelegates()) {
-            return true;
-        }
         if (count($this->delegates) == 0) {
             return true;
         }
@@ -61,6 +61,9 @@ class Op_seq extends ComplexOperation {
         if (count($this->delegates) == 0) {
             return ["err" => "No moves"];
         }
+        if ($this->isRanged()) {
+            return ["confirm"];
+        }
         foreach ($this->delegates as $i => $sub) {
             if ($sub->isVoid()) {
                 return ["err" => $sub->getError()];
@@ -68,5 +71,26 @@ class Op_seq extends ComplexOperation {
         }
         $sub = $this->delegates[0];
         return $sub->getPossibleMoves();
+    }
+
+    function getPrompt() {
+        if ($this->isRanged()) {
+            return clienttranslate('Perform ${op_name}?');
+        }
+        return parent::getPrompt();
+    }
+
+    function getExtraArgs() {
+        return ["op_name" => $this->getRecName(" => ")];
+    }
+
+    public function resolve() {
+        if ($this->isRanged()) {
+            $this->incMinCount(1);
+            $this->withDataField("orig", null);
+            $this->expandOperation();
+            return;
+        }
+        return parent::resolve();
     }
 }

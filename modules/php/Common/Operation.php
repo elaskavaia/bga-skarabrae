@@ -52,11 +52,11 @@ abstract class Operation {
         }
     }
 
-    final function getType() {
+    function getType() {
         return $this->type;
     }
     final function getOpId() {
-        return "Op_" . $this->type;
+        return "Op_" . $this->getType();
     }
     final function getOwner() {
         return $this->owner;
@@ -122,10 +122,6 @@ abstract class Operation {
         }
         return $this;
     }
-    // complex operation can be instanciated from op expr
-    function withExpr(OpExpression $expr) {
-        return $this;
-    }
 
     function withParams(?string $params) {
         return $this->withDataField("params", $params);
@@ -137,6 +133,14 @@ abstract class Operation {
 
     final function isTrancient() {
         return $this->id <= 0;
+    }
+
+    function expandOperation() {
+        if ($this->isTrancient()) {
+            $this->game->machine->put($this->getType(), $this->getOwner(), $this->getData(), 1);
+            return true;
+        }
+        return false;
     }
 
     function destroy() {
@@ -163,6 +167,7 @@ abstract class Operation {
             $data["reason"] = $reason;
         }
         $this->game->machine->insert($type, $owner, $data, $this->queueRank);
+        //$this->game->debugConsole("queue $type");
     }
 
     protected function getCheckedArg() {
@@ -230,7 +235,7 @@ abstract class Operation {
     }
 
     /** Get state arguments if we go to player's state */
-    final function getArgs() {
+    function getArgs() {
         if ($this->cachedArgs !== null) {
             return $this->cachedArgs;
         }
@@ -255,6 +260,7 @@ abstract class Operation {
                 "name" => $this->getSkipName(),
                 "o" => 1000,
                 "sec" => true,
+                "q" => 0,
             ];
         }
 
@@ -460,9 +466,9 @@ abstract class Operation {
         if ($this->canSkip()) {
             return false;
         }
-        if ($this->getArgType() == Operation::TTYPE_AUTO) {
-            return true;
-        }
+        // if ($this->getArgType() == Operation::TTYPE_AUTO) {
+        //     return true;
+        // }
         if ($this->isOneChoice()) {
             return true;
         }

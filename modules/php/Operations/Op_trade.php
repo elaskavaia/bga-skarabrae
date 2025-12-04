@@ -27,15 +27,18 @@ class Op_trade extends Operation {
         $owner = $this->getOwner();
         $type = $this->getType();
         $value = $this->game->tokens->getTrackerValue($owner, $type);
+        $value++;
         $this->game->userAssert("Maximum is reached", $value < 7); // NOI18N
         $this->queue("tradeInc");
 
         $state = $this->game->tokens->tokens->getTokenState("action_main_5");
 
+        $good = $this->game->getRulesFor("slot_trade_$value", "craft", "nop");
+
         if ($state) {
-            $rules = "?(payAny:tradeGood)";
+            $rules = "?(payAny:$good)";
         } else {
-            $rules = "?(skaill:tradeGood)";
+            $rules = "?(n_skaill:$good)";
         }
         $this->queue($rules);
         return;

@@ -20,18 +20,18 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Common;
 
-use Bga\Games\skarabrae\States\PlayerTurn;
-
 abstract class CountableOperation extends Operation {
-    function auto(): bool {
-        $count = $this->getCount();
-        $mcount = $this->getMinCount();
-        if ($count == $mcount && !$this->requireConfirmation()) {
-            $this->resolve();
-            return true;
-        }
-        return false;
-    }
+    // function canResolveAutomatically(): bool {
+    //     if (!parent::canResolveAutomatically()) {
+    //         return false;
+    //     }
+    //     $count = $this->getCount();
+    //     $mcount = $this->getMinCount();
+    //     if ($count == $mcount) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
     function getPossibleMoves() {
         $res = [];
         $count = $this->getCount();
@@ -54,7 +54,34 @@ abstract class CountableOperation extends Operation {
         return $this->getDataField("mcount", 1);
     }
 
+    function incMinCount($inc = 1) {
+        $v = $this->getDataField("mcount", 1);
+        $v += $inc;
+        $this->withDataField("mcount", 1);
+        return $v;
+    }
+
+    function incCount($inc = 1) {
+        $v = $this->getDataField("count", 1);
+        $v += $inc;
+        $this->withDataField("count", 1);
+        return $v;
+    }
+
+    function isRanged() {
+        $count = $this->getCount();
+        $mcount = $this->getMinCount();
+        if ($count == 1 && $mcount == 1) {
+            return false;
+        }
+        return true;
+    }
+
     function canSkip() {
+        return $this->isOptional();
+    }
+
+    function isOptional() {
         return $this->getMinCount() == 0;
     }
 }

@@ -255,11 +255,6 @@ class Game extends Base {
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
 
-    function debug_dumpMachine() {
-        $t = $this->machine->gettableexpr();
-        $this->debugLog("all stack", ["t" => $t]);
-        return $t;
-    }
     function debug_dumpMachineDb() {
         $t = $this->machine->gettablearr();
         $this->debugLog("all stack", ["t" => $t]);

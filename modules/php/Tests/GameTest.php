@@ -6,12 +6,14 @@ use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Notify;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\Common\PGameTokens;
 use Bga\Games\skarabrae\Operations\Op_paygain;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Tests\MachineInMem;
+use Bga\Games\skarabrae\Tests\TokensInMem;
 use PHPUnit\Framework\TestCase;
 
 use function Bga\Games\skarabrae\array_get;
@@ -48,6 +50,9 @@ class GameUT extends Game {
         $this->curid = 1;
         $this->_colors = [PCOLOR, BCOLOR];
         $this->notify = new FakeNotify();
+
+        $tokens = new TokensInMem($this);
+        $this->tokens = new PGameTokens($this, $tokens);
     }
 
     public function _($s): string {
@@ -224,7 +229,7 @@ final class GameTest extends TestCase {
         $op = array_shift($tops);
         $this->assertEquals("fish", $op["type"]);
         $data = Operation::decodeData($op["data"]);
-        $this->assertEquals("or", $data["parent"]);
+        $this->assertEquals("/", $data["xop"]);
         $op = array_shift($tops);
         $this->assertEquals("pass", $op["type"]);
 
@@ -263,10 +268,27 @@ final class GameTest extends TestCase {
     }
 
     public function testTradeGood() {
-        $rule = "?(skaill:tradeGood)";
-        $op = $this->game->machine->instanciateOperation($rule);
+        $rule = "?(n_skaill:cow)";
+        $color = PCOLOR;
+        $this->game->machine->push($rule, PCOLOR);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_paygain);
         $this->assertTrue($op->canSkip());
         $this->assertFalse($op->canResolveAutomatically());
+        $this->assertFalse($op->expandOperation());
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertEquals("paygain", $op->getType());
+        $this->game->tokens->createTokens();
+        $this->game->effect_incCount(PCOLOR, "skaill", 1, "");
+        $this->assertEquals(1, $this->game->tokens->getTrackerValue(PCOLOR, "skaill"));
+        $op->action_resolve([
+            Operation::ARG_TARGET => "confirm",
+        ]);
+
+        $this->dispatchOneStep(GameDispatch::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertEquals("cow", $op->getType());
+        $this->dispatchOneStep(GameDispatch::class);
+        $this->assertEquals(1, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
     }
 }

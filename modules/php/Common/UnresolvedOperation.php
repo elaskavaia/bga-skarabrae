@@ -18,18 +18,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
+namespace Bga\Games\skarabrae\Common;
 
-use Bga\Games\skarabrae\Common\Operation;
+use BgaSystemException;
 
-class Op_tradeGood extends Operation {
-    function resolve() {
-        $owner = $this->getOwner();
-
-        $value = $this->game->tokens->getTrackerValue($owner, "trade");
-        $slot = "slot_trade_$value";
-        $good = $this->game->getRulesFor($slot, "craft");
-        $this->game->systemAssert("hello $slot");
-        $this->queue($good);
+class UnresolvedOperation extends Operation {
+    public function resolve() {
+        throw new BgaSystemException("unresolved " . $this->getType());
     }
 }
