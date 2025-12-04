@@ -18,12 +18,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Common;
+namespace Bga\Games\skarabrae\Operations;
 
-use BgaSystemException;
+use Bga\Games\skarabrae\OpCommon\Operation;
 
-class UnresolvedOperation extends Operation {
-    public function resolve() {
-        throw new BgaSystemException("unresolved " . $this->getType());
+// gain roof card
+class Op_roof extends Operation {
+    function resolve() {
+        $this->game->effect_drawSimpleCard($this->getOwner(), "roof", 1, $this->getReason());
+        return;
     }
 }

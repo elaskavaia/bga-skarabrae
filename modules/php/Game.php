@@ -175,7 +175,7 @@ class Game extends Base {
         $this->tokens->dbResourceInc($token_id, $inc, $message, ["reason" => $reason] + $options, $this->getPlayerIdByColor($color));
     }
 
-    function effect_incTrack(string $color, string $type, int $inc = 1, string $reason, array $args = []) {
+    function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
         $message = array_get($args, "message", "*");
         unset($args["message"]);
         $token_id = $this->tokens->getTrackerId($color, $type);
@@ -188,6 +188,23 @@ class Game extends Base {
             $value,
             $message,
             $args + ["reason" => $reason],
+            $this->getPlayerIdByColor($color)
+        );
+    }
+
+    function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
+        $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
+        unset($args["message"]);
+        $from = "deck_$type";
+        $location = "tableau_{$color}";
+        $tokens = $this->tokens->tokens->pickTokensForLocation($inc, $from, $location);
+
+        $this->tokens->dbSetTokensLocation(
+            $tokens,
+            $location,
+            0,
+            $message,
+            $args + ["reason" => $reason, "place_from" => $from],
             $this->getPlayerIdByColor($color)
         );
     }

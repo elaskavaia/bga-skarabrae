@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Common;
+namespace Bga\Games\skarabrae\OpCommon;
 
 abstract class ComplexOperation extends CountableOperation {
     /** @var Operation[] */

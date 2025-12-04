@@ -18,18 +18,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
-use Bga\Games\skarabrae\Common\ComplexOperation;
+namespace Bga\Games\skarabrae\OpCommon;
 
-class Op_unique extends ComplexOperation {
-    function getCount() {
-        return $this->getDataField("count", 1);
-    }
-
-    function getMinCount() {
-        return $this->getDataField("mcount", 1);
-    }
-
+class Op_order extends ComplexOperation {
     function resolve() {
         $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
@@ -38,8 +29,6 @@ class Op_unique extends ComplexOperation {
                 $this->game->machine->push($arg->getType(), $arg->getOwner(), $arg->getData());
                 $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $arg->destroy();
-            } else {
-                // subtract count
             }
         }
 
@@ -47,17 +36,9 @@ class Op_unique extends ComplexOperation {
     }
 
     function getPrompt() {
-        return clienttranslate("Choose one of the options");
+        return clienttranslate("Choose first to resolve");
     }
     function getDescription() {
         return clienttranslate('${actplayer} chooses one of the options');
-    }
-    function getOpName() {
-        $name = $this->game->getTokenName($this->getOpId(), "");
-        if ($name) {
-            return $name;
-        }
-
-        return $this->getRecName(" / ");
     }
 }

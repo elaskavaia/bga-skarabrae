@@ -50,13 +50,12 @@ n_skaill|Pay Skaill
 n_hide|Pay Hide
 n_food|Pay Food
 n_bone|Pay Bone
-n_midden|Clean Midden
 n_boar|Pay Boar
 
 
 #set class=
 nop|None
-
+n_midden|Clean Midden
 or|Choice
 unique|Unique Choice
 order|Choose Order

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Tests;
 
 use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
 use Bga\Games\skarabrae\Operations\Op_gain;
-use Bga\Games\skarabrae\Operations\Op_or;
+use Bga\Games\skarabrae\OpCommon\Op_or;
 use Bga\Games\skarabrae\Operations\Op_pay;
 use Bga\Games\skarabrae\OpMachine;
 use PHPUnit\Framework\TestCase;

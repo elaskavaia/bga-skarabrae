@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 
 // special action
 class Op_build extends Operation {

@@ -20,8 +20,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\CountableOperation;
-use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Material;
 
 /** Calculate and push payment for trade */

@@ -23,6 +23,10 @@
   vertical-align: top;
 }
 
+.tableau .card {
+  height: 200px;
+}
+
 .action.main {
   background-image: url(img/action_Purple_front.jpg);
   background-size: 500% auto;
@@ -278,6 +282,12 @@
 .card.roof {
   background-image: url(img/nset_cards.jpg);
   background-position: 42.8571428571% 0;
+  background-size: 800% auto;
+}
+
+.card.roofi {
+  background-image: url(img/nset_cards.jpg);
+  background-position: 28.5714285714% 0;
   background-size: 800% auto;
 }
 

@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_pass extends Operation {
     function auto(): bool {

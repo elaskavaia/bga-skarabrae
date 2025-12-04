@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Material;
 
 class Op_cook extends Operation {

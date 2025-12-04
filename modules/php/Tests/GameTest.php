@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Notify;
 use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\Common\Operation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
-use Bga\Games\skarabrae\Operations\Op_paygain;
+use Bga\Games\skarabrae\OpCommon\Op_paygain;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
@@ -263,7 +263,7 @@ final class GameTest extends TestCase {
     }
 
     public function testOr() {
-        $op = $this->game->machine->instanciateOperation("or");
+        $op = $this->game->machine->instanciateCommonOperation("or", PCOLOR);
         $this->assertTrue($op->canSkip());
     }
 

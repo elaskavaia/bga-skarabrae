@@ -21,26 +21,31 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
-use Bga\Games\skarabrae\Material;
 
-class Op_pay extends CountableOperation {
+class Op_n_midden extends CountableOperation {
     function getResType() {
         $type = $this->getType();
         return substr($type, 2); // n_XYZ -> XYZ
     }
 
     function getPossibleMoves() {
-        $owner = $this->getOwner();
-        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
-        if ($current < $this->getCount()) {
-            return ["q" => Material::MA_ERR_COST];
-        }
         return [$this->getResType()];
     }
 
     function resolve() {
+        $owner = $this->getOwner();
         $count = $this->getCount();
-        $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason());
+        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+        if ($current < $count) {
+            $count = $current;
+        }
+        if ($count > 0) {
+            $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason(), [
+                "message" => clienttranslate('${player_name} cleans ${token_div} x ${absInc}'),
+            ]);
+        } else {
+            $this->notifyMessage(clienttranslate('${player_name} has no midden to clean'));
+        }
         return;
     }
 
@@ -49,6 +54,10 @@ class Op_pay extends CountableOperation {
     }
 
     public function getPrompt() {
-        return clienttranslate('Pay ${count} ${token_div}');
+        return clienttranslate('Clean ${count} ${token_div}');
+    }
+
+    public function requireConfirmation() {
+        return false;
     }
 }

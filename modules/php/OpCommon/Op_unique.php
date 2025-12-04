@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
-use Bga\Games\skarabrae\Common\ComplexOperation;
+namespace Bga\Games\skarabrae\OpCommon;
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 
-class Op_or extends ComplexOperation {
+class Op_unique extends ComplexOperation {
     function resolve() {
         $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
@@ -29,31 +29,13 @@ class Op_or extends ComplexOperation {
                 // XXX
                 $this->game->machine->push($arg->getType(), $arg->getOwner(), $arg->getData());
                 $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
+                $arg->destroy();
+            } else {
+                // subtract count
             }
-            $arg->destroy();
         }
 
         return;
-    }
-
-    function getPossibleMoves() {
-        $res = [];
-        foreach ($this->delegates as $sub) {
-            $err = "";
-            if ($sub->isVoid()) {
-                $err = $sub->getError();
-            }
-            $q = 0;
-            if ($err) {
-                $q = 1;
-            }
-            $res[$sub->getId()] = [
-                "name" => $sub->getButtonName(),
-                "err" => $err,
-                "q" => $q,
-            ];
-        }
-        return $res;
     }
 
     function getPrompt() {

@@ -18,16 +18,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
+namespace Bga\Games\skarabrae\OpCommon;
 
-use Bga\Games\skarabrae\OpCommon\Operation;
+use BgaSystemException;
 
-class Op_turn extends Operation {
-    function auto(): bool {
-        $this->queue("village", $this->getOwner());
-        $this->queue("act", $this->getOwner());
-        $this->queue("recall", $this->getOwner());
-        $this->game->undoSavepoint();
-        return true;
+class UnresolvedOperation extends Operation {
+    public function resolve() {
+        throw new BgaSystemException("unresolved " . $this->getType());
     }
 }

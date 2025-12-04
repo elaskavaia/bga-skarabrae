@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae;
 
-use Bga\Games\skarabrae\Common\Operation;
-use Bga\Games\skarabrae\Common\ComplexOperation;
 use Bga\Games\skarabrae\Common\OpExpression;
-use Bga\Games\skarabrae\Common\UnresolvedOperation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\Db\DbMachine;
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
+use Bga\Games\skarabrae\OpCommon\UnresolvedOperation;
 use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 
@@ -47,7 +47,7 @@ class OpMachine {
             $operand = $data["xop"] ?? ",";
             $mnemonic = self::opToMnemonic($operand);
             /** @var ComplexOperation */
-            $top = $this->instanciateSimpleOperation($mnemonic, $dop["owner"]);
+            $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"]);
             foreach ($ops as $sub) {
                 $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
                 $top->withDelegate($subOp);
@@ -66,6 +66,9 @@ class OpMachine {
         try {
             $expr = OpExpression::parseExpression($type);
             $operand = OpExpression::getop($expr);
+            if ($owner === null) {
+                $owner = $this->game->getActivePlayerColor();
+            }
 
             if ($id) {
                 $id = (int) $id;
@@ -78,7 +81,7 @@ class OpMachine {
                     throw new BgaSystemException("infinite rec $type");
                 }
                 /** @var ComplexOperation */
-                $op = $this->instanciateSimpleOperation($mnemonic, $owner, $data, $id)->withCounts($expr)->withDataField("orig", $type);
+                $op = $this->instanciateCommonOperation($mnemonic, $owner, $data, $id)->withCounts($expr)->withDataField("orig", $type);
                 foreach ($expr->args as $arg) {
                     $sub = $this->instanciateSimpleOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
                     $op->withDelegate($sub);
@@ -114,13 +117,16 @@ class OpMachine {
             default => throw new BgaSystemException("Unknown operator $operand"),
         };
     }
+    function instanciateCommonOperation(string $type, string $owner, mixed $data = null, int $id = 0): Operation {
+        $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\OpCommon\\Op_$type");
+        $instance = $reflectionClass->newInstance($type, $owner, $data);
+        $instance->withId($id);
+        return $instance;
+    }
 
-    function instanciateSimpleOperation(string $type, ?string $owner = null, mixed $data = null, int $id = 0): Operation {
+    function instanciateSimpleOperation(string $type, string $owner, mixed $data = null, int $id = 0): Operation {
         if (strlen($type) > 80) {
             throw new BgaSystemException("Cannot instantice op");
-        }
-        if ($owner === null) {
-            $owner = $this->game->getActivePlayerColor();
         }
 
         $expr = OpExpression::parseExpression($type);

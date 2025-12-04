@@ -18,8 +18,8 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
-
+namespace Bga\Games\skarabrae\OpCommon;
+/** Sequence of operations, no user choice. Usually pay/gain that is shown diffrently then sequence */
 class Op_paygain extends Op_seq {
     public function requireConfirmation() {
         return true;

@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Common;
+namespace Bga\Games\skarabrae\OpCommon;
 
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\States\GameDispatch;

@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Common\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_gain extends CountableOperation {
     function resolve() {

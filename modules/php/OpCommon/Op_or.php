@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
-use Bga\Games\skarabrae\Common\ComplexOperation;
-class Op_order extends ComplexOperation {
+namespace Bga\Games\skarabrae\OpCommon;
+/** User choses operation. If count is used it is shared and decreases for all choices */
+class Op_or extends ComplexOperation {
     function resolve() {
         $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
@@ -28,17 +28,45 @@ class Op_order extends ComplexOperation {
                 // XXX
                 $this->game->machine->push($arg->getType(), $arg->getOwner(), $arg->getData());
                 $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
-                $arg->destroy();
             }
+            $arg->destroy();
         }
 
         return;
     }
 
+    function getPossibleMoves() {
+        $res = [];
+        foreach ($this->delegates as $sub) {
+            $err = "";
+            if ($sub->isVoid()) {
+                $err = $sub->getError();
+            }
+            $q = 0;
+            if ($err) {
+                $q = 1;
+            }
+            $res[$sub->getId()] = [
+                "name" => $sub->getButtonName(),
+                "err" => $err,
+                "q" => $q,
+            ];
+        }
+        return $res;
+    }
+
     function getPrompt() {
-        return clienttranslate("Choose first to resolve");
+        return clienttranslate("Choose one of the options");
     }
     function getDescription() {
         return clienttranslate('${actplayer} chooses one of the options');
+    }
+    function getOpName() {
+        $name = $this->game->getTokenName($this->getOpId(), "");
+        if ($name) {
+            return $name;
+        }
+
+        return $this->getRecName(" / ");
     }
 }

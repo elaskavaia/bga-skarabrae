@@ -23,6 +23,11 @@
     }
   }
 }
+.tableau {
+  .card {
+    height: 200px;
+  }
+}
 .action.main {
   background-image: url(img/action_Purple_front.jpg);
   &[data-state="1"] {
@@ -85,6 +90,12 @@
 .card.roof {
   background-image: url(img/nset_cards.jpg);
   background-position: calc(3 * 100% / 7) 0;
+  background-size: 800% auto;
+}
+
+.card.roofi {
+  background-image: url(img/nset_cards.jpg);
+  background-position: calc(2 * 100% / 7) 0;
   background-size: 800% auto;
 }
 

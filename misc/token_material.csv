@@ -31,7 +31,7 @@ card_setl|Village Settler Card|60|card village setl|2|deck_village
 card_roof|Village Roof Card|8|card village roof|2|deck_village
 card_ball|Village Stone Ball Card|8|card village ball|2|deck_village
 card_util|Village Utencil Card|4|card village util|2|deck_village
-card_roofi|Roof Card|40|card roof|2|deck_roof
+card_roofi|Roof Card|40|card roofi|2|deck_roof
 
 
 #create=0

@@ -18,10 +18,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\Operations;
+namespace Bga\Games\skarabrae\OpCommon;
 
-use Bga\Games\skarabrae\Common\ComplexOperation;
-
+/** Sequence of operations, no user choice */
 class Op_seq extends ComplexOperation {
     function expandOperation() {
         if ($this->isRanged()) {

@@ -1111,22 +1111,24 @@ var GameMachine = /** @class */ (function (_super) {
     function GameMachine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    GameMachine.prototype.onEnteringState_PlayerTurn = function (args) {
+    GameMachine.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         var _this = this;
         var _a, _b;
         if (!this.isCurrentPlayerActive()) {
-            if (args === null || args === void 0 ? void 0 : args.description)
-                this.statusBar.setTitle(args.description, args);
+            if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
+                this.statusBar.setTitle(opInfo.description, opInfo);
             return;
         }
-        this.completeOpInfo(args);
-        if (args.descriptionOnMyTurn) {
-            this.statusBar.setTitle(args.descriptionOnMyTurn, args);
+        this.completeOpInfo(opInfo);
+        this.opInfo = opInfo;
+        if (opInfo.descriptionOnMyTurn) {
+            this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
         }
-        var sortedTargets = Object.keys(args.info);
-        sortedTargets.sort(function (a, b) { return args.info[a].o - args.info[b].o; });
+        var multiselect = this.isMultiSelectArgs(opInfo);
+        var sortedTargets = Object.keys(opInfo.info);
+        sortedTargets.sort(function (a, b) { return opInfo.info[a].o - opInfo.info[b].o; });
         var _loop_1 = function (target) {
-            var paramInfo = args.info[target];
+            var paramInfo = opInfo.info[target];
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
@@ -1144,13 +1146,21 @@ var GameMachine = /** @class */ (function (_super) {
                 // skip, whatever TODO: anytime
                 handler = function () { return _this.bgaPerformAction("action_".concat(target), {}); };
             }
+            else if (multiselect) {
+                handler = function () { return _this.onMultiCount(target, opInfo); };
+            }
             else {
                 handler = function () { return _this.resolveAction({ target: target }); };
             }
-            var button = this_1.statusBar.addActionButton(this_1.getTr(name_2), handler, {
-                color: active ? "primary" : "alert",
-                disabled: !active
+            var button = this_1.statusBar.addActionButton(this_1.getTr(name_2, opInfo.args), handler, {
+                color: multiselect ? "secondary" : "primary",
+                disabled: !active,
+                id: "button_" + target
             });
+            button.dataset.targetId = target;
+            if (paramInfo.max !== undefined) {
+                button.dataset.max = String(paramInfo.max);
+            }
             if (!active) {
                 button.title = this_1.getTr((_b = paramInfo.err) !== null && _b !== void 0 ? _b : _("Operation cannot be performed now"));
             }
@@ -1160,8 +1170,14 @@ var GameMachine = /** @class */ (function (_super) {
             var target = sortedTargets_1[_i];
             _loop_1(target);
         }
+        if (multiselect) {
+            this.activateMultiCountPrompt(opInfo);
+        }
         // need a global condition when this can be added
         this.addUndoButton();
+    };
+    GameMachine.prototype.isMultiSelectArgs = function (args) {
+        return args.ttype == "token_count" || args.ttype == "token_array";
     };
     GameMachine.prototype.onLeavingState = function (stateName) {
         var _a;
@@ -1185,10 +1201,63 @@ var GameMachine = /** @class */ (function (_super) {
         return true;
     };
     GameMachine.prototype.onToken_PlayerTurn = function (tid) {
+        var _a, _b;
         //debugger;
         if (!tid)
             return false;
+        if ($(tid).classList.contains(this.classActiveSlot)) {
+            var ttype = (_a = this.opInfo) === null || _a === void 0 ? void 0 : _a.ttype;
+            if (ttype) {
+                var methodName = "onToken_" + ttype;
+                var ret = this.callfn(methodName, tid);
+                if (ret === undefined)
+                    return false;
+                return true;
+            }
+            return false;
+        }
+        else {
+            // propagate to parent
+            return this.onToken_PlayerTurn((_b = $(tid).parentNode) === null || _b === void 0 ? void 0 : _b.id);
+        }
+    };
+    GameMachine.prototype.onToken_token = function (tid) {
+        if (!tid)
+            return false;
         this.resolveAction({ target: tid });
+    };
+    GameMachine.prototype.activateMultiCountPrompt = function (opInfo) {
+        var _this = this;
+        var ttype = opInfo.ttype;
+        var buttonName = _("Submit");
+        var doneButtonId = "button_done";
+        var resetButtonId = "button_reset";
+        this.statusBar.addActionButton(buttonName, function () {
+            var res = {};
+            var count = _this.getMultiCount(res);
+            _this.resolveAction({ target: res, count: count });
+        }, {
+            color: "primary",
+            id: doneButtonId
+        });
+        this.statusBar.addActionButton(_("Reset"), function () {
+            var allSel = document.querySelectorAll(".".concat(_this.classSelectedAlt));
+            allSel.forEach(function (node) {
+                delete node.dataset.count;
+            });
+            _this.removeAllClasses(_this.classSelected, _this.classSelectedAlt);
+            _this.onMultiSelectionUpdate(opInfo);
+        }, {
+            color: "alert",
+            id: resetButtonId
+        });
+        // this.replicateTokensOnToolbar(opInfo, (target) => {
+        //   return this.onMultiCount(target, opInfo);
+        // });
+        this.onMultiSelectionUpdate(opInfo);
+        this["onToken_".concat(ttype)] = function (tid) {
+            return _this.onMultiCount(tid, opInfo);
+        };
     };
     GameMachine.prototype.onUpdateActionButtons_PlayerTurnConfirm = function (args) {
         var _this = this;
@@ -1218,6 +1287,89 @@ var GameMachine = /** @class */ (function (_super) {
             // $("undoredo_wrap")?.appendChild(div2);
         }
     };
+    GameMachine.prototype.getMultiSelectCountAndSync = function () {
+        // sync alternative selection on toolbar
+        var allSel = document.querySelectorAll(".".concat(this.classSelected));
+        var selectedAlt = this.classSelectedAlt;
+        this.removeAllClasses(selectedAlt);
+        allSel.forEach(function (node) {
+            var altnode = document.querySelector("[data-target-id=\"".concat(node.id, "\"]"));
+            if (altnode) {
+                altnode.classList.add(selectedAlt);
+            }
+        });
+        return allSel.length;
+    };
+    GameMachine.prototype.onMultiCount = function (tid, opInfo) {
+        var _a;
+        var node = $(tid);
+        var altnode = document.querySelector("[data-target-id=\"".concat(tid, "\"]"));
+        if (altnode) {
+            node = altnode;
+        }
+        var count = Number((_a = node.dataset.count) !== null && _a !== void 0 ? _a : 0);
+        node.dataset.count = String(count + 1);
+        if (node.dataset.max !== undefined && count + 1 > Number(node.dataset.max)) {
+            node.dataset.count = "0";
+        }
+        node.classList.add(this.classSelectedAlt);
+        this.onMultiSelectionUpdate(opInfo);
+        return;
+    };
+    GameMachine.prototype.getMultiCount = function (result) {
+        if (result === void 0) { result = {}; }
+        var allSel = document.querySelectorAll(".".concat(this.classSelectedAlt));
+        var totalCount = 0;
+        allSel.forEach(function (node) {
+            var _a, _b;
+            var tid = (_a = node.dataset.targetId) !== null && _a !== void 0 ? _a : node.id;
+            var count = Number((_b = node.dataset.count) !== null && _b !== void 0 ? _b : 0);
+            result[tid] = count;
+            totalCount += count;
+        });
+        return totalCount;
+    };
+    GameMachine.prototype.onMultiSelectionUpdate = function (opInfo) {
+        var _a, _b;
+        var ttype = opInfo.ttype;
+        var skippable = false; // XXX
+        var doneButtonId = "button_done";
+        var resetButtonId = "button_reset";
+        var skipButton = $("button_skip");
+        var buttonName = _("Submit");
+        // sync real selection to alt selection on toolbar
+        var count = ttype == "token_array" ? this.getMultiSelectCountAndSync() : this.getMultiCount();
+        var doneButton = $(doneButtonId);
+        if (doneButton) {
+            if ((count == 0 && skippable) || count < opInfo.mcount) {
+                doneButton.classList.add(this.classButtonDisabled);
+                doneButton.title = _("Cannot use this action because insuffient amount of elements selected");
+            }
+            else if (count > opInfo.count) {
+                doneButton.classList.add(this.classButtonDisabled);
+                doneButton.title = _("Cannot use this action because superfluous amount of elements selected");
+            }
+            else {
+                doneButton.classList.remove(this.classButtonDisabled);
+                doneButton.title = "";
+            }
+            $(doneButtonId).innerHTML = buttonName + ": " + count;
+        }
+        if (count > 0) {
+            (_a = $(resetButtonId)) === null || _a === void 0 ? void 0 : _a.classList.remove(this.classButtonDisabled);
+            if (skipButton) {
+                skipButton.classList.add(this.classButtonDisabled);
+                skipButton.title = _("Cannot use this action because there are some elements selected");
+            }
+        }
+        else {
+            (_b = $(resetButtonId)) === null || _b === void 0 ? void 0 : _b.classList.add(this.classButtonDisabled);
+            if (skipButton) {
+                skipButton.title = "";
+                skipButton.classList.remove(this.classButtonDisabled);
+            }
+        }
+    };
     GameMachine.prototype.completeOpInfo = function (opInfo) {
         var _a, _b;
         try {
@@ -1229,6 +1381,10 @@ var GameMachine = /** @class */ (function (_super) {
             if (opInfo.void === undefined)
                 opInfo.void = false;
             opInfo.confirm = (_b = opInfo.confirm) !== null && _b !== void 0 ? _b : false;
+            if (opInfo.count === undefined)
+                opInfo.count = 1;
+            if (opInfo.mcount === undefined)
+                opInfo.mcount = 1;
             if (!opInfo.info)
                 opInfo.info = {};
             if (!opInfo.target)
