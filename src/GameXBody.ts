@@ -51,10 +51,14 @@ class GameXBody extends GameMachine {
     placeHtml(
       `
       <div id='tableau_${playerInfo.color}' class='tableau'>
-         <div id='pboard_${playerInfo.color}' class='pboard'>
+        <div class='pboard_area'>
+           <div id='pboard_${playerInfo.color}' class='pboard'>
                  <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
                  <div id='track_trade_${playerInfo.color}' class='track_trade track'></div>
                  <div id='breakroom_${playerInfo.color}' class='breakroom'></div>
+           </div>
+           <div id='cards_area_${playerInfo.color}' class='cards_area'>
+           </div>
          </div>
          <div class='village_area'>
             <div id='action_area_${playerInfo.color}' class='action_area'></div>
@@ -87,9 +91,6 @@ class GameXBody extends GameMachine {
     return false;
   }
 
-  updateTokenDisplayInfo(tokenDisplayInfo: TokenDisplayInfo) {
-    // override to generate dynamic tooltips and such
-  }
   hideCard(tokenId: ElementOrId) {
     $("limbo")?.appendChild($(tokenId));
   }
@@ -113,6 +114,9 @@ class GameXBody extends GameMachine {
       if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `settlers_col_${color}_1`;
+      } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
+        const color = getPart(location, 1);
+        result.location = `cards_area_${color}`;
       }
     } else if (location.startsWith("discard")) {
       result.onEnd = (node) => this.hideCard(node);
@@ -127,6 +131,60 @@ class GameXBody extends GameMachine {
       result.location = `breakroom_${color}`;
     }
     return result;
+  }
+
+  updateTokenDisplayInfo(tokenInfo: TokenDisplayInfo) {
+    // override to generate dynamic tooltips and such
+    const mainType = tokenInfo.mainType;
+    const token = $(tokenInfo.tokenId);
+    const parentId = token?.parentElement?.id;
+    const state = parseInt(token?.dataset.state);
+    switch (mainType) {
+      case "worker":
+        {
+          const tokenId = tokenInfo.key;
+          const name = tokenInfo.name;
+          tokenInfo.tooltip = {
+            log: "${name} (${color_name})",
+            args: {
+              name: this.getTr(name),
+              color_name: this.getTr(this.getColorName(getPart(tokenId, 2)))
+            }
+          };
+        }
+        return;
+      case "card":
+        {
+          const tokenId = tokenInfo.key;
+          const name = tokenInfo.name;
+          if (tokenId.startsWith("card_setl")) {
+            tokenInfo.tooltip = "When gaining this card you must resolve top harvest and you may resolve bottom effect";
+            tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName(`env_${tokenInfo.t}`));
+            tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+          }
+        }
+        return;
+    }
+  }
+
+  ttSection(prefix: string, text: string) {
+    if (prefix) return `<p><b>${prefix}</b>: ${text}</p>`;
+    else return `<p>${text}</p>`;
+  }
+
+  getColorName(color: string) {
+    switch (color) {
+      case "ff0000":
+        return _("Red");
+      case "ffcc02":
+        return _("Yellow");
+      case "982fff":
+        return _("Purple");
+      case "6cd0f6":
+        return _("Blue");
+      default:
+        return _("Black");
+    }
   }
 
   setupNotifications() {

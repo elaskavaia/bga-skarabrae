@@ -1,4 +1,4 @@
-mtype|name|state|php
+mtype|name|o
 
 #player counters
 #set id=tracker_{mtype}
@@ -7,21 +7,22 @@ mtype|name|state|php
 #set location=miniboard_{COLOR}
 #set state=0
 
-shell|Shell
-rabbit|Rabbit
-barley|Barley
-fish|Fish
-seaweed|Seaweed
-sheep|Sheep
-wool|Wool
-deer|Deer
-stone|Stone
-cow|Cow
-wood|Wood
-skaill|Skaill
-hide|Hide
-food|Food
-bone|Bone
-midden|Midden
+midden|Midden|0
+bone|Bone|1
+food|Food|2
+skaill|Skaill|3
+stone|Stone|4
+wood|Wood|5
+hide|Hide|6
+seaweed|Seaweed|7
+wool|Wool|8
+barley|Barley|9
+shell|Shell|10
+fish|Fish|11
+rabbit|Rabbit|12
+sheep|Sheep|13
+deer|Deer|14
+cow|Cow|15
+boar|Boar|16
 
 

@@ -53,7 +53,7 @@ class Op_craft extends Operation {
                 "name" => $this->game->tokens->getTokenName($card),
                 "q" => 0,
             ];
-            $state = $this->game->tokens->tokens->getTokenState($card);
+            $state = $this->game->getActionTileSide($card);
 
             if ($state) {
                 // already flipped

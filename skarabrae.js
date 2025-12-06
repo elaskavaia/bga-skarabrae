@@ -250,7 +250,7 @@ var Game0Basics = /** @class */ (function (_super) {
                 args.player_name = this.gamedatas.players[args.player_id].name;
             }
         }
-        return { log: log, args: args };
+        return { log: this.format_string_recursive(log, args), args: args };
     };
     Game0Basics.prototype.divYou = function () {
         var color = "black";
@@ -992,7 +992,7 @@ var Game1Tokens = /** @class */ (function (_super) {
                 console.error(log, args, "Exception thrown", e.stack);
             }
         }
-        return { log: log, args: args };
+        return _super.prototype.bgaFormatText.call(this, log, args);
     };
     Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, duration, mobileStyle, onEnd) {
         var _a;
@@ -1464,7 +1464,7 @@ var GameXBody = /** @class */ (function (_super) {
         var pp = "player_panel_content_".concat(playerInfo.color);
         document.querySelectorAll("#".concat(pp, ">.miniboard")).forEach(function (node) { return node.remove(); });
         placeHtml("<div id='miniboard_".concat(playerInfo.color, "' class='miniboard'></div>"), pp);
-        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n         <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
+        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
         for (var i = 0; i <= 6; i++) {
             placeHtml("<div id='slot_furnish_".concat(i, "_").concat(playerInfo.color, "' class='slot_furnish slot_furnish_").concat(i, "'></div>"), "track_furnish_".concat(playerInfo.color));
         }
@@ -1474,9 +1474,6 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.showHelp = function (id) {
         return false;
-    };
-    GameXBody.prototype.updateTokenDisplayInfo = function (tokenDisplayInfo) {
-        // override to generate dynamic tooltips and such
     };
     GameXBody.prototype.hideCard = function (tokenId) {
         var _a;
@@ -1506,6 +1503,10 @@ var GameXBody = /** @class */ (function (_super) {
                 var color = getPart(location, 1);
                 result.location = "settlers_col_".concat(color, "_1");
             }
+            else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
+                var color = getPart(location, 1);
+                result.location = "cards_area_".concat(color);
+            }
         }
         else if (location.startsWith("discard")) {
             result.onEnd = function (node) { return _this.hideCard(node); };
@@ -1524,6 +1525,60 @@ var GameXBody = /** @class */ (function (_super) {
             result.location = "breakroom_".concat(color);
         }
         return result;
+    };
+    GameXBody.prototype.updateTokenDisplayInfo = function (tokenInfo) {
+        var _a;
+        // override to generate dynamic tooltips and such
+        var mainType = tokenInfo.mainType;
+        var token = $(tokenInfo.tokenId);
+        var parentId = (_a = token === null || token === void 0 ? void 0 : token.parentElement) === null || _a === void 0 ? void 0 : _a.id;
+        var state = parseInt(token === null || token === void 0 ? void 0 : token.dataset.state);
+        switch (mainType) {
+            case "worker":
+                {
+                    var tokenId = tokenInfo.key;
+                    var name_3 = tokenInfo.name;
+                    tokenInfo.tooltip = {
+                        log: "${name} (${color_name})",
+                        args: {
+                            name: this.getTr(name_3),
+                            color_name: this.getTr(this.getColorName(getPart(tokenId, 2)))
+                        }
+                    };
+                }
+                return;
+            case "card":
+                {
+                    var tokenId = tokenInfo.key;
+                    var name_4 = tokenInfo.name;
+                    if (tokenId.startsWith("card_setl")) {
+                        tokenInfo.tooltip = "When gaining this card you must resolve top harvest and you may resolve bottom effect";
+                        tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName("env_".concat(tokenInfo.t)));
+                        tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+                    }
+                }
+                return;
+        }
+    };
+    GameXBody.prototype.ttSection = function (prefix, text) {
+        if (prefix)
+            return "<p><b>".concat(prefix, "</b>: ").concat(text, "</p>");
+        else
+            return "<p>".concat(text, "</p>");
+    };
+    GameXBody.prototype.getColorName = function (color) {
+        switch (color) {
+            case "ff0000":
+                return _("Red");
+            case "ffcc02":
+                return _("Yellow");
+            case "982fff":
+                return _("Purple");
+            case "6cd0f6":
+                return _("Blue");
+            default:
+                return _("Black");
+        }
     };
     GameXBody.prototype.setupNotifications = function () {
         var _this = this;

@@ -459,6 +459,12 @@ abstract class Operation {
             return false;
         }
         $this->checkVoid();
+        if ($this->noValidTargets()) {
+            if ($this->canSkip()) {
+                $this->action_skip();
+                return true;
+            }
+        }
         $this->action_resolve([]);
         return true;
     }

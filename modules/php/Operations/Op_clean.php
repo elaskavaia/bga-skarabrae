@@ -59,7 +59,7 @@ class Op_clean extends Operation {
 
     function isFlipped() {
         $owner = $this->getOwner();
-        $state = $this->game->tokens->tokens->getTokenState("action_main_4_$owner"); // clean action card
+        $state = $this->game->getActionTileSide("action_main_4_$owner"); // clean action card
         return $state;
     }
 

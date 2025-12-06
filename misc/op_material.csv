@@ -61,7 +61,7 @@ n_midden|Clean Midden
 or|Choice
 unique|Unique Choice
 order|Choose Order
-seq|Execution
+seq|Sequence
 payAny|Pay Any Resource
 act|Worker Action
 gain|Gain
@@ -73,5 +73,4 @@ round|Round
 turn|Turn
 turnall|Turn
 village|Gain Village Card
-tradeGood|Trade Market Resource
 tradeInc|Move up on Trade track

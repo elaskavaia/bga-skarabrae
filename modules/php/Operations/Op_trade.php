@@ -31,7 +31,7 @@ class Op_trade extends Operation {
         $this->game->userAssert("Maximum is reached", $value < 7); // NOI18N
         $this->queue("tradeInc");
 
-        $state = $this->game->tokens->tokens->getTokenState("action_main_5");
+        $state = $this->game->getActionTileSide("action_main_5");
 
         $good = $this->game->getRulesFor("slot_trade_$value", "craft", "nop");
 

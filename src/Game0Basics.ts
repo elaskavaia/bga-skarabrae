@@ -228,8 +228,7 @@ class Game0Basics extends GameGui<any> {
         args.player_name = this.gamedatas.players[args.player_id].name;
       }
     }
-
-    return { log, args };
+    return { log: this.format_string_recursive(log, args), args };
   }
   divYou() {
     var color = "black";
@@ -247,7 +246,7 @@ class Game0Basics extends GameGui<any> {
   getTr(name: string | NotificationMessage, args: any = {}) {
     if (name === undefined) return null;
 
-    if ((name as NotificationMessage).log !== undefined) {
+    if ((name as any).log !== undefined) {
       const notif = name as NotificationMessage;
       const { log } = this.bgaFormatText(notif.log, notif.args);
       return this.clienttranslate_string(log);

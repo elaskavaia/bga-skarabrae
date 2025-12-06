@@ -7,7 +7,7 @@
 }
 
 .card {
-  border-radius: 5%;
+  border-radius: 10px;
 }
 
 #mainarea .card {
@@ -325,9 +325,14 @@
 .tableau .pboard .breakroom > * {
   display: inline-block;
 }
-.tableau .village_area > * {
+.tableau .village_area > *,
+.tableau .pboard_area > * {
   position: relative;
   display: block;
+}
+.tableau .cards_area > * {
+  position: relative;
+  display: inline-block;
 }
 .tableau .action_area {
   aspect-ratio: 25/16;
@@ -380,6 +385,10 @@
 .tableau .action_area .action_main_9 {
   left: 60%;
   top: 50%;
+}
+
+.discard_village > .card {
+  display: none;
 }
 
 .track_furnish {
@@ -630,6 +639,31 @@
  * skarabrae.scss
  *
  */
+@keyframes active-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+  70% {
+    transform: scale(1.5);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+@keyframes pulse {
+  0% {
+    transform: scale(1) !important;
+  }
+  50% {
+    transform: scale(1.5) !important;
+  }
+  100% {
+    transform: scale(1) !important;
+  }
+}
 #oversurface {
   position: absolute;
   width: 100%;

@@ -72,7 +72,7 @@ class Op_act extends Operation {
             } else {
                 $res[$act]["worker"] = $anyWorker;
             }
-            $state = $this->game->tokens->tokens->getTokenState($act);
+            $state = $this->game->getActionTileSide($act);
             $rulesField = "r";
             if ($state) {
                 $rulesField = "rb";
@@ -93,7 +93,12 @@ class Op_act extends Operation {
 
         $action_tile = $this->getCheckedArg();
         $worker = $args["info"][$action_tile]["worker"];
-        $r = $this->game->getRulesFor($action_tile);
+        $side = $this->game->getActionTileSide($action_tile);
+        if ($side) {
+            $r = $this->game->getRulesFor($action_tile, "rb");
+        } else {
+            $r = $this->game->getRulesFor($action_tile, "r");
+        }
         $this->queue($r, $owner, [], $action_tile);
         $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);

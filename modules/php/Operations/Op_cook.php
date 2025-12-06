@@ -36,7 +36,9 @@ class Op_cook extends Operation {
         $weight = $this->game->getRulesFor($recipe_token, "craft");
         $prevWeight = $this->getWeight();
         $hearth_limit = $this->game->tokens->getTrackerValue($owner, "hearth");
-        //throw new BgaSystemException("$recipe_token => $recipe_rule");
+        if (!$recipe_rule) {
+            throw new \BgaSystemException("$recipe_token => $recipe_rule");
+        }
         $this->queue($recipe_rule);
         if ($prevWeight + $weight < $hearth_limit) {
             $this->queue("cook", $this->getOwner(), ["weight" => $prevWeight + $weight]);
@@ -72,9 +74,9 @@ class Op_cook extends Operation {
     }
 
     function canSkip() {
-        if ($this->noValidTargets() == false) {
-            return true;
-        }
-        return false;
+        // if ($this->noValidTargets()) {
+        //     return true;
+        // }
+        return true;
     }
 }

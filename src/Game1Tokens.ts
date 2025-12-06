@@ -14,7 +14,7 @@ interface TokenDisplayInfo {
   mainType: string; // first type
   imageTypes: string; // all classes
   name?: string | NotificationMessage;
-  tooltip?: string;
+  tooltip?: string | NotificationMessage;
   showtooltip?: boolean;
   [key: string]: any;
 }
@@ -601,7 +601,7 @@ class Game1Tokens extends Game0Basics {
         console.error(log, args, "Exception thrown", e.stack);
       }
     }
-    return { log, args };
+    return super.bgaFormatText(log, args);
   }
 
   async slideAndPlace(

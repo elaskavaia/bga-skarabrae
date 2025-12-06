@@ -48,6 +48,7 @@ num|name|r|rb|craft|tooltip|php
 
 #set name=Trade level {num}
 #set id=slot_trade_{num}
+#set type=
 0||0||nop
 1||1||cow
 2||3||deer
@@ -57,3 +58,31 @@ num|name|r|rb|craft|tooltip|php
 6||15||2shell
 7||20||2barley
 
+
+#set name=
+#set id=slot_furnish_{num}
+#set type=
+#set craft=
+0||1|0|
+1||1|2|
+2||1|4|
+3||1|6|
+4||2|2|
+5||2|4|
+6||2|6|
+
+#set name=
+#set id=slot_slider_{num}
+#set type=
+#set craft=
+0||0|0
+1||0|0
+2||1|0
+3||2|0
+4||3|0
+5||3|-1
+6||4|-2
+7||4|-3
+8||5|-4
+9||6|-5
+10||7|-6

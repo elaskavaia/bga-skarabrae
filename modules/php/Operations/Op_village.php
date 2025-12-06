@@ -42,25 +42,9 @@ class Op_village extends Operation {
     function resolve() {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
-        $type = getPart($card, 1);
-        $this->game->effect_gainCard($owner, $card, $this->getOpId());
-        switch ($type) {
-            case "setl":
-                $r = $this->game->getRulesFor($card, "r");
-                $terr = $this->game->getTerrainNum($card);
-                $ac = $terr + 5;
-                $gain = $this->game->getRulesFor("action_main_$ac", "r");
-                $this->queue("cotag($terr,$gain)", $owner, null, $card);
-                $this->queue("?$r", $owner, null, $card);
 
-                break;
-            case "ball":
-                $this->queue("ball");
-                break;
-            case "roof":
-            case "util":
-                break;
-        }
+        $this->game->effect_gainCard($owner, $card, $this->getOpId());
+
         return;
     }
 }

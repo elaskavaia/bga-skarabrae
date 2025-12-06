@@ -78,6 +78,7 @@ class Game extends Base {
             $color = $this->getPlayerColorById((int) $player_id);
             $this->effect_incCount($color, "skaill", 2, "setup");
             $this->effect_incCount($color, "hearth", 4, "setup");
+            $this->effect_incCount($color, "slider", 1, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
@@ -248,6 +249,29 @@ class Game extends Base {
 
         $location = "tableau_{$color}";
         $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
+
+        $type = getPart($card, 1);
+        $owner = $color;
+        switch ($type) {
+            case "setl":
+                $r = $this->getRulesFor($card, "r");
+                $terr = $this->getTerrainNum($card);
+                $ac = $terr + 5;
+                $gain = $this->getRulesFor("action_main_$ac", "r");
+                $this->machine->push("cotag($terr,$gain);?$r", $owner, null, $card);
+
+                break;
+            case "ball":
+                $r = $this->getRulesFor($card, "r");
+                $this->machine->push("cotag(5,$r)", $owner, null, $card);
+                break;
+            case "roof":
+                break;
+            case "util":
+                $r = $this->getRulesFor($card, "r");
+                $this->machine->push("$r", $owner, null, $card);
+                break;
+        }
     }
 
     function getRulesFor($token_id, $field = "r", $default = "") {
@@ -266,16 +290,35 @@ class Game extends Base {
         return $tnum;
     }
 
-    function countTags(int $terr, string $owner) {
-        $ac = $terr + 5;
-        // if gathering card is flipped it has another tag
-        $count = $this->tokens->tokens->getTokenState("action_main_$ac", 0);
-        $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$owner}");
-        foreach ($cards as $card => $info) {
-            $num = $this->getTerrainNum($card);
-            if ($num == $terr) {
-                $count++;
+    function getActionTileSide(string $action_tile) {
+        $state = $this->tokens->tokens->getTokenState($action_tile, 0);
+        return $state;
+    }
+
+    function countTags(int $tagtype, string $owner) {
+        if ($tagtype <= 4) {
+            $ac = $tagtype + 5;
+            // if gathering card is flipped it has another tag
+            $count = $this->getActionTileSide("action_main_$ac");
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$owner}");
+            foreach ($cards as $card => $info) {
+                $num = $this->getTerrainNum($card);
+                if ($num == $tagtype) {
+                    $count++;
+                }
             }
+        } elseif ($tagtype == 5) {
+            // stone balls
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_ball", "tableau_{$owner}");
+            $count = count($cards);
+        } elseif ($tagtype == 6) {
+            // spindle wharl
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_spin", "tableau_{$owner}");
+            $count = count($cards);
+        } elseif ($tagtype == 7) {
+            // roof
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_roof%", "tableau_{$owner}");
+            $count = count($cards);
         }
         return $count;
     }
@@ -285,11 +328,35 @@ class Game extends Base {
         foreach ($players as $player_id => $player) {
             $color = $this->getPlayerColorById((int) $player_id);
             //         Furnish Track (VP per Settler and completed rows of Settlers).
+            $furnish = $this->tokens->getTrackerValue($color, "furnish");
+            $flevel1 = $this->getRulesFor("slot_furnish_{$furnish}", "r");
+            $flevel2 = $this->getRulesFor("slot_furnish_{$furnish}", "rb");
 
-            // Trade Track (VP based on Trade Marker position).
-            // Craft (VP for turned-over Action Tiles).
-            // Roof, Utensil, and Stone Ball Cards (VP shown on each card).
             $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$color}");
+            $this->effect_incVp($color, (int) ($flevel1 * count($cards)), "game_vp_setl_count");
+            $types = [0, 0, 0, 0, 0];
+            foreach ($cards as $card => $info) {
+                $num = $this->getTerrainNum($card);
+                $types[$num]++;
+            }
+            unset($types[0]);
+            $sets = min($types);
+            $this->effect_incVp($color, (int) ($flevel2 * $sets), "game_vp_setl_sets");
+            // Trade Track (VP based on Trade Marker position).
+            $trade = $this->tokens->getTrackerValue($color, "trade");
+            $tlevel = $this->getRulesFor("slot_trade_{$trade}", "r");
+            $this->effect_incVp($color, (int) $tlevel, "game_vp_trade");
+            // Craft (VP for turned-over Action Tiles).
+            $cards = $this->tokens->getTokensOfTypeInLocation("action", "tableau_{$color}");
+            foreach ($cards as $card => $info) {
+                $state = $info["state"];
+                if ($state) {
+                    $this->effect_incVp($color, (int) 2, "game_vp_action_tiles");
+                }
+            }
+
+            // Roof, Utensil, and Stone Ball Cards (VP shown on each card).
+            $cards = $this->tokens->getTokensOfTypeInLocation("card", "tableau_{$color}");
             foreach ($cards as $card => $info) {
                 $r = $this->getRulesFor($card, "vp", 0);
                 if ($r) {
@@ -297,8 +364,18 @@ class Game extends Base {
                 }
             }
             // Food and Skaill Knives (1VP per item in Storage Area).
+            $v = $this->tokens->getTrackerValue($color, "food");
+            $this->effect_incVp($color, (int) $v, "game_vp_food");
+            $v = $this->tokens->getTrackerValue($color, "skaill");
+            $this->effect_incVp($color, (int) $v, "game_vp_skaill");
             // Midden (-1VP per Midden in Storage Area).
+            $v = $this->tokens->getTrackerValue($color, "midden");
+            $this->effect_incVp($color, (int) -$v, "game_vp_midden");
+
             // Slider (negative VP shown in the bottom hole).
+            $v = $this->tokens->getTrackerValue($color, "slider");
+            $vp = $this->getRulesFor("slot_slider_$v", "rb", 0);
+            $this->effect_incVp($color, (int) $vp, "game_vp_slider");
         }
     }
 

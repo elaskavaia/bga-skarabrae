@@ -1,0 +1,70 @@
+num|name|r|t
+#set create=4
+#set type=card setl
+#set location=deck_village
+#set id=card_setl_{num}
+1|Fisherman|fish|1
+2|Fisherman|fish|1
+3|Fisherman|fish|1
+4|Fisherman|fish|1
+5|Fisherman|fish|1
+6|Fisherman|fish|1
+7|Fisherman|fish|1
+8|Fisherman|fish|1
+9|Seaweed Wood Crafter|n_seaweed:2wood|1
+10|Seaweed Barley Crafter|n_seaweed:2barley|1
+11|Seaweed Stone Crafter|n_seaweed:2stone|1
+12|Seaweed Wool Crafter|n_seaweed:2wool|1
+13|Stone Gatherer|cotag(2,stone)|1
+14|Wood Gatherer|cotag(3,wood)|1
+15|Barley Gatherer|cotag(4,barley)|1
+16|Rabbit Hunter|rabbit|2
+17|Rabbit Hunter|rabbit|2
+18|Sheppard|2n_stone:sheep|2
+19|Sheppard|2n_stone:sheep|2
+20|Sheppard|2n_stone:sheep|2
+21|Sheppard|2n_stone:sheep|2
+22|Sheppard|2n_stone:sheep|2
+23|Sheppard|2n_stone:sheep|2
+24|Stone Shell Crafter|n_stone:2shell|2
+25|Stone Barley Crafter|n_stone:2barley|2
+26|Stone Wood Crafter|n_stone:2wood|2
+27|Stone Seaweed Crafter|n_stone:2seaweed|2
+28|Seaweed Gatherer|cotag(1,seaweed)|2
+29|Wood Gatherer|cotag(3,wood)|2
+30|Barley Gatherer|cotag(4,barley)|2
+31|Rabbit Hunter|rabbit|3
+32|Rabbit Hunter|rabbit|3
+33|Deer Hunter|2n_wood:deer|3
+34|Deer Hunter|2n_wood:deer|3
+35|Deer Hunter|2n_wood:deer|3
+36|Deer Hunter|2n_wood:deer|3
+37|Deer Hunter|2n_wood:deer|3
+38|Deer Hunter|2n_wood:deer|3
+39|Wood Seaweed Crafter|n_wood:2seaweed|3
+40|Wood Wool Crafter|n_wood:2wool|3
+41|Wood Stone Crafter|n_wood:2stone|3
+42|Wood Barley Crafter|n_wood:2barley|3
+43|Shell Gatherer|cotag(1,shell)|3
+44|Stone Gatherer|cotag(2,stone)|3
+45|Barley Gatherer|cotag(4,barley)|3
+46|Rabbit Hunter|rabbit|4
+47|Rabbit Hunter|rabbit|4
+48|Cowboy|3n_barley:cow|4
+49|Cowboy|3n_barley:cow|4
+50|Cowboy|3n_barley:cow|4
+51|Cowboy|3n_barley:cow|4
+52|Cowboy|3n_barley:cow|4
+53|Cowboy|3n_barley:cow|4
+54|Barley Stone Crafter|n_barley:2stone|4
+55|Barley Wool Crafter|n_barley:2wool|4
+56|Barley Wood Crafter|n_barley:2wood|4
+57|Barley Shell Crafter|n_barley:2shell|4
+58|Seaweed Gatherer|cotag(1,seaweed)|4
+59|Wool Gatherer|cotag(2,wool)|4
+60|Wood Gatherer|cotag(3,wood)|4
+
+
+
+
+
