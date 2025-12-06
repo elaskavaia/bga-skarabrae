@@ -29,6 +29,8 @@ use BgaSystemException;
 use BgaUserException;
 use Exception;
 
+use function Bga\Games\skarabrae\array_get;
+
 abstract class Operation {
     const ARG_TARGET = "target";
     const ARG_TOKEN = "token";
@@ -129,6 +131,15 @@ abstract class Operation {
 
     function getParams() {
         return $this->getDataField("params", null);
+    }
+
+    function getParam(int $index = 0, string $default = "") {
+        $params = $this->getParams();
+        if (!$params) {
+            return $default;
+        }
+        $pargs = explode(",", $params);
+        return array_get($pargs, $index, $default);
     }
 
     final function isTrancient() {
@@ -261,6 +272,7 @@ abstract class Operation {
                 "o" => 1000,
                 "sec" => true,
                 "q" => 0,
+                "color" => "alert",
             ];
         }
 
@@ -431,10 +443,14 @@ abstract class Operation {
 
         if (!$isAuto) {
             // switch to player state
-            return PlayerTurn::class;
+            return $this->getNextState();
         }
         $this->destroy();
         return;
+    }
+
+    function getNextState() {
+        return PlayerTurn::class;
     }
 
     /** Automatic action perform in game state, if cannot be done automatically turn one of player's states */

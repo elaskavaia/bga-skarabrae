@@ -36,6 +36,12 @@ abstract class CountableOperation extends Operation {
         $res = [];
         $count = $this->getCount();
         $mcount = $this->getMinCount();
+        if ($mcount == 0) {
+            $mcount++;
+        }
+        if ($mcount == $count) {
+            return ["confirm"];
+        }
         for ($i = $mcount; $i <= $count; $i++) {
             $res[] = "$i";
         }

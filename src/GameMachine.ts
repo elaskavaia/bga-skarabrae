@@ -17,14 +17,10 @@ interface BasicParamInfo {
   info?: ParamInfoArray; // param info for next argument
   sec?: boolean; // this is secondary target
   o?: number; //  priority order
-}
-
-interface ButtonParamInfo extends BasicParamInfo {
   color?: string; // button color
-  // button?: string | NotificationMessage; // button name if different from name
 }
 
-type ParamInfo = ButtonParamInfo | BasicParamInfo;
+type ParamInfo = BasicParamInfo;
 
 interface ParamInfoArray {
   [key: string]: ParamInfo;
@@ -91,8 +87,9 @@ class GameMachine extends Game1Tokens {
       } else {
         handler = () => this.resolveAction({ target });
       }
+      const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
       const button = this.statusBar.addActionButton(this.getTr(name, opInfo.args), handler, {
-        color: multiselect ? "secondary" : "primary",
+        color: color,
         disabled: !active,
         id: "button_" + target
       });

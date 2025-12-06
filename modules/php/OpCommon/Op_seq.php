@@ -74,7 +74,11 @@ class Op_seq extends ComplexOperation {
 
     function getPrompt() {
         if ($this->isRanged()) {
-            return clienttranslate('Perform ${op_name}?');
+            $max = $this->getCount();
+            if ($max > 1) {
+                return clienttranslate('Perform ${op_name} up to ${count} times?');
+            }
+            return clienttranslate('Perform ${op_name}');
         }
         return parent::getPrompt();
     }

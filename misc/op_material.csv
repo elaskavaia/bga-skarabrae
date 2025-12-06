@@ -12,6 +12,8 @@ trade|Trade
 tradePay|Trade
 build|Build
 endOfRound|End of Round
+cotag|Count of Tags
+roof|Gain Roof Card
 
 
 #set class=Op_gain

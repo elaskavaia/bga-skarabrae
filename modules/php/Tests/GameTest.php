@@ -7,7 +7,9 @@ use Bga\GameFramework\Notify;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
+use Bga\Games\skarabrae\OpCommon\Op_or;
 use Bga\Games\skarabrae\OpCommon\Op_paygain;
+use Bga\Games\skarabrae\Operations\Op_cotag;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
@@ -290,5 +292,19 @@ final class GameTest extends TestCase {
         $this->assertEquals("cow", $op->getType());
         $this->dispatchOneStep(GameDispatch::class);
         $this->assertEquals(1, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
+    }
+
+    public function testCoTag() {
+        $rule = "cotag(1,wool/stone)";
+        $color = PCOLOR;
+        $this->game->machine->push($rule, $color);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_cotag);
+        $this->assertEquals("wool/stone", $op->getParam(1, ""));
+        $this->dispatchOneStep(GameDispatch::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_or);
+        $this->dispatchOneStep(GameDispatch::class);
+        $this->dispatchOneStep(PlayerTurn::class);
     }
 }

@@ -1,9 +1,8 @@
 .tableau {
   position: relative;
-  $height: 500px;
+  $height: 400px;
   & > * {
     position: relative;
-    height: $height;
     display: inline-block;
     vertical-align: top;
   }
@@ -11,10 +10,10 @@
     aspect-ratio: 332 / 273;
     background-image: url(img/pboard.jpg);
     background-size: cover;
-
+    height: $height;
     .breakroom {
       position: absolute;
-      width: 20%;
+      width: 25%;
       height: 10%;
 
       top: 15%;
@@ -23,9 +22,15 @@
       }
     }
   }
+  .village_area {
+    & > * {
+      position: relative;
+      display: block;
+    }
+  }
   .action_area {
     aspect-ratio: 25 / 16;
-
+    height: $height;
     $cols: 5;
     $rows: 2;
 

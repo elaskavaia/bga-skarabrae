@@ -27,11 +27,12 @@ tracker_hearth|Hearth Limit|1|wooden tracker hearth|4|miniboard_{COLOR}
 
 #cards
 #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
-card_setl|Village Settler Card|60|card village setl|2|deck_village
-card_roof|Village Roof Card|8|card village roof|2|deck_village
-card_ball|Village Stone Ball Card|8|card village ball|2|deck_village
-card_util|Village Utencil Card|4|card village util|2|deck_village
-card_roofi|Roof Card|40|card roofi|2|deck_roof
+card_setl|Village Settler Card|60|card village setl|2|deck_village|'r'=>'fish'
+card_roof|Village Roof Card|8|card village roof|2|deck_village|'vp'=>2
+card_ball|Village Stone Ball Card|8|card village ball|2|deck_village|'vp'=>2
+card_util|Village Utencil Card|4|card village util|2|deck_village|'vp'=>1
+card_roofi|Roof Card|40|card roofi|2|deck_roof|'vp'=>1
+card_spin|Spindle Card|10|card spin|2|deck_spin|'vp'=>1
 
 
 #create=0

@@ -140,6 +140,14 @@ class Material {
         "type" => "endOfRound",
         "name" => clienttranslate("End of Round"),
 ],
+    "Op_cotag" => [ 
+        "type" => "cotag",
+        "name" => clienttranslate("Count of Tags"),
+],
+    "Op_roof" => [ 
+        "type" => "roof",
+        "name" => clienttranslate("Gain Roof Card"),
+],
     "Op_shell" => [ 
         "class" => "Op_gain",
         "type" => "shell",
@@ -469,6 +477,7 @@ class Material {
         "type" => "card village setl",
         "create" => 2,
         "location" => "deck_village",
+        'r'=>'fish',
 ],
     "card_roof" => [ 
         "name" => clienttranslate("Village Roof Card"),
@@ -476,6 +485,7 @@ class Material {
         "type" => "card village roof",
         "create" => 2,
         "location" => "deck_village",
+        'vp'=>2,
 ],
     "card_ball" => [ 
         "name" => clienttranslate("Village Stone Ball Card"),
@@ -483,6 +493,7 @@ class Material {
         "type" => "card village ball",
         "create" => 2,
         "location" => "deck_village",
+        'vp'=>2,
 ],
     "card_util" => [ 
         "name" => clienttranslate("Village Utencil Card"),
@@ -490,6 +501,7 @@ class Material {
         "type" => "card village util",
         "create" => 2,
         "location" => "deck_village",
+        'vp'=>1,
 ],
     "card_roofi" => [ 
         "name" => clienttranslate("Roof Card"),
@@ -497,6 +509,15 @@ class Material {
         "type" => "card roofi",
         "create" => 2,
         "location" => "deck_roof",
+        'vp'=>1,
+],
+    "card_spin" => [ 
+        "name" => clienttranslate("Spindle Card"),
+        "count" => 10,
+        "type" => "card spin",
+        "create" => 2,
+        "location" => "deck_spin",
+        'vp'=>1,
 ],
             /* --- gen php end token_material --- */
             /* --- gen php begin action_material --- */

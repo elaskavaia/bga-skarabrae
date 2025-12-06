@@ -24,8 +24,16 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_gain extends CountableOperation {
     function resolve() {
-        $count = (int) $this->getCheckedArg();
-        $this->game->effect_incCount($this->getOwner(), $this->getType(), $count, $this->getReason());
+        $count = $this->getCheckedArg();
+        if ($count == "confirm") {
+            $count = $this->getCount();
+        }
+        $this->game->effect_incCount($this->getOwner(), $this->getType(), (int) $count, $this->getReason());
+
         return;
+    }
+
+    function getPrompt() {
+        return $this->getOpName();
     }
 }

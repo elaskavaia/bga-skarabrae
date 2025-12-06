@@ -192,6 +192,39 @@ class Game extends Base {
         );
     }
 
+    function effect_incVp(string $owner, int $inc, string $stat = "", array $options = []) {
+        $player_id = $this->getPlayerIdByColor($owner);
+
+        if ($inc < 0) {
+            $message = clienttranslate('${player_name} loses ${absInc} VP ${reason}');
+        } else {
+            // if 0 print gain 0
+            $message = clienttranslate('${player_name} gains ${absInc} VP ${reason}');
+        }
+
+        $score = $this->playerScore->inc(
+            $player_id,
+            $inc,
+            new NotificationMessage($message, [
+                "reason" => $stat,
+            ])
+        );
+        // XXX: inc stat
+
+        // $this->notifyWithName(
+        //     "score",
+        //     $message,
+        //     [
+        //         "player_score" => $score,
+        //         "inc" => $inc,
+        //         "mod" => abs((int) $inc),
+        //         "duration" => 500,
+        //         "target" => $target,
+        //     ],
+        //     $player_id
+        // );
+    }
+
     function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
         $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
         unset($args["message"]);
@@ -209,6 +242,14 @@ class Game extends Base {
         );
     }
 
+    function effect_gainCard(string $color, string $card, string $reason = "", array $args = []) {
+        $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
+        unset($args["message"]);
+
+        $location = "tableau_{$color}";
+        $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
+    }
+
     function getRulesFor($token_id, $field = "r", $default = "") {
         return $this->material->getRulesFor($token_id, $field, $default);
     }
@@ -217,6 +258,48 @@ class Game extends Base {
             $default = "$token_id ?";
         }
         return $this->material->getRulesFor($token_id, "name", $default);
+    }
+
+    function getTerrainNum(string $card) {
+        $num = getPart($card, 2);
+        $tnum = floor(($num - 1) / 15) + 1;
+        return $tnum;
+    }
+
+    function countTags(int $terr, string $owner) {
+        $ac = $terr + 5;
+        // if gathering card is flipped it has another tag
+        $count = $this->tokens->tokens->getTokenState("action_main_$ac", 0);
+        $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$owner}");
+        foreach ($cards as $card => $info) {
+            $num = $this->getTerrainNum($card);
+            if ($num == $terr) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    function finalScoring() {
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player) {
+            $color = $this->getPlayerColorById((int) $player_id);
+            //         Furnish Track (VP per Settler and completed rows of Settlers).
+
+            // Trade Track (VP based on Trade Marker position).
+            // Craft (VP for turned-over Action Tiles).
+            // Roof, Utensil, and Stone Ball Cards (VP shown on each card).
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$color}");
+            foreach ($cards as $card => $info) {
+                $r = $this->getRulesFor($card, "vp", 0);
+                if ($r) {
+                    $this->effect_incVp($color, (int) $r, "game_vp_cards");
+                }
+            }
+            // Food and Skaill Knives (1VP per item in Storage Area).
+            // Midden (-1VP per Midden in Storage Area).
+            // Slider (negative VP shown in the bottom hole).
+        }
     }
 
     function debug_op(string $type) {

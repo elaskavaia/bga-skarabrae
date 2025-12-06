@@ -307,7 +307,6 @@
 }
 .tableau > * {
   position: relative;
-  height: 500px;
   display: inline-block;
   vertical-align: top;
 }
@@ -315,18 +314,24 @@
   aspect-ratio: 332/273;
   background-image: url(img/pboard.jpg);
   background-size: cover;
+  height: 400px;
 }
 .tableau .pboard .breakroom {
   position: absolute;
-  width: 20%;
+  width: 25%;
   height: 10%;
   top: 15%;
 }
 .tableau .pboard .breakroom > * {
   display: inline-block;
 }
+.tableau .village_area > * {
+  position: relative;
+  display: block;
+}
 .tableau .action_area {
   aspect-ratio: 25/16;
+  height: 400px;
 }
 .tableau .action_area .action {
   position: absolute;

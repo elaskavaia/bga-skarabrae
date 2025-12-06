@@ -56,7 +56,15 @@ class GameXBody extends GameMachine {
                  <div id='track_trade_${playerInfo.color}' class='track_trade track'></div>
                  <div id='breakroom_${playerInfo.color}' class='breakroom'></div>
          </div>
-         <div id='action_area_${playerInfo.color}' class='action_area'></div>
+         <div class='village_area'>
+            <div id='action_area_${playerInfo.color}' class='action_area'></div>
+            <div id='settlers_area_${playerInfo.color}' class='settlers_area'>
+               <div id='settlers_col_${playerInfo.color}_1' class='settlers_col_1'></div>
+               <div id='settlers_col_${playerInfo.color}_2' class='settlers_col_2'></div>
+               <div id='settlers_col_${playerInfo.color}_3' class='settlers_col_3'></div>
+               <div id='settlers_col_${playerInfo.color}_4' class='settlers_col_4'></div>
+            </div>
+         </div>
       </div>`,
       "players_panels"
     );
@@ -100,6 +108,12 @@ class GameXBody extends GameMachine {
       const color = getPart(location, 1);
       result.location = `action_area_${color}`;
       result.onClick = (x) => this.onToken(x);
+    } else if (tokenId.startsWith("card")) {
+      result.onClick = (x) => this.onToken(x);
+      if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {
+        const color = getPart(location, 1);
+        result.location = `settlers_col_${color}_1`;
+      }
     } else if (location.startsWith("discard")) {
       result.onEnd = (node) => this.hideCard(node);
     } else if (location.startsWith("deck")) {
