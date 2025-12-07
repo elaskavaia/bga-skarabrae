@@ -22,11 +22,33 @@
       }
     }
   }
+  .storage {
+    position: absolute;
+    width: 95%;
+    height: 31%;
+    bottom: 17%;
+    left: 3%;
+    display: grid;
+    grid-auto-flow: column;
+    /* Defines 10 columns, each with a fixed width of 100px. */
+    grid-template-columns: repeat(11, 9%);
+    /* Defines 3 rows, each with a fixed height of 50px. */
+    grid-template-rows: repeat(3, 33%);
+    /* Optional: Add a gap between grid items */
+    gap: 2px;
+  }
   .village_area,
   .pboard_area {
     & > * {
       position: relative;
       display: block;
+    }
+  }
+  .settlers_area {
+    & > * {
+      position: relative;
+      display: inline-block;
+      width: 20%;
     }
   }
   .cards_area {

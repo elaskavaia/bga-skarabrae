@@ -39,6 +39,7 @@ class Op_pay extends CountableOperation {
     }
 
     function resolve() {
+        $this->checkVoid(); //validation
         $count = $this->getCount();
         $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason());
         return;
@@ -46,6 +47,16 @@ class Op_pay extends CountableOperation {
 
     public function getExtraArgs() {
         return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getResType())];
+    }
+
+    function getButtonName() {
+        if ($this->getCount() == 1) {
+            return '${token_div}';
+        }
+        if ($this->getCount() == 2) {
+            return '${token_div} ${token_div}';
+        }
+        return clienttranslate('${count} ${token_div}');
     }
 
     public function getPrompt() {

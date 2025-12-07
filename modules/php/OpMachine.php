@@ -46,8 +46,9 @@ class OpMachine {
             $data = Operation::decodeData($dop["data"]);
             $operand = $data["xop"] ?? ",";
             $mnemonic = self::opToMnemonic($operand);
+            unset($data["xop"]);
             /** @var ComplexOperation */
-            $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"]);
+            $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"], $data)->withDataField("op", $operand);
             foreach ($ops as $sub) {
                 $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
                 $top->withDelegate($subOp);
@@ -81,11 +82,12 @@ class OpMachine {
                     throw new BgaSystemException("infinite rec $type");
                 }
                 /** @var ComplexOperation */
-                $op = $this->instanciateCommonOperation($mnemonic, $owner, $data, $id)->withCounts($expr)->withDataField("orig", $type);
+                $op = $this->instanciateCommonOperation($mnemonic, $owner, $data, $id)->withDataField("op", $operand);
                 foreach ($expr->args as $arg) {
-                    $sub = $this->instanciateSimpleOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
+                    $sub = $this->instanciateOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
                     $op->withDelegate($sub);
                 }
+                $op->withCounts($expr);
                 return $op;
             }
 
@@ -97,10 +99,7 @@ class OpMachine {
                 $params = $matches[2];
                 $unrangedType = $matches[1];
             }
-            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)
-                ->withParams($params)
-                ->withCounts($expr)
-                ->withDataField("orig", $type);
+            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params)->withCounts($expr);
         } catch (Exception $e) {
             throw new BgaSystemException("Cannot instanciate '$type': " . $e->getMessage());
         }

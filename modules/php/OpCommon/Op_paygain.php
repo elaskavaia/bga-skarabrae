@@ -25,11 +25,6 @@ class Op_paygain extends Op_seq {
         return true;
     }
     function getOpName() {
-        $name = $this->game->getTokenName($this->getOpId(), "");
-        if ($name) {
-            return $name;
-        }
-
         return $this->getRecName(" => ");
     }
 }

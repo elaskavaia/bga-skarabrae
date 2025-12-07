@@ -9,6 +9,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
 use Bga\Games\skarabrae\OpCommon\Op_or;
 use Bga\Games\skarabrae\OpCommon\Op_paygain;
+use Bga\Games\skarabrae\OpCommon\Op_seq;
 use Bga\Games\skarabrae\Operations\Op_cotag;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 use function Bga\Games\skarabrae\array_get;
 use function Bga\Games\skarabrae\startsWith;
+use function Bga\Games\skarabrae\toJson;
 
 //    'player_colors' => ["ef58a2", "a0d28c", "6cd0f6", "ffcc02"],
 define("PCOLOR", "a0d28c");
@@ -128,6 +130,17 @@ final class GameTest extends TestCase {
     function dispatchOneStep($done = null) {
         $game = $this->game;
         $state = $game->machine->dispatchOne();
+        if ($state === null) {
+            $state = GameDispatch::class;
+        }
+        if ($done !== null) {
+            $this->assertEquals($done, $state);
+        }
+        return $game->machine->getTopOperations(null);
+    }
+    function dispatch($done = null) {
+        $game = $this->game;
+        $state = $game->machine->dispatchAll();
         if ($state === null) {
             $state = GameDispatch::class;
         }
@@ -287,16 +300,15 @@ final class GameTest extends TestCase {
             Operation::ARG_TARGET => "confirm",
         ]);
 
-        $this->dispatchOneStep(GameDispatch::class);
-        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
-        $this->assertEquals("cow", $op->getType());
-        $this->dispatchOneStep(GameDispatch::class);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
         $this->assertEquals(1, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue(PCOLOR, "skaill"));
     }
 
     public function testCoTag() {
         $rule = "cotag(1,wool/stone)";
         $color = PCOLOR;
+        $this->game->tokens->dbSetTokenLocation("action_main_6_$color", "tableau_$color", 1);
         $this->game->machine->push($rule, $color);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_cotag);
@@ -306,5 +318,49 @@ final class GameTest extends TestCase {
         $this->assertTrue($op instanceof Op_or);
         $this->dispatchOneStep(GameDispatch::class);
         $this->dispatchOneStep(PlayerTurn::class);
+    }
+
+    public function testRangedOr() {
+        $rule = "2(wool/stone)";
+        $color = PCOLOR;
+        $this->game->machine->push($rule, $color, ["reason" => "xxx"]);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals("xxx", $op->getReason());
+        $this->assertEquals("[2,2](wool/stone)", $op->getTypeFullExpr());
+        $this->dispatchOneStep(GameDispatch::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals("xxx", $op->getReason());
+        $this->assertEquals("[2,2](wool/stone)", $op->getTypeFullExpr());
+        $this->dispatchOneStep(PlayerTurn::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $t = $op->getArgs()["target"];
+        $op->action_resolve([
+            Operation::ARG_TARGET => $t[0],
+        ]);
+        $this->dispatchOneStep(GameDispatch::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals("wool/stone", $op->getTypeFullExpr());
+    }
+
+    public function testSeq() {
+        $rule = "4(cow,wood)";
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
+        $this->game->machine->push($rule, PCOLOR);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_seq);
+        $this->assertFalse($op->canSkip());
+        $this->assertTrue($op->canResolveAutomatically());
+        $this->dispatchOneStep(GameDispatch::class);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertEquals("cow", $op->getType());
+
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        $this->assertEquals(4, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
+        $this->assertEquals(4, $this->game->tokens->getTrackerValue(PCOLOR, "wood"));
     }
 }

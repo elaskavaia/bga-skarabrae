@@ -18,6 +18,7 @@ interface BasicParamInfo {
   sec?: boolean; // this is secondary target
   o?: number; //  priority order
   color?: string; // button color
+  args?: any;
 }
 
 type ParamInfo = BasicParamInfo;
@@ -43,10 +44,9 @@ interface OpInfo {
   subtitle?: string; // sub prompt when op is single/active (rended small subtext)
 
   err?: string | NotificationMessage; // error string or notification object XXX
-  args: { [key: string]: any }; // other args for notifs
 
-  mcount: number;
-  count: number;
+  count?: number;
+  mcount?: number;
 }
 
 /**  Generic processing related to Operation Machine */
@@ -88,7 +88,7 @@ class GameMachine extends Game1Tokens {
         handler = () => this.resolveAction({ target });
       }
       const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
-      const button = this.statusBar.addActionButton(this.getTr(name, opInfo.args), handler, {
+      const button = this.statusBar.addActionButton(this.getTr(name, paramInfo.args), handler, {
         color: color,
         disabled: !active,
         id: "button_" + target
@@ -98,7 +98,7 @@ class GameMachine extends Game1Tokens {
         button.dataset.max = String(paramInfo.max);
       }
       if (!active) {
-        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"));
+        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo.args);
       }
     }
 
@@ -286,10 +286,10 @@ class GameMachine extends Game1Tokens {
 
     const doneButton = $(doneButtonId);
     if (doneButton) {
-      if ((count == 0 && skippable) || count < opInfo.mcount) {
+      if ((count == 0 && skippable) || count < opInfo.data.mcount) {
         doneButton.classList.add(this.classButtonDisabled);
         doneButton.title = _("Cannot use this action because insuffient amount of elements selected");
-      } else if (count > opInfo.count) {
+      } else if (count > opInfo.data.count) {
         doneButton.classList.add(this.classButtonDisabled);
         doneButton.title = _("Cannot use this action because superfluous amount of elements selected");
       } else {
@@ -319,12 +319,10 @@ class GameMachine extends Game1Tokens {
     try {
       // server may skip sending some data, this will feel all omitted fields
 
-      if (!opInfo.args) opInfo.args = [];
-      if (opInfo.data?.count !== undefined) opInfo.args.count = parseInt(opInfo.data.count);
+      if (opInfo.data?.count !== undefined && opInfo.count === undefined) opInfo.count = parseInt(opInfo.data.count);
+      if (opInfo.data?.mcount !== undefined && opInfo.mcount === undefined) opInfo.mcount = parseInt(opInfo.data.mcount);
       if (opInfo.void === undefined) opInfo.void = false;
       opInfo.confirm = opInfo.confirm ?? false;
-      if (opInfo.count === undefined) opInfo.count = 1;
-      if (opInfo.mcount === undefined) opInfo.mcount = 1;
 
       if (!opInfo.info) opInfo.info = {};
       if (!opInfo.target) opInfo.target = [];

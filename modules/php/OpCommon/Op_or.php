@@ -21,17 +21,57 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\OpCommon;
 /** User choses operation. If count is used it is shared and decreases for all choices */
 class Op_or extends ComplexOperation {
+    function withDelegate(Operation $sub) {
+        if ($sub instanceof CountableOperation) {
+            // shared counter
+            $this->withDataField("count", $sub->getCount());
+            $this->withDataField("mcount", $sub->getMinCount());
+            $sub->withDataField("count", null);
+            $sub->withDataField("mcount", null);
+        }
+        return parent::withDelegate($sub);
+    }
+    function expandOperation($rank = 1) {
+        if ($this->getCount() == 0) {
+            return true; // destroy
+        }
+        if (!$this->isSubTrancient()) {
+            return false;
+        }
+
+        $this->game->machine->interrupt($rank);
+
+        foreach ($this->delegates as $sub) {
+            $this->game->machine->put(
+                $sub->getTypeFullExpr(),
+                $sub->getOwner(),
+                [
+                    "xop" => $this->getOperator(),
+                    "count" => $this->getCount(),
+                    "mcount" => $this->getMinCount(),
+                    "reason" => $this->getReason(),
+                ],
+                $rank
+            );
+        }
+
+        return true;
+    }
+
     function resolve() {
         $target = $this->getCheckedArg();
+
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
-                // XXX
-                $this->game->machine->push($arg->getType(), $arg->getOwner(), $arg->getData());
+                $this->game->machine->push($arg->getTypeFullExpr(false), $arg->getOwner(), ["reason" => $this->getReason()]);
                 $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
+                $this->incMinCount(-1);
+                $this->incCount(-1);
             }
             $arg->destroy();
         }
-
+        $this->game->machine->interrupt(2);
+        $this->expandOperation(2);
         return;
     }
 
@@ -48,6 +88,7 @@ class Op_or extends ComplexOperation {
             }
             $res[$sub->getId()] = [
                 "name" => $sub->getButtonName(),
+                "args" => $sub->getExtraArgs(),
                 "err" => $err,
                 "q" => $q,
             ];
@@ -56,17 +97,15 @@ class Op_or extends ComplexOperation {
     }
 
     function getPrompt() {
-        return clienttranslate("Choose one of the options");
+        if ($this->getCount() > 1) {
+            return clienttranslate('Choose one of the options ${name} (${count} left)');
+        }
+        return clienttranslate('Choose one of the options ${name}');
     }
     function getDescription() {
         return clienttranslate('${actplayer} chooses one of the options');
     }
     function getOpName() {
-        $name = $this->game->getTokenName($this->getOpId(), "");
-        if ($name) {
-            return $name;
-        }
-
         return $this->getRecName(" / ");
     }
 }

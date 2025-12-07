@@ -26,6 +26,7 @@ interface TokenMoveInfo extends Token {
   animtime?: number;
   nop?: boolean;
   place_from?: string;
+  inc?: number;
 }
 
 interface AnimArgs {
@@ -35,6 +36,7 @@ interface AnimArgs {
   nod?: boolean;
   delay?: number;
   place_from?: string;
+  inc?: number;
 }
 
 type StringProperties = { [key: string]: string };
@@ -304,7 +306,7 @@ class Game1Tokens extends Game0Basics {
     this.updateToken(tokenNode, placeInfo);
     // no movement
     if (placeInfo.nop) {
-      return undefined;
+      return placeInfo;
     }
     const location = placeInfo.location;
     if (!$(location)) {
@@ -320,13 +322,20 @@ class Game1Tokens extends Game0Basics {
     if (!placeInfo) {
       return;
     }
+
     const tokenNode = $(tokenId);
+    if (!tokenNode) return;
+    void placeInfo.onStart?.(tokenNode);
+    if (placeInfo.nop) {
+      return;
+    }
     $(placeInfo.location).appendChild(tokenNode);
+    void placeInfo.onEnd?.(tokenNode);
   }
 
   async placeToken(tokenId: string, tokenDbInfo?: Token, args: AnimArgs = {}) {
     try {
-      const placeInfo = this.prapareToken(tokenId, tokenDbInfo);
+      const placeInfo = this.prapareToken(tokenId, tokenDbInfo, args);
 
       if (!placeInfo) {
         return;
@@ -340,7 +349,7 @@ class Game1Tokens extends Game0Basics {
       }
 
       if (placeInfo.onStart) await placeInfo.onStart(tokenNode);
-      await this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd);
+      if (!placeInfo.nop) await this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd);
       //if (animTime == 0) $(location).appendChild(tokenNode);
       //else void this.animationManager.slideAndAttach(tokenNode, $(location));
     } catch (e) {
@@ -613,6 +622,9 @@ class Game1Tokens extends Game0Basics {
   ) {
     if (!$(token)) console.error(`token not found for ${token}`);
     if ($(token)?.parentNode == $(finalPlace)) return;
+    if (this.game.bgaAnimationsActive() == false) {
+      duration = 0;
+    }
 
     this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
     return this.wait(duration);

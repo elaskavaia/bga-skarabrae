@@ -266,7 +266,7 @@ class Game0Basics extends GameGui<any> {
       var message = this.format_string_recursive(notif.log, notif.args);
       if (message != notif.log) console.log(message);
     } else {
-      console.log("hidden log", notif.args);
+      console.log("hidden log", notif);
     }
   }
 

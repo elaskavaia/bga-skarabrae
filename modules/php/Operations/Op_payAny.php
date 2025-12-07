@@ -49,8 +49,12 @@ class Op_payAny extends CountableOperation {
         $list = [];
         foreach ($ress as $res) {
             $resvalue = $this->game->tokens->getTrackerValue($owner, $res);
+            //$list[$res] = ["q" => Material::MA_ERR_NOT_ENOUGH];
             if ($resvalue >= $n) {
-                $list[] = "$res";
+                $list[$res]["q"] = 0;
+                $list[$res]["max"] = $resvalue;
+                $list[$res]["name"] = '${token_div}';
+                $list[$res]["args"] = ["token_div" => "tracker_$res"];
             }
         }
 

@@ -22,7 +22,7 @@ namespace Bga\Games\skarabrae\OpCommon;
 
 use BgaSystemException;
 
-class UnresolvedOperation extends Operation {
+class UnresolvedOperation extends CountableOperation {
     public function resolve() {
         throw new BgaSystemException("unresolved " . $this->getType());
     }

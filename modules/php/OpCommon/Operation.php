@@ -25,6 +25,7 @@ use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Common\OpExpressionRanged;
+use Bga\Games\skarabrae\Common\OpParser;
 use BgaSystemException;
 use BgaUserException;
 use Exception;
@@ -93,6 +94,31 @@ abstract class Operation {
     final function getPlayerId() {
         return $this->player_id;
     }
+
+    function getTypeFullExpr(bool $withCounts = true) {
+        $params = $this->getParams();
+        if ($params) {
+            return $this->getType() . "($params)";
+        }
+        return $this->getType();
+    }
+
+    public static function str(mixed $expr, $topop = ";") {
+        if ($expr instanceof Operation) {
+            $res = $expr->getTypeFullExpr();
+            $op = $expr->getOperator();
+            if (OpParser::compareOperationRank($topop, $op) > 0) {
+                $res = "($res)";
+            }
+        } else {
+            $res = $expr;
+        }
+        return $res;
+    }
+
+    function getOperator() {
+        return $this->getDataField("op");
+    }
     function withDataField(string $field, mixed $value) {
         if ($this->data === null) {
             $this->data = [];
@@ -146,9 +172,9 @@ abstract class Operation {
         return $this->id <= 0;
     }
 
-    function expandOperation() {
+    function expandOperation($rank = 1) {
         if ($this->isTrancient()) {
-            $this->game->machine->put($this->getType(), $this->getOwner(), $this->getData(), 1);
+            $this->game->machine->put($this->getType(), $this->getOwner(), $this->getData(), $rank);
             return true;
         }
         return false;
@@ -158,6 +184,7 @@ abstract class Operation {
         $id = $this->getId();
         if ($id > 0) {
             $this->game->machine->hide($id);
+            $this->withId(0);
         }
         return GameDispatch::class;
     }
@@ -506,6 +533,7 @@ abstract class Operation {
         if (!is_array($data)) {
             throw new BgaSystemException("data encoding issues");
         }
+
         $this->userArgs = $data;
         return $this->resolve($data) ?: $this->destroy();
     }

@@ -16,11 +16,13 @@ class Op_cotag extends Operation {
         $count = $this->game->countTags((int) $tnum, $owner);
         $op = $this->getParam(1, "");
         //$this->game->debugLog("-evaluted to $count");
-        $this->queue("{$count}$op");
+        if ($count > 0) {
+            $this->queue("$count($op)", $owner, null, $this->getReason());
+        }
         if ($tnum <= 4) {
             $skaill = $this->game->tokens->getTrackerValue($owner, "skaill");
             if ($skaill) {
-                $this->queue("[0,{$skaill}](n_skaill:$op)");
+                $this->queue("[0,{$skaill}](n_skaill:$op)", $owner, null, $this->getReason());
             }
         }
         return 1;

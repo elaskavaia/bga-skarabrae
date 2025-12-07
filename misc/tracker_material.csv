@@ -6,6 +6,7 @@ mtype|name|o
 #set create=4
 #set location=miniboard_{COLOR}
 #set state=0
+#set s=1
 
 midden|Midden|0
 bone|Bone|1

@@ -2,12 +2,14 @@
 
 .tracker {
   height: 32px;
-  width: 32px;
+  aspect-ratio: 1/1;
 
   .log &,
   #page-title & {
     display: inline-block;
     vertical-align: middle;
+    height: 24px;
+    line-height: 24px;
   }
 }
 
@@ -78,13 +80,13 @@
   background-position: 10% 66%;
 }
 .wooden.wool {
-  background-position: 48% 34%;
+  background-position: 48% 37%;
 }
 .wooden.deer {
   background-position: 20% 63%;
 }
 .wooden.stone {
-  background-position: 80% 34%;
+  background-position: 80% 38%;
 }
 .wooden.cow {
   background-position: 40% 64%;

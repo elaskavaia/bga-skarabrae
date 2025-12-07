@@ -151,29 +151,15 @@ class Game extends Base {
         $message = array_get($options, "message", "*");
         unset($options["message"]);
 
-        $min = array_get($options, "min", 0);
-        $check = array_get($options, "check", true);
-        unset($options["min"]);
-        unset($options["check"]);
-
         $token_id = $this->tokens->getTrackerId($color, $type);
-        $current = $this->tokens->getTrackerValue($color, $type);
-        $value = $current + $inc;
-        if ($inc < 0) {
-            if ($value < $min && $check) {
-                $message = new NotificationMessage(clienttranslate('Not enough ${token_name} to pay: ${value} of ${absInc}'), [
-                    "token_name" => $this->getTokenName($token_id),
-                    "value" => $current,
-                    "absInc" => -$inc,
-                ]);
-                $this->userAssert($message, false);
-            }
-        }
-        if (array_get($options, "onlyCheck")) {
-            return;
-        }
 
-        $this->tokens->dbResourceInc($token_id, $inc, $message, ["reason" => $reason] + $options, $this->getPlayerIdByColor($color));
+        $this->tokens->dbResourceInc(
+            $token_id,
+            $inc,
+            $message,
+            ["reason" => $reason, "place_from" => $reason] + $options,
+            $this->getPlayerIdByColor($color)
+        );
     }
 
     function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
@@ -252,24 +238,26 @@ class Game extends Base {
 
         $type = getPart($card, 1);
         $owner = $color;
+        $data = ["reason" => $card];
         switch ($type) {
             case "setl":
                 $r = $this->getRulesFor($card, "r");
                 $terr = $this->getTerrainNum($card);
                 $ac = $terr + 5;
-                $gain = $this->getRulesFor("action_main_$ac", "r");
-                $this->machine->push("cotag($terr,$gain);?$r", $owner, null, $card);
+                $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
+                $this->machine->push("?($r)", $owner, $data);
+                $this->machine->push("cotag($terr,$gain)", $owner, $data);
 
                 break;
             case "ball":
                 $r = $this->getRulesFor($card, "r");
-                $this->machine->push("cotag(5,$r)", $owner, null, $card);
+                $this->machine->push("cotag(5,$r)", $owner, $data);
                 break;
             case "roof":
                 break;
             case "util":
                 $r = $this->getRulesFor($card, "r");
-                $this->machine->push("$r", $owner, null, $card);
+                $this->machine->push("$r", $owner, $data);
                 break;
         }
     }
@@ -299,7 +287,7 @@ class Game extends Base {
         if ($tagtype <= 4) {
             $ac = $tagtype + 5;
             // if gathering card is flipped it has another tag
-            $count = $this->getActionTileSide("action_main_$ac");
+            $count = $this->getActionTileSide("action_main_{$ac}_{$owner}");
             $cards = $this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_{$owner}");
             foreach ($cards as $card => $info) {
                 $num = $this->getTerrainNum($card);
@@ -438,11 +426,11 @@ class Game extends Base {
         return $t;
     }
     function debugConsole($info, $args = []) {
-        $this->notifyAllPlayers("log", $info, $args);
+        $this->notify->all("log", $info, $args);
         $this->warn($info);
     }
     function debugLog($info, $args = []) {
-        $this->notifyAllPlayers("log", "", $args + ["info" => $info]);
-        $this->warn($info);
+        $this->notify->all("log", "", $args + ["info" => $info]);
+        $this->warn($info . ": " . toJson($args));
     }
 }

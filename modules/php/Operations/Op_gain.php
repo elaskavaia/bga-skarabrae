@@ -25,15 +25,31 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 class Op_gain extends CountableOperation {
     function resolve() {
         $count = $this->getCheckedArg();
-        if ($count == "confirm") {
-            $count = $this->getCount();
-        }
+        //$this->game->systemAssert("missing reason", $this->getReason());
         $this->game->effect_incCount($this->getOwner(), $this->getType(), (int) $count, $this->getReason());
 
         return;
     }
 
     function getPrompt() {
-        return $this->getOpName();
+        if ($this->isRangedChoice()) {
+            $max = $this->getCount();
+            if ($max > 1) {
+                return clienttranslate('Select how many time to gain ${token_div}');
+            }
+            return clienttranslate('Gain ${token_div}');
+        }
+        return parent::getPrompt();
+    }
+
+    public function getExtraArgs() {
+        return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getType())];
+    }
+
+    function getButtonName() {
+        if ($this->getCount() == 1) {
+            return '${token_div}';
+        }
+        return clienttranslate('${count} ${token_div}');
     }
 }

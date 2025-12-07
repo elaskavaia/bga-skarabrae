@@ -22,46 +22,36 @@ namespace Bga\Games\skarabrae\OpCommon;
 
 /** Sequence of operations, no user choice */
 class Op_seq extends ComplexOperation {
-    function expandOperation() {
-        if ($this->isRanged()) {
-            return parent::expandOperation();
-        }
-        $stored = false;
-        foreach ($this->delegates as $sub) {
-            if ($sub->isTrancient()) {
-                $stored = true;
-                break;
-            }
-        }
-        $this->game->machine->interrupt(0, count($this->delegates));
-        $rank = 1;
-        foreach ($this->delegates as $sub) {
-            $sub->destroy();
-            $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), $rank);
-            $rank++;
-        }
-        //$this->game->debug_dumpMachineDb();
-        return $stored;
-    }
-    function auto(): bool {
+    function expandOperation($rank = 1) {
         if (count($this->delegates) == 0) {
             return true;
         }
-        if (!$this->canResolveAutomatically()) {
+        $count = $this->getCount();
+        if ($this->isRangedChoice()) {
+            return false;
+        }
+        if (!$this->isSubTrancient()) {
             return false;
         }
 
-        $this->game->machine->interrupt();
-        $this->game->machine->renice($this->delegates[0], 1);
+        $this->game->machine->interrupt($rank, count($this->delegates));
+        foreach ($this->delegates as $sub) {
+            $sub->destroy();
+            $this->game->machine->put(
+                $count . "(" . $sub->getTypeFullExpr() . ")",
+                $sub->getOwner(),
+                ["reason" => $this->getReason()],
+                $rank
+            );
+            $rank++;
+        }
+
         return true;
     }
 
     function getPossibleMoves() {
-        if (count($this->delegates) == 0) {
-            return ["err" => "No moves"];
-        }
-        if ($this->isRanged()) {
-            return ["confirm"];
+        if ($this->isRangedChoice()) {
+            return parent::getRangeMoves();
         }
         foreach ($this->delegates as $i => $sub) {
             if ($sub->isVoid()) {
@@ -73,25 +63,26 @@ class Op_seq extends ComplexOperation {
     }
 
     function getPrompt() {
-        if ($this->isRanged()) {
+        if ($this->isRangedChoice()) {
             $max = $this->getCount();
             if ($max > 1) {
-                return clienttranslate('Perform ${op_name} up to ${count} times?');
+                return clienttranslate('Select how many time to perform ${name}');
             }
-            return clienttranslate('Perform ${op_name}');
+            return clienttranslate('Perform ${name}');
         }
         return parent::getPrompt();
     }
 
     function getExtraArgs() {
-        return ["op_name" => $this->getRecName(" => ")];
+        return ["name" => $this->getRecName(" ⤇ ")];
     }
 
     public function resolve() {
-        if ($this->isRanged()) {
-            $this->incMinCount(1);
-            $this->withDataField("orig", null);
-            $this->expandOperation();
+        if ($this->isRangedChoice()) {
+            $c = $this->getCheckedArg();
+            $this->game->machine->interrupt(1, 2);
+            $choice = $this->getTypeFullExpr(false);
+            $this->game->machine->put("$c($choice)", $this->getOwner(), ["reason" => $this->getReason()], 1);
             return;
         }
         return parent::resolve();

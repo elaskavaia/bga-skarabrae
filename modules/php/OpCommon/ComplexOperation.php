@@ -24,30 +24,21 @@ abstract class ComplexOperation extends CountableOperation {
     /** @var Operation[] */
     protected array $delegates = [];
 
-    function expandOperation() {
-        $stored = false;
-
+    function expandOperation($rank = 1) {
         $ranged = $this->isRanged();
+        if ($ranged) {
+            return false;
+        }
+        if (!$this->isSubTrancient()) {
+            return false;
+        }
+        $this->game->machine->interrupt($rank);
         foreach ($this->delegates as $sub) {
-            if ($sub->isTrancient()) {
-                $stored = true;
-                if ($ranged) {
-                    // can only store itself
-                    // $this->game->machine->put(
-                    //     $sub->getDataField("orig", $this->getType()),
-                    //     $sub->getOwner(),
-                    //     ["xop" => $sub->getDataField("xop", ",")],
-                    //     1
-                    // );
-                    // break;
-                    return false;
-                } else {
-                    $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), 1);
-                }
-            }
+            $sub->destroy();
+            $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), $rank);
         }
 
-        return $stored;
+        return true;
     }
 
     function canSkip() {
@@ -63,6 +54,9 @@ abstract class ComplexOperation extends CountableOperation {
     }
 
     function getPossibleMoves() {
+        if ($this->isRangedChoice()) {
+            return parent::getPossibleMoves();
+        }
         $res = [];
         foreach ($this->delegates as $sub) {
             $res[$sub->getId()] = [
@@ -70,6 +64,15 @@ abstract class ComplexOperation extends CountableOperation {
             ];
         }
         return $res;
+    }
+
+    function isSubTrancient() {
+        foreach ($this->delegates as $sub) {
+            if ($sub->isTrancient()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function getRecName($join) {
@@ -85,7 +88,30 @@ abstract class ComplexOperation extends CountableOperation {
                 return '${' . $a . "}";
             }, $pars)
         );
-        $args["i18n"] = $pars;
+
         return ["log" => $log, "args" => $args];
+    }
+
+    function getTypeFullExpr(bool $withCounts = true) {
+        $op = $this->getOperator();
+
+        $opcount = count($this->delegates);
+        if ($opcount == 1) {
+            $base = static::str($this->delegates[0]);
+        } elseif ($opcount == 0) {
+            $base = "0";
+        } else {
+            $res = static::str($this->delegates[0], $op);
+            for ($i = 1; $i < $opcount; $i++) {
+                $res .= $op . static::str($this->delegates[$i], $op);
+            }
+            $base = $res;
+        }
+        if ($withCounts && $this->isRanged()) {
+            $min = $this->getMinCount();
+            $max = $this->getCount();
+            return "[$min,$max]($base)";
+        }
+        return $base;
     }
 }

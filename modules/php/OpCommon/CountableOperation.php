@@ -21,18 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\OpCommon;
 
 abstract class CountableOperation extends Operation {
-    // function canResolveAutomatically(): bool {
-    //     if (!parent::canResolveAutomatically()) {
-    //         return false;
-    //     }
-    //     $count = $this->getCount();
-    //     $mcount = $this->getMinCount();
-    //     if ($count == $mcount) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
-    function getPossibleMoves() {
+    function getRangeMoves() {
         $res = [];
         $count = $this->getCount();
         $mcount = $this->getMinCount();
@@ -40,16 +29,31 @@ abstract class CountableOperation extends Operation {
             $mcount++;
         }
         if ($mcount == $count) {
-            return ["confirm"];
+            return [
+                "$count" => [
+                    "name" => "Confirm",
+                    "q" => 0,
+                ],
+            ];
         }
         for ($i = $mcount; $i <= $count; $i++) {
-            $res[] = "$i";
+            $res["$i"] = ["q" => 0];
         }
         return $res;
     }
 
+    function getButtonName() {
+        if ($this->getCount() == 1) {
+            return '${name}';
+        }
+        return clienttranslate('${name} x ${count}');
+    }
+    function getPossibleMoves() {
+        return $this->getRangeMoves();
+    }
+
     public function getExtraArgs() {
-        return ["count" => $this->getCount()];
+        return ["count" => $this->getCount(), "name" => $this->getOpName()];
     }
 
     function getCount() {
@@ -63,14 +67,21 @@ abstract class CountableOperation extends Operation {
     function incMinCount($inc = 1) {
         $v = $this->getDataField("mcount", 1);
         $v += $inc;
-        $this->withDataField("mcount", 1);
+        if ($v < 0) {
+            $v = 0;
+        }
+        $this->withDataField("mcount", $v);
+
         return $v;
     }
 
     function incCount($inc = 1) {
         $v = $this->getDataField("count", 1);
         $v += $inc;
-        $this->withDataField("count", 1);
+        if ($v < 0) {
+            $v = 0;
+        }
+        $this->withDataField("count", $v);
         return $v;
     }
 
@@ -83,11 +94,25 @@ abstract class CountableOperation extends Operation {
         return true;
     }
 
+    function isRangedChoice() {
+        return $this->getCount() != $this->getMinCount();
+    }
+
     function canSkip() {
         return $this->isOptional();
     }
 
     function isOptional() {
         return $this->getMinCount() == 0;
+    }
+
+    function getTypeFullExpr(bool $withCounts = true) {
+        $base = parent::getTypeFullExpr($withCounts);
+        if ($withCounts && $this->isRanged()) {
+            $min = $this->getMinCount();
+            $max = $this->getCount();
+            return "[$min,$max]($base)";
+        }
+        return $base;
     }
 }
