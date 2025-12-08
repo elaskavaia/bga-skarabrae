@@ -106,6 +106,34 @@ class Game1Tokens extends Game0Basics {
     //this.updateCountersSafe(this.gamedatas.counters);
   }
 
+  addShowMeButton(scroll: boolean) {
+    const firstTarget = document.querySelector("." + this.classActiveSlot);
+    if (!firstTarget) return;
+    this.statusBar.addActionButton(
+      _("Show me"),
+      () => {
+        const butt = $("button_showme");
+        const firstTarget = document.querySelector("." + this.classActiveSlot);
+        if (!firstTarget) return;
+        if (scroll) $(firstTarget).scrollIntoView({ behavior: "smooth", block: "center" });
+        document.querySelectorAll("." + this.classActiveSlot).forEach((node) => {
+          const elem = node as HTMLHtmlElement;
+          elem.style.removeProperty("animation");
+          elem.style.setProperty("animation", "active-pulse 500ms 3");
+          butt.classList.add(this.classButtonDisabled);
+          setTimeout(() => {
+            elem.style.removeProperty("animation");
+            butt.classList.remove(this.classButtonDisabled);
+          }, 1500);
+        });
+      },
+      {
+        color: "secondary",
+        id: "button_showme"
+      }
+    );
+  }
+
   getAllLocations() {
     const res = [];
     for (const key in this.gamedatas.token_types) {

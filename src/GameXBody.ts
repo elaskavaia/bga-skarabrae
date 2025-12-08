@@ -132,6 +132,9 @@ class GameXBody extends GameMachine {
       result.onEnd = (node) => this.hideCard(node);
     } else if (tokenId.startsWith("slot")) {
       result.nop = true; // do not move slots
+    } else if (tokenId.startsWith("tracker_slider")) {
+      const color = getPart(location, 1);
+      result.location = `pboard_${color}`;
     } else if (tokenId.startsWith("tracker")) {
       if (this.getRulesFor(tokenId, "s") == 1) {
         result.onStart = async () => {

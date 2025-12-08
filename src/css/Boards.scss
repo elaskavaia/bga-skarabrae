@@ -49,12 +49,21 @@
       position: relative;
       display: inline-block;
       width: 20%;
+      vertical-align: top;
+      .card ~ .card {
+        position: relative;
+        margin-top: -130%;
+      }
     }
   }
   .cards_area {
     & > * {
       position: relative;
       display: inline-block;
+    }
+    .card ~ .card {
+      position: relative;
+      margin-left: -20%;
     }
   }
   .action_area {

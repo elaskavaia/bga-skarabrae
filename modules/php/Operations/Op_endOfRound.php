@@ -21,24 +21,13 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\StateConstants;
 
 class Op_endOfRound extends Operation {
     function auto(): bool {
         $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_%");
         $this->game->tokens->dbSetTokensLocation($cards, "discard_village");
 
-        $roundNum = $this->game->globals->get(Game::ROUNDS_NUMBER_GLOBAL);
-        if ($roundNum >= 4) {
-            $this->game->finalScoring();
-            return false;
-        }
         $this->queue("round");
         return true;
-    }
-
-    function getNextState() {
-        return StateConstants::STATE_END_GAME;
     }
 }

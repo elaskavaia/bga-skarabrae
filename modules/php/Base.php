@@ -429,6 +429,7 @@ class Base extends Table {
             foreach ($args as $key => $value) {
                 if (
                     is_string($value) &&
+                    is_string($key) &&
                     (endsWith($key, "_tr") ||
                         (endsWith($key, "_name") && $key != "player_name" && $key != "token_name" && $key != "place_name"))
                 ) {

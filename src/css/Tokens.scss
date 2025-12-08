@@ -132,3 +132,24 @@
 .worker.large {
   width: 30px;
 }
+.storage .wooden {
+  filter: v.$dropShadow2;
+}
+
+.tracker.slider {
+  background-image: url(img/SliderBGA.png);
+  background-size: cover;
+  aspect-ratio: 209 / 634;
+  filter: v.$dropShadow2;
+}
+.pboard .tracker.slider {
+  position: absolute;
+  height: 32%;
+  top: 51%;
+
+  @for $num from 0 through 10 {
+    &[data-state="#{$num}"] {
+      left: calc(2% + 8.7% * $num);
+    }
+  }
+}

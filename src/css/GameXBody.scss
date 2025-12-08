@@ -127,11 +127,18 @@ a.bgabutton_white {
     margin-top: 0em !important;
   }
 }
-
+/*
 .gg_selected_alt[data-count] {
   box-shadow:
     0 0 0 2px white,
     0.3em 0.3em 1em gray !important;
+}
+*/
+.bgabutton {
+  &.gg_selected,
+  &.gg_selected_alt {
+    border: 1px solid blue;
+  }
 }
 
 #undoredo_wrap {

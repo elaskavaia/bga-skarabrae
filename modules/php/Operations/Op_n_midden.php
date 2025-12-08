@@ -24,16 +24,31 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_n_midden extends CountableOperation {
     function getResType() {
-        $type = $this->getType();
-        return substr($type, 2); // n_XYZ -> XYZ
+        return "midden";
     }
 
     function getPossibleMoves() {
-        return [$this->getResType()];
+        $owner = $this->getOwner();
+        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+        $canSlider = !$this->game->machine->instanciateOperation("n_slider", $owner)->isVoid();
+        return [$this->game->tokens->getTrackerId($owner, "midden"), $this->game->tokens->getTrackerId($owner, "slider")];
+        if ($canSlider && $current > 0) {
+            return [$this->game->tokens->getTrackerId($owner, "midden"), $this->game->tokens->getTrackerId($owner, "slider")];
+        } elseif ($canSlider) {
+            return [$this->game->tokens->getTrackerId($owner, "slider")];
+        } else {
+            return [$this->game->tokens->getTrackerId($owner, "midden")];
+        }
     }
 
     function resolve() {
         $owner = $this->getOwner();
+        $res = $this->getCheckedArg();
+        if (str_starts_with($res, "tracker_slider")) {
+            $this->queue("n_slider", $owner, null, $this->getReason());
+            return;
+        }
+
         $count = $this->getCount();
         $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
         if ($current < $count) {
@@ -49,15 +64,22 @@ class Op_n_midden extends CountableOperation {
         return;
     }
 
+    function getUiArgs() {
+        return ["name" => '${token_div}'];
+    }
+
     public function getExtraArgs() {
         return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getResType())];
     }
 
     public function getPrompt() {
-        return clienttranslate('Clean ${count} ${token_div}');
+        if ($this->isOneChoice()) {
+            return parent::getPrompt();
+        }
+        return clienttranslate("Select to clean midden or shift the slider back");
     }
 
     public function requireConfirmation() {
-        return false;
+        return true;
     }
 }

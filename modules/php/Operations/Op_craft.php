@@ -89,10 +89,23 @@ class Op_craft extends Operation {
         return $cost;
     }
 
+    public function requireConfirmation() {
+        if ($this->isPaid()) {
+            return false;
+        }
+        return true;
+    }
+    public function getUiArgs() {
+        return ["buttons" => false];
+    }
     function resolve() {
         if ($this->isPaid()) {
             $card = $this->getDataField("card");
             $this->game->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} crafts ${token_name}'));
+            $owner = $this->getOwner();
+            if ($card == "action_main_2_$owner") {
+                $this->game->effect_incCount($owner, "hearth", 2, $card);
+            }
         } else {
             $card = $this->getCheckedArg();
             $cost = $this->game->getRulesFor($card, "craft", "");

@@ -88,7 +88,7 @@ class OpExpression {
 
         $res = static::str($this->args[0]);
         for ($i = 1; $i < $opcount; $i++) {
-            $res .= $op . static::str($this->args[$i]);
+            $res .= $op . static::str($this->args[$i], $op);
         }
         return $res;
     }
@@ -401,8 +401,8 @@ class OpParser {
     ];
 
     public static function compareOperationRank($pop, $cop) {
-        $prank = $binary_operator_priority[$pop] ?? 0;
-        $crank = $binary_operator_priority[$cop] ?? 0;
+        $prank = self::$binary_operator_priority[$pop] ?? 0;
+        $crank = self::$binary_operator_priority[$cop] ?? 0;
         return $prank <=> $crank;
     }
 

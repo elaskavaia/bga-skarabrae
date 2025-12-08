@@ -31,6 +31,7 @@ use BgaUserException;
 use Exception;
 
 use function Bga\Games\skarabrae\array_get;
+use function Bga\Games\skarabrae\toJson;
 
 abstract class Operation {
     const ARG_TARGET = "target";
@@ -107,7 +108,7 @@ abstract class Operation {
         if ($expr instanceof Operation) {
             $res = $expr->getTypeFullExpr();
             $op = $expr->getOperator();
-            if (OpParser::compareOperationRank($topop, $op) > 0) {
+            if ($op && OpParser::compareOperationRank($topop, $op) > 0) {
                 $res = "($res)";
             }
         } else {
@@ -304,6 +305,7 @@ abstract class Operation {
         }
 
         $res = array_merge($res, $this->getExtraArgs());
+        $res["ui"] = $this->getUiArgs();
 
         // cleanup nulls to optimize of data transfer
         foreach ($res as $key => $value) {
@@ -432,6 +434,9 @@ abstract class Operation {
     }
 
     function getExtraArgs() {
+        return [];
+    }
+    function getUiArgs() {
         return [];
     }
     function getPrompt() {

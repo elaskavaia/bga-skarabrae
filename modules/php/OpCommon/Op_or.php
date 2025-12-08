@@ -64,7 +64,7 @@ class Op_or extends ComplexOperation {
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
                 $this->game->machine->push($arg->getTypeFullExpr(false), $arg->getOwner(), ["reason" => $this->getReason()]);
-                $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
+                //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $this->incMinCount(-1);
                 $this->incCount(-1);
             }

@@ -133,14 +133,20 @@ class Game extends Base {
         (see states.inc.php)
     */
     function getGameProgression() {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $round = (int) $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL, 0);
+        $turn = (int) $this->globals->get(Game::TURNS_NUMBER_GLOBAL, 0);
+        if ($round == 0) {
+            return 0;
+        }
+        if ($round == 5) {
+            return 100;
+        }
+        return ($round - 1) * 25 + ($turn - 1) * 8;
     }
 
     function isEndOfGame() {
         $num = (int) $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL, 0);
-        return $num >= 4;
+        return $num >= 5;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -160,6 +166,20 @@ class Game extends Base {
             ["reason" => $reason, "place_from" => $reason] + $options,
             $this->getPlayerIdByColor($color)
         );
+
+        if ($this->getRulesFor($token_id, "s") == 1) {
+            $x = $this->getTotalResCount($color);
+            $cap = $this->tokens->getTrackerValue($color, "slider") * 3;
+            if ($x > $cap) {
+                $this->tokens->dbResourceInc(
+                    "tracker_slider_$color",
+                    ceil(($x - $cap) / 3),
+                    clienttranslate('${player_name}\'s slider shifts ${inc} spaces to the right'),
+                    $options,
+                    $this->getPlayerIdByColor($color)
+                );
+            }
+        }
     }
 
     function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
@@ -258,6 +278,7 @@ class Game extends Base {
             case "util":
                 $r = $this->getRulesFor($card, "r");
                 $this->machine->push("$r", $owner, $data);
+                $this->effect_incCount($owner, "hearth", 1, $card);
                 break;
         }
     }
@@ -365,6 +386,15 @@ class Game extends Base {
             $vp = $this->getRulesFor("slot_slider_$v", "rb", 0);
             $this->effect_incVp($color, (int) $vp, "game_vp_slider");
         }
+    }
+
+    function getTotalResCount(string $color) {
+        $count = 0;
+        foreach (Material::getAllNonPoopResources() as $res) {
+            $count += $this->tokens->getTrackerValue($color, $res);
+        }
+        $count += $this->tokens->getTrackerValue($color, "midden");
+        return $count;
     }
 
     function debug_op(string $type) {

@@ -499,6 +499,33 @@ var Game1Tokens = /** @class */ (function (_super) {
         //this.restoreServerData();
         //this.updateCountersSafe(this.gamedatas.counters);
     };
+    Game1Tokens.prototype.addShowMeButton = function (scroll) {
+        var _this = this;
+        var firstTarget = document.querySelector("." + this.classActiveSlot);
+        if (!firstTarget)
+            return;
+        this.statusBar.addActionButton(_("Show me"), function () {
+            var butt = $("button_showme");
+            var firstTarget = document.querySelector("." + _this.classActiveSlot);
+            if (!firstTarget)
+                return;
+            if (scroll)
+                $(firstTarget).scrollIntoView({ behavior: "smooth", block: "center" });
+            document.querySelectorAll("." + _this.classActiveSlot).forEach(function (node) {
+                var elem = node;
+                elem.style.removeProperty("animation");
+                elem.style.setProperty("animation", "active-pulse 500ms 3");
+                butt.classList.add(_this.classButtonDisabled);
+                setTimeout(function () {
+                    elem.style.removeProperty("animation");
+                    butt.classList.remove(_this.classButtonDisabled);
+                }, 1500);
+            });
+        }, {
+            color: "secondary",
+            id: "button_showme"
+        });
+    };
     Game1Tokens.prototype.getAllLocations = function () {
         var res = [];
         for (var key in this.gamedatas.token_types) {
@@ -1127,7 +1154,7 @@ var GameMachine = /** @class */ (function (_super) {
     }
     GameMachine.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         var _this = this;
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         if (!this.isCurrentPlayerActive()) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
@@ -1138,11 +1165,20 @@ var GameMachine = /** @class */ (function (_super) {
         if (opInfo.descriptionOnMyTurn) {
             this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
         }
+        if (opInfo.err) {
+            var button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), function () { }, {
+                color: "alert",
+                id: "button_err"
+            });
+        }
         var multiselect = this.isMultiSelectArgs(opInfo);
         var sortedTargets = Object.keys(opInfo.info);
         sortedTargets.sort(function (a, b) { return opInfo.info[a].o - opInfo.info[b].o; });
         var _loop_1 = function (target) {
             var paramInfo = opInfo.info[target];
+            if (paramInfo.sec) {
+                return "continue";
+            }
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
@@ -1153,14 +1189,13 @@ var GameMachine = /** @class */ (function (_super) {
                 if (!name_2)
                     name_2 = div.dataset.name;
             }
+            if (opInfo.ui.buttons == false) {
+                return "continue";
+            }
             if (!name_2)
                 name_2 = target;
             var handler = void 0;
-            if (paramInfo.sec) {
-                // skip, whatever TODO: anytime
-                handler = function () { return _this.bgaPerformAction("action_".concat(target), {}); };
-            }
-            else if (multiselect) {
+            if (multiselect) {
                 handler = function () { return _this.onMultiCount(target, opInfo); };
             }
             else {
@@ -1176,6 +1211,9 @@ var GameMachine = /** @class */ (function (_super) {
             if (paramInfo.max !== undefined) {
                 button.dataset.max = String(paramInfo.max);
             }
+            else {
+                button.dataset.max = "1";
+            }
             if (!active) {
                 button.title = this_1.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo.args);
             }
@@ -1185,8 +1223,29 @@ var GameMachine = /** @class */ (function (_super) {
             var target = sortedTargets_1[_i];
             _loop_1(target);
         }
+        var _loop_2 = function (target) {
+            var paramInfo = opInfo.info[target];
+            if (paramInfo.sec) {
+                // skip, whatever TODO: anytime
+                var color = (_d = paramInfo.color) !== null && _d !== void 0 ? _d : "secondary";
+                var button = this_2.statusBar.addActionButton(this_2.getTr(paramInfo.name, paramInfo.args), function () { return _this.bgaPerformAction("action_".concat(target), {}); }, {
+                    color: color,
+                    id: "button_" + target
+                });
+                button.dataset.targetId = target;
+            }
+        };
+        var this_2 = this;
+        // secondary buttons
+        for (var _e = 0, sortedTargets_2 = sortedTargets; _e < sortedTargets_2.length; _e++) {
+            var target = sortedTargets_2[_e];
+            _loop_2(target);
+        }
+        if (opInfo.ui.buttons == false) {
+            this.addShowMeButton(true);
+        }
         if (multiselect) {
-            this.activateMultiCountPrompt(opInfo);
+            this.activateMultiSelectPrompt(opInfo);
         }
         // need a global condition when this can be added
         this.addUndoButton();
@@ -1241,7 +1300,7 @@ var GameMachine = /** @class */ (function (_super) {
             return false;
         this.resolveAction({ target: tid });
     };
-    GameMachine.prototype.activateMultiCountPrompt = function (opInfo) {
+    GameMachine.prototype.activateMultiSelectPrompt = function (opInfo) {
         var _this = this;
         var ttype = opInfo.ttype;
         var buttonName = _("Submit");
@@ -1249,8 +1308,13 @@ var GameMachine = /** @class */ (function (_super) {
         var resetButtonId = "button_reset";
         this.statusBar.addActionButton(buttonName, function () {
             var res = {};
-            var count = _this.getMultiCount(res);
-            _this.resolveAction({ target: res, count: count });
+            var count = _this.getMultiSelectCountAndSync(res);
+            if (opInfo.ttype == "token_count") {
+                _this.resolveAction({ target: res, count: count });
+            }
+            else {
+                _this.resolveAction({ target: Object.keys(res), count: count });
+            }
         }, {
             color: "primary",
             id: doneButtonId
@@ -1302,47 +1366,44 @@ var GameMachine = /** @class */ (function (_super) {
             // $("undoredo_wrap")?.appendChild(div2);
         }
     };
-    GameMachine.prototype.getMultiSelectCountAndSync = function () {
+    GameMachine.prototype.getMultiSelectCountAndSync = function (result) {
+        if (result === void 0) { result = {}; }
         // sync alternative selection on toolbar
         var allSel = document.querySelectorAll(".".concat(this.classSelected));
         var selectedAlt = this.classSelectedAlt;
         this.removeAllClasses(selectedAlt);
+        var totalCount = 0;
         allSel.forEach(function (node) {
+            var _a;
             var altnode = document.querySelector("[data-target-id=\"".concat(node.id, "\"]"));
             if (altnode) {
                 altnode.classList.add(selectedAlt);
             }
-        });
-        return allSel.length;
-    };
-    GameMachine.prototype.onMultiCount = function (tid, opInfo) {
-        var _a;
-        var node = $(tid);
-        var altnode = document.querySelector("[data-target-id=\"".concat(tid, "\"]"));
-        if (altnode) {
-            node = altnode;
-        }
-        var count = Number((_a = node.dataset.count) !== null && _a !== void 0 ? _a : 0);
-        node.dataset.count = String(count + 1);
-        if (node.dataset.max !== undefined && count + 1 > Number(node.dataset.max)) {
-            node.dataset.count = "0";
-        }
-        node.classList.add(this.classSelectedAlt);
-        this.onMultiSelectionUpdate(opInfo);
-        return;
-    };
-    GameMachine.prototype.getMultiCount = function (result) {
-        if (result === void 0) { result = {}; }
-        var allSel = document.querySelectorAll(".".concat(this.classSelectedAlt));
-        var totalCount = 0;
-        allSel.forEach(function (node) {
-            var _a, _b;
-            var tid = (_a = node.dataset.targetId) !== null && _a !== void 0 ? _a : node.id;
-            var count = Number((_b = node.dataset.count) !== null && _b !== void 0 ? _b : 0);
+            var cnode = altnode !== null && altnode !== void 0 ? altnode : node;
+            var tid = (_a = cnode.dataset.targetId) !== null && _a !== void 0 ? _a : node.id;
+            var count = cnode.dataset.count === undefined ? 1 : Number(cnode.dataset.count);
             result[tid] = count;
             totalCount += count;
         });
         return totalCount;
+    };
+    GameMachine.prototype.onMultiCount = function (tid, opInfo) {
+        var _a, _b;
+        var node = $(tid);
+        var altnode = document.querySelector("[data-target-id=\"".concat(tid, "\"]"));
+        var cnode = altnode !== null && altnode !== void 0 ? altnode : node;
+        var count = Number((_a = cnode.dataset.count) !== null && _a !== void 0 ? _a : 0);
+        cnode.dataset.count = String(count + 1);
+        var max = Number((_b = cnode.dataset.max) !== null && _b !== void 0 ? _b : 1);
+        if (count + 1 > max) {
+            cnode.dataset.count = "0";
+            node.classList.remove(this.classSelected);
+        }
+        else {
+            node.classList.add(this.classSelected);
+        }
+        this.onMultiSelectionUpdate(opInfo);
+        return;
     };
     GameMachine.prototype.onMultiSelectionUpdate = function (opInfo) {
         var _a, _b;
@@ -1353,7 +1414,7 @@ var GameMachine = /** @class */ (function (_super) {
         var skipButton = $("button_skip");
         var buttonName = _("Submit");
         // sync real selection to alt selection on toolbar
-        var count = ttype == "token_array" ? this.getMultiSelectCountAndSync() : this.getMultiCount();
+        var count = this.getMultiSelectCountAndSync();
         var doneButton = $(doneButtonId);
         if (doneButton) {
             if ((count == 0 && skippable) || count < opInfo.data.mcount) {
@@ -1534,6 +1595,10 @@ var GameXBody = /** @class */ (function (_super) {
         }
         else if (tokenId.startsWith("slot")) {
             result.nop = true; // do not move slots
+        }
+        else if (tokenId.startsWith("tracker_slider")) {
+            var color = getPart(location, 1);
+            result.location = "pboard_".concat(color);
         }
         else if (tokenId.startsWith("tracker")) {
             if (this.getRulesFor(tokenId, "s") == 1) {

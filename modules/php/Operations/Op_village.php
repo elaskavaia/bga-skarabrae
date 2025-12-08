@@ -39,6 +39,14 @@ class Op_village extends Operation {
     public function getArgType() {
         return "token";
     }
+
+    public function getUiArgs() {
+        return ["buttons" => false];
+    }
+
+    public function getPrompt() {
+        return clienttranslate('${You} must select a village card');
+    }
     function resolve() {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();

@@ -43,7 +43,7 @@ class Op_clean extends Operation {
             clienttranslate("Cannot use this action because superfluous amount of elements selected"),
             $userCount <= $maxcount
         );
-        foreach ($res as $item => $count) {
+        foreach ($res as $item) {
             $name = getPart($item, 1);
             $this->game->effect_incCount($this->getOwner(), $name, -1, $this->getReason());
         }
@@ -77,6 +77,8 @@ class Op_clean extends Operation {
             $res[$id] = [
                 "q" => $v ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH,
                 "max" => $v ? 1 : 0,
+                "name" => '${token_div}',
+                "args" => ["token_div" => $id],
             ];
         }
         return $res;
@@ -91,7 +93,7 @@ class Op_clean extends Operation {
     }
 
     function getArgType() {
-        return "token_count";
+        return "token_array";
     }
 
     function getPrompt() {

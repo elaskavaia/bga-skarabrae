@@ -87,12 +87,15 @@ class Op_act extends Operation {
         }
         return $res;
     }
+    function getUiArgs() {
+        return ["buttons" => false];
+    }
     function resolve() {
         $owner = $this->getOwner();
         $args = $this->getArgs();
-
         $action_tile = $this->getCheckedArg();
         $worker = $args["info"][$action_tile]["worker"];
+        $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
         $side = $this->game->getActionTileSide($action_tile);
         if ($side) {
             $r = $this->game->getRulesFor($action_tile, "rb");
@@ -100,7 +103,7 @@ class Op_act extends Operation {
             $r = $this->game->getRulesFor($action_tile, "r");
         }
         $this->queue($r, $owner, [], $action_tile);
-        $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
+
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $worker = array_shift($workers);
         if ($worker) {

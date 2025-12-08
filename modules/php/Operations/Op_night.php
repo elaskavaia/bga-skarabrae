@@ -19,20 +19,21 @@
 declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
-
-use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
-class Op_turn extends Operation {
+class Op_night extends Operation {
     function auto(): bool {
-        $this->queue("village", $this->getOwner());
-        $this->queue("act", $this->getOwner());
-        $this->queue("recall", $this->getOwner());
-        $curturn = $this->game->globals->get(Game::TURNS_NUMBER_GLOBAL, 1);
-        if ($curturn == 3) {
-            $this->queue("night", $this->getOwner());
+        $color = $this->getOwner();
+        $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "tableau_{$color}");
+        foreach ($cards as $card => $info) {
+            $state = $info["state"];
+            if ($state) {
+                $n = $this->game->getRulesFor($card, "n");
+                if ($n) {
+                    $this->queue("$n", $this->getOwner());
+                }
+            }
         }
-        $this->game->undoSavepoint();
         return true;
     }
 }

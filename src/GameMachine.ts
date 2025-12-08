@@ -47,6 +47,9 @@ interface OpInfo {
 
   count?: number;
   mcount?: number;
+  ui: {
+    buttons?: boolean;
+  };
 }
 
 /**  Generic processing related to Operation Machine */
@@ -62,6 +65,12 @@ class GameMachine extends Game1Tokens {
     if (opInfo.descriptionOnMyTurn) {
       this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
     }
+    if (opInfo.err) {
+      const button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), () => {}, {
+        color: "alert",
+        id: "button_err"
+      });
+    }
     const multiselect = this.isMultiSelectArgs(opInfo);
 
     const sortedTargets = Object.keys(opInfo.info);
@@ -69,6 +78,9 @@ class GameMachine extends Game1Tokens {
 
     for (const target of sortedTargets) {
       const paramInfo = opInfo.info[target];
+      if (paramInfo.sec) {
+        continue; // secondary buttons
+      }
       const div = $(target);
       const q = paramInfo.q;
       const active = q == 0;
@@ -77,12 +89,12 @@ class GameMachine extends Game1Tokens {
         if (active) div.classList?.add(this.classActiveSlot);
         if (!name) name = div.dataset.name;
       }
+      if (opInfo.ui.buttons == false) {
+        continue;
+      }
       if (!name) name = target;
       let handler: any;
-      if (paramInfo.sec) {
-        // skip, whatever TODO: anytime
-        handler = () => this.bgaPerformAction(`action_${target}`, {});
-      } else if (multiselect) {
+      if (multiselect) {
         handler = () => this.onMultiCount(target, opInfo);
       } else {
         handler = () => this.resolveAction({ target });
@@ -96,14 +108,36 @@ class GameMachine extends Game1Tokens {
       button.dataset.targetId = target;
       if (paramInfo.max !== undefined) {
         button.dataset.max = String(paramInfo.max);
+      } else {
+        button.dataset.max = "1";
       }
       if (!active) {
         button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo.args);
       }
     }
 
+    // secondary buttons
+    for (const target of sortedTargets) {
+      const paramInfo = opInfo.info[target];
+      if (paramInfo.sec) {
+        // skip, whatever TODO: anytime
+        const color: any = paramInfo.color ?? "secondary";
+        const button = this.statusBar.addActionButton(
+          this.getTr(paramInfo.name, paramInfo.args),
+          () => this.bgaPerformAction(`action_${target}`, {}),
+          {
+            color: color,
+            id: "button_" + target
+          }
+        );
+        button.dataset.targetId = target;
+      }
+    }
+    if (opInfo.ui.buttons == false) {
+      this.addShowMeButton(true);
+    }
     if (multiselect) {
-      this.activateMultiCountPrompt(opInfo);
+      this.activateMultiSelectPrompt(opInfo);
     }
 
     // need a global condition when this can be added
@@ -156,7 +190,7 @@ class GameMachine extends Game1Tokens {
     this.resolveAction({ target: tid });
   }
 
-  activateMultiCountPrompt(opInfo: OpInfo) {
+  activateMultiSelectPrompt(opInfo: OpInfo) {
     const ttype = opInfo.ttype;
 
     const buttonName = _("Submit");
@@ -167,8 +201,12 @@ class GameMachine extends Game1Tokens {
       buttonName,
       () => {
         const res = {};
-        const count = this.getMultiCount(res);
-        this.resolveAction({ target: res, count });
+        const count = this.getMultiSelectCountAndSync(res);
+        if (opInfo.ttype == "token_count") {
+          this.resolveAction({ target: res, count });
+        } else {
+          this.resolveAction({ target: Object.keys(res), count });
+        }
       },
       {
         color: "primary",
@@ -231,46 +269,42 @@ class GameMachine extends Game1Tokens {
     }
   }
 
-  getMultiSelectCountAndSync() {
+  getMultiSelectCountAndSync(result: any = {}) {
     // sync alternative selection on toolbar
     const allSel = document.querySelectorAll(`.${this.classSelected}`);
     const selectedAlt = this.classSelectedAlt;
     this.removeAllClasses(selectedAlt);
-    allSel.forEach((node) => {
+    let totalCount = 0;
+    allSel.forEach((node: any) => {
       const altnode = document.querySelector(`[data-target-id="${node.id}"]`);
       if (altnode) {
         altnode.classList.add(selectedAlt);
       }
-    });
-    return allSel.length;
-  }
-
-  onMultiCount(tid: string, opInfo: OpInfo) {
-    let node = $(tid);
-    const altnode = document.querySelector(`[data-target-id="${tid}"]`);
-    if (altnode) {
-      node = altnode as HTMLElement;
-    }
-    const count = Number(node.dataset.count ?? 0);
-    node.dataset.count = String(count + 1);
-    if (node.dataset.max !== undefined && count + 1 > Number(node.dataset.max)) {
-      node.dataset.count = "0";
-    }
-    node.classList.add(this.classSelectedAlt);
-    this.onMultiSelectionUpdate(opInfo);
-    return;
-  }
-
-  getMultiCount(result: any = {}) {
-    const allSel = document.querySelectorAll(`.${this.classSelectedAlt}`);
-    let totalCount = 0;
-    allSel.forEach((node: HTMLElement) => {
-      const tid = node.dataset.targetId ?? node.id;
-      const count = Number(node.dataset.count ?? 0);
+      const cnode = altnode ?? node;
+      const tid = cnode.dataset.targetId ?? node.id;
+      const count = cnode.dataset.count === undefined ? 1 : Number(cnode.dataset.count);
       result[tid] = count;
       totalCount += count;
     });
     return totalCount;
+  }
+
+  onMultiCount(tid: string, opInfo: OpInfo) {
+    let node = $(tid);
+    const altnode: HTMLElement = document.querySelector(`[data-target-id="${tid}"]`);
+    const cnode = altnode ?? node;
+    const count = Number(cnode.dataset.count ?? 0);
+    cnode.dataset.count = String(count + 1);
+    const max = Number(cnode.dataset.max ?? 1);
+    if (count + 1 > max) {
+      cnode.dataset.count = "0";
+      node.classList.remove(this.classSelected);
+    } else {
+      node.classList.add(this.classSelected);
+    }
+
+    this.onMultiSelectionUpdate(opInfo);
+    return;
   }
 
   onMultiSelectionUpdate(opInfo: OpInfo) {
@@ -282,7 +316,7 @@ class GameMachine extends Game1Tokens {
     const buttonName = _("Submit");
 
     // sync real selection to alt selection on toolbar
-    const count = ttype == "token_array" ? this.getMultiSelectCountAndSync() : this.getMultiCount();
+    const count = this.getMultiSelectCountAndSync();
 
     const doneButton = $(doneButtonId);
     if (doneButton) {

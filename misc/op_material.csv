@@ -14,6 +14,8 @@ build|Build
 endOfRound|End of Round
 cotag|Count of Tags
 roof|Gain Roof Card
+n_slider|Shift Slider
+night|Night Actions
 
 
 #set class=Op_gain
@@ -62,7 +64,7 @@ or|Choice
 unique|Unique Choice
 order|Choose Order
 seq|Sequence
-payAny|Pay Any Resource
+payAny|Pay any Resource
 act|Worker Action
 gain|Gain
 pay|Pay

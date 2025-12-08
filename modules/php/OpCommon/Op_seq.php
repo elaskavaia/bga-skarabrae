@@ -73,8 +73,8 @@ class Op_seq extends ComplexOperation {
         return parent::getPrompt();
     }
 
-    function getExtraArgs() {
-        return ["name" => $this->getRecName(" ⤇ ")];
+    function getOpName() {
+        return $this->getRecName(" ");
     }
 
     public function resolve() {

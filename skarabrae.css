@@ -349,10 +349,19 @@
   position: relative;
   display: inline-block;
   width: 20%;
+  vertical-align: top;
+}
+.tableau .settlers_area > * .card ~ .card {
+  position: relative;
+  margin-top: -130%;
 }
 .tableau .cards_area > * {
   position: relative;
   display: inline-block;
+}
+.tableau .cards_area .card ~ .card {
+  position: relative;
+  margin-left: -20%;
 }
 .tableau .action_area {
   aspect-ratio: 25/16;
@@ -593,6 +602,56 @@
   width: 30px;
 }
 
+.storage .wooden {
+  filter: drop-shadow(2px 2px 3px black);
+}
+
+.tracker.slider {
+  background-image: url(img/SliderBGA.png);
+  background-size: cover;
+  aspect-ratio: 209/634;
+  filter: drop-shadow(2px 2px 3px black);
+}
+
+.pboard .tracker.slider {
+  position: absolute;
+  height: 32%;
+  top: 51%;
+}
+.pboard .tracker.slider[data-state="0"] {
+  left: 2%;
+}
+.pboard .tracker.slider[data-state="1"] {
+  left: 10.7%;
+}
+.pboard .tracker.slider[data-state="2"] {
+  left: 19.4%;
+}
+.pboard .tracker.slider[data-state="3"] {
+  left: 28.1%;
+}
+.pboard .tracker.slider[data-state="4"] {
+  left: 36.8%;
+}
+.pboard .tracker.slider[data-state="5"] {
+  left: 45.5%;
+}
+.pboard .tracker.slider[data-state="6"] {
+  left: 54.2%;
+}
+.pboard .tracker.slider[data-state="7"] {
+  left: 62.9%;
+}
+.pboard .tracker.slider[data-state="8"] {
+  left: 71.6%;
+}
+.pboard .tracker.slider[data-state="9"] {
+  left: 80.3%;
+}
+.pboard .tracker.slider[data-state="10"] {
+  left: 89%;
+}
+
 /* tooltips */
 .midSizeDialog {
   max-width: 700px;
@@ -763,8 +822,15 @@ a.bgabutton_white {
   margin-top: 0em !important;
 }
 
+/*
 .gg_selected_alt[data-count] {
-  box-shadow: 0 0 0 2px white, 0.3em 0.3em 1em gray !important;
+  box-shadow:
+    0 0 0 2px white,
+    0.3em 0.3em 1em gray !important;
+}
+*/
+.bgabutton.gg_selected, .bgabutton.gg_selected_alt {
+  border: 1px solid blue;
 }
 
 #undoredo_wrap {

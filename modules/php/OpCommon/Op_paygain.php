@@ -25,6 +25,6 @@ class Op_paygain extends Op_seq {
         return true;
     }
     function getOpName() {
-        return $this->getRecName(" => ");
+        return $this->getRecName(" ⤇ ");
     }
 }

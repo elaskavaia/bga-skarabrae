@@ -73,6 +73,15 @@ class Op_cook extends Operation {
         return $list;
     }
 
+    public function getExtraArgs() {
+        $owner = $this->getOwner();
+        return parent::getExtraArgs() + ["hearth" => $this->game->tokens->getTrackerValue($owner, "hearth") - $this->getWeight()];
+    }
+
+    public function getPrompt() {
+        return clienttranslate('Select recipe to cook, you have ${hearth} hearth');
+    }
+
     function canSkip() {
         // if ($this->noValidTargets()) {
         //     return true;

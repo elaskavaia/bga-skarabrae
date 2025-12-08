@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Notify;
+use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
@@ -11,6 +12,7 @@ use Bga\Games\skarabrae\OpCommon\Op_or;
 use Bga\Games\skarabrae\OpCommon\Op_paygain;
 use Bga\Games\skarabrae\OpCommon\Op_seq;
 use Bga\Games\skarabrae\Operations\Op_cotag;
+use Bga\Games\skarabrae\Operations\Op_craft;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
@@ -362,5 +364,29 @@ final class GameTest extends TestCase {
         $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
         $this->assertEquals(4, $this->game->tokens->getTrackerValue(PCOLOR, "cow"));
         $this->assertEquals(4, $this->game->tokens->getTrackerValue(PCOLOR, "wood"));
+    }
+
+    public function testFurnish() {
+        $rule = "furnishPay:furnish,(barley/skaill)";
+        $color = PCOLOR;
+        $res = OpExpression::parseExpression($rule);
+        $this->assertEquals($rule, OpExpression::str($res));
+        $this->game->tokens->createTokens();
+        $this->game->effect_incCount(PCOLOR, "hide", 1, "");
+        $this->game->machine->push($rule, PCOLOR);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_paygain);
+        $this->assertEquals($rule, $op->getTypeFullExpr());
+    }
+
+    public function testData() {
+        $color = PCOLOR;
+        $this->game->machine->push("craft", PCOLOR, ["paid" => true, "card" => "action_main_3_$color"]);
+        /** @var Op_craft */
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_craft);
+        $this->assertTrue($op->isPaid());
+        $this->assertFalse($op->requireConfirmation());
+        $this->dispatchOneStep(GameDispatch::class);
     }
 }
