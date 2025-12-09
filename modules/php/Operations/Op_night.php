@@ -34,6 +34,7 @@ class Op_night extends Operation {
                 }
             }
         }
+        $this->queue("feed", $this->getOwner());
         return true;
     }
 }

@@ -2,17 +2,14 @@
 
 .card,
 .action {
-  height: 30em;
+  height: 200px;
   aspect-ratio: 640 / 1000;
   box-shadow: v.$boxShadowBlack;
 }
 .card {
-  border-radius: 10px;
+  border-radius: 5%;
 }
 #mainarea {
-  .card {
-    height: 200px;
-  }
   .cardset {
     position: relative;
     display: block;
@@ -23,11 +20,7 @@
     }
   }
 }
-.tableau {
-  .card {
-    height: 200px;
-  }
-}
+
 .action.main {
   background-image: url(img/action_Purple_front.jpg);
   &[data-state="1"] {

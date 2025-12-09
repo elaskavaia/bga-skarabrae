@@ -37,7 +37,7 @@ class Op_village extends Operation {
     }
 
     public function getArgType() {
-        return "token";
+        return Operation::TTYPE_TOKEN;
     }
 
     public function getUiArgs() {

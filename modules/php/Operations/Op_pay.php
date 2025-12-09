@@ -50,11 +50,13 @@ class Op_pay extends CountableOperation {
     }
 
     function getButtonName() {
-        if ($this->getCount() == 1) {
+        $count = $this->getCount();
+        if ($count == 1) {
             return '${token_div}';
-        }
-        if ($this->getCount() == 2) {
+        } elseif ($count == 2) {
             return '${token_div} ${token_div}';
+        } elseif ($count == 3) {
+            return '${token_div} ${token_div} ${token_div}';
         }
         return clienttranslate('${count} ${token_div}');
     }

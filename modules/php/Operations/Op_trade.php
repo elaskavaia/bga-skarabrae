@@ -28,7 +28,7 @@ class Op_trade extends Operation {
         $type = $this->getType();
         $value = $this->game->tokens->getTrackerValue($owner, $type);
         $value++;
-        $this->game->userAssert("Maximum is reached", $value < 7); // NOI18N
+
         $this->queue("tradeInc");
 
         $state = $this->game->getActionTileSide("action_main_5_{$owner}");

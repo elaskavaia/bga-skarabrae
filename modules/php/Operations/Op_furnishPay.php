@@ -26,7 +26,7 @@ use Bga\Games\skarabrae\Material;
 /** Calculate and push payment for furnish */
 class Op_furnishPay extends Operation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
 
     function getPossibleMoves() {

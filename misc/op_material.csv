@@ -16,6 +16,7 @@ cotag|Count of Tags
 roof|Gain Roof Card
 n_slider|Shift Slider
 night|Night Actions
+feed|Feeding Action
 
 
 #set class=Op_gain

@@ -35,7 +35,9 @@ use function Bga\Games\skarabrae\toJson;
 
 abstract class Operation {
     const ARG_TARGET = "target";
-    const ARG_TOKEN = "token";
+    const TTYPE_TOKEN = "token";
+    const TTYPE_TOKEN_ARRAY = "token_array";
+    const TTYPE_TOKEN_COUNT = "token_count";
     const TTYPE_AUTO = "auto";
     const TARGET_AUTO = "auto";
     const TARGET_CONFIRM = "confirm";
@@ -234,7 +236,7 @@ abstract class Operation {
                 $multi = $target;
                 $res = [];
 
-                if ($ttype == "token_array") {
+                if ($ttype == Operation::TTYPE_TOKEN_ARRAY) {
                     foreach ($multi as $target) {
                         $index = array_search($target, $possible_targets);
                         $this->game->systemAssert("ERR:getCheckedArg:2", $index !== false);

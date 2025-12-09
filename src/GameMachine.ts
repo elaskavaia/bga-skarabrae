@@ -65,6 +65,7 @@ class GameMachine extends Game1Tokens {
     if (opInfo.descriptionOnMyTurn) {
       this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
     }
+    if (opInfo.subtitle) this.setSubPrompt(opInfo.subtitle, opInfo);
     if (opInfo.err) {
       const button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), () => {}, {
         color: "alert",
@@ -347,6 +348,15 @@ class GameMachine extends Game1Tokens {
         skipButton.classList.remove(this.classButtonDisabled);
       }
     }
+  }
+
+  setSubPrompt(text: string, args: any) {
+    if (!text) text = "";
+    const message = this.format_string_recursive(this.getTr(text), args);
+    // have to set after otherwise status update wipes it
+    setTimeout(() => {
+      $("gameaction_status").innerHTML = `<div class="subtitle">${message}</div>`;
+    }, 100);
   }
 
   completeOpInfo(opInfo: OpInfo) {

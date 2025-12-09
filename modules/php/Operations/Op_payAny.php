@@ -27,7 +27,7 @@ use Bga\Games\skarabrae\Material;
 /** Calculate and push payment for trade */
 class Op_payAny extends CountableOperation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
 
     public function requireConfirmation() {

@@ -26,7 +26,7 @@ use Bga\Games\skarabrae\Material;
 /** Standard action */
 class Op_act extends Operation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
 
     function getPossibleMoves() {

@@ -357,13 +357,14 @@ class Game extends Base {
             $this->effect_incVp($color, (int) $tlevel, "game_vp_trade");
             // Craft (VP for turned-over Action Tiles).
             $cards = $this->tokens->getTokensOfTypeInLocation("action", "tableau_{$color}");
+            $ac = 0;
             foreach ($cards as $card => $info) {
                 $state = $info["state"];
                 if ($state) {
-                    $this->effect_incVp($color, (int) 2, "game_vp_action_tiles");
+                    $ac += 2;
                 }
             }
-
+            $this->effect_incVp($color, (int) $ac, "game_vp_action_tiles");
             // Roof, Utensil, and Stone Ball Cards (VP shown on each card).
             $cards = $this->tokens->getTokensOfTypeInLocation("card", "tableau_{$color}");
             foreach ($cards as $card => $info) {
@@ -385,6 +386,18 @@ class Game extends Base {
             $v = $this->tokens->getTrackerValue($color, "slider");
             $vp = $this->getRulesFor("slot_slider_$v", "rb", 0);
             $this->effect_incVp($color, (int) $vp, "game_vp_slider");
+
+            $score = $this->playerScore->get($player_id);
+            $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
+            if ($this->isSolo()) {
+                $goal = 55;
+                if ($score < $goal) {
+                    $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
+                        "points" => $goal,
+                    ]);
+                    $score = $this->playerScore->set($player_id, -1);
+                }
+            }
         }
     }
 

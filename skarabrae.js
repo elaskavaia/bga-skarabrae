@@ -980,6 +980,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         var div = document.createElement("div");
         div.id = tokenId + "_tt_" + this.globlog++;
         this.updateToken(div, { key: tokenId, location: "log", state: 0 });
+        div.title = this.getTokenName(tokenId);
         return div.outerHTML;
     };
     Game1Tokens.prototype.isMarkedForTranslation = function (key, args) {
@@ -1165,6 +1166,8 @@ var GameMachine = /** @class */ (function (_super) {
         if (opInfo.descriptionOnMyTurn) {
             this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
         }
+        if (opInfo.subtitle)
+            this.setSubPrompt(opInfo.subtitle, opInfo);
         if (opInfo.err) {
             var button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), function () { }, {
                 color: "alert",
@@ -1446,6 +1449,15 @@ var GameMachine = /** @class */ (function (_super) {
             }
         }
     };
+    GameMachine.prototype.setSubPrompt = function (text, args) {
+        if (!text)
+            text = "";
+        var message = this.format_string_recursive(this.getTr(text), args);
+        // have to set after otherwise status update wipes it
+        setTimeout(function () {
+            $("gameaction_status").innerHTML = "<div class=\"subtitle\">".concat(message, "</div>");
+        }, 100);
+    };
     GameMachine.prototype.completeOpInfo = function (opInfo) {
         var _a, _b, _c;
         try {
@@ -1620,34 +1632,47 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.syncStorage = function (result) {
         return __awaiter(this, void 0, void 0, function () {
-            var tokenNode, count, type, color, i_1, item, itemNode, location_2, i, itemNode;
+            var tokenId, tokenNode, count, type, color, i_1, item, itemNode, location_2, targetLoc, div, i, itemNode;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         console.log("storage anim", result);
+                        tokenId = result.key;
                         tokenNode = $(result.key);
                         count = result.state;
-                        type = getPart(result.key, 1);
-                        color = getPart(result.key, 2);
+                        type = getPart(tokenId, 1);
+                        color = getPart(tokenId, 2);
                         i_1 = 0;
                         _a.label = 1;
                     case 1:
-                        if (!(i_1 < count)) return [3 /*break*/, 4];
+                        if (!(i_1 < count)) return [3 /*break*/, 5];
                         item = "item_".concat(type, "_").concat(i_1);
                         itemNode = $(item);
-                        if (!!itemNode) return [3 /*break*/, 3];
-                        location_2 = tokenNode;
+                        if (!!itemNode) return [3 /*break*/, 4];
+                        location_2 = tokenId;
                         if (result.place_from)
-                            location_2 = $(result.place_from);
-                        placeHtml("<div id=\"".concat(item, "\" class=\"tracker wooden ").concat(type, "\"></div>"), location_2);
-                        return [4 /*yield*/, this.slideAndPlace(item, "storage_".concat(color), result.animtime === undefined ? this.defaultAnimationDuration : result.animtime)];
+                            location_2 = result.place_from;
+                        if (!$(location_2)) {
+                            console.error("missing location " + location_2);
+                        }
+                        targetLoc = "storage_".concat(color);
+                        div = document.createElement("div");
+                        div.id = item;
+                        this.updateToken(div, { key: tokenId, location: location_2, state: 0 });
+                        div.title = this.getTokenName(tokenId);
+                        if (!(this.bgaAnimationsActive() && !this.inSetup)) return [3 /*break*/, 3];
+                        $(location_2).appendChild(div);
+                        return [4 /*yield*/, this.slideAndPlace(item, targetLoc, result.animtime === undefined ? this.defaultAnimationDuration : result.animtime)];
                     case 2:
                         _a.sent();
-                        _a.label = 3;
+                        return [3 /*break*/, 4];
                     case 3:
+                        $(targetLoc).appendChild(div);
+                        _a.label = 4;
+                    case 4:
                         i_1++;
                         return [3 /*break*/, 1];
-                    case 4:
+                    case 5:
                         i = count;
                         while (i < 100) {
                             itemNode = $("item_".concat(type, "_").concat(i));
@@ -1725,8 +1750,8 @@ var GameXBody = /** @class */ (function (_super) {
             minDurationNoText: 1,
             logger: console.log,
             //handlers: [this, this.tokens],
-            onStart: function (notifName, msg, args) { return _this.statusBar.setTitle(msg, args); },
-            onEnd: function (notifName, msg, args) { return _this.statusBar.setTitle("", args); }
+            onStart: function (notifName, msg, args) { return _this.setSubPrompt(msg, args); },
+            onEnd: function (notifName, msg, args) { return _this.setSubPrompt("", args); }
         });
     };
     GameXBody.prototype.notif_message = function (args) {

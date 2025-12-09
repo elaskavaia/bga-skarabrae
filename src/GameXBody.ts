@@ -151,18 +151,31 @@ class GameXBody extends GameMachine {
   }
   async syncStorage(result: TokenMoveInfo) {
     console.log("storage anim", result);
+    const tokenId = result.key;
     const tokenNode = $(result.key);
     let count = result.state;
-    const type = getPart(result.key, 1);
-    const color = getPart(result.key, 2);
+    const type = getPart(tokenId, 1);
+    const color = getPart(tokenId, 2);
     for (let i = 0; i < count; i++) {
       const item = `item_${type}_${i}`;
       const itemNode = $(item);
       if (!itemNode) {
-        let location = tokenNode;
-        if (result.place_from) location = $(result.place_from);
-        placeHtml(`<div id="${item}" class="tracker wooden ${type}"></div>`, location);
-        await this.slideAndPlace(item, `storage_${color}`, result.animtime === undefined ? this.defaultAnimationDuration : result.animtime);
+        let location: string = tokenId;
+        if (result.place_from) location = result.place_from;
+        if (!$(location)) {
+          console.error("missing location " + location);
+        }
+        let targetLoc = `storage_${color}`;
+        const div = document.createElement("div");
+        div.id = item;
+        this.updateToken(div, { key: tokenId, location: location, state: 0 });
+        div.title = this.getTokenName(tokenId);
+        if (this.bgaAnimationsActive() && !this.inSetup) {
+          $(location).appendChild(div);
+          await this.slideAndPlace(item, targetLoc, result.animtime === undefined ? this.defaultAnimationDuration : result.animtime);
+        } else {
+          $(targetLoc).appendChild(div);
+        }
       }
     }
     let i = count;
@@ -240,8 +253,8 @@ class GameXBody extends GameMachine {
 
       logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
       //handlers: [this, this.tokens],
-      onStart: (notifName, msg, args) => this.statusBar.setTitle(msg, args),
-      onEnd: (notifName, msg, args) => this.statusBar.setTitle("", args)
+      onStart: (notifName, msg, args) => this.setSubPrompt(msg, args),
+      onEnd: (notifName, msg, args) => this.setSubPrompt("", args)
     });
   }
   async notif_message(args: any) {

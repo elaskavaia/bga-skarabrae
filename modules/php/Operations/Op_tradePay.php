@@ -26,13 +26,13 @@ use Bga\Games\skarabrae\Material;
 /** Calculate and push payment for trade */
 class Op_tradePay extends Operation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $value = $this->game->tokens->getTrackerValue($owner, "trade");
-        if ($value >= 6) {
+        if ($value >= 7) {
             return ["q" => Material::MA_ERR_MAX];
         }
         $cost = $this->getCostOp();
@@ -56,8 +56,7 @@ class Op_tradePay extends Operation {
         $value = $this->game->tokens->getTrackerValue($owner, "trade", 0);
         $this->game->systemAssert("", $value >= 0);
         $value += 1;
-        $multi = [0, 2, 3, 4, 4, 5, 5, 6];
-        $coeff = $multi[$value] - $this->getDiscount();
+        $coeff = $this->game->getRulesFor("slot_trade_$value", "rb") - $this->getDiscount();
         return $coeff;
     }
 

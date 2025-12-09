@@ -49,14 +49,14 @@ num|name|r|rb|craft|tooltip|php
 #set name=Trade level {num}
 #set id=slot_trade_{num}
 #set type=
-0||0||nop
-1||1||cow
-2||3||deer
-3||5||sheep
-4||8||rabbit
-5||11||fish
-6||15||2shell
-7||20||2barley
+0||0|0|nop
+1||1|2|cow
+2||3|3|deer
+3||5|4|sheep
+4||8|4|rabbit
+5||11|5|fish
+6||15|5|2shell
+7||20|6|2barley
 
 
 #set name=

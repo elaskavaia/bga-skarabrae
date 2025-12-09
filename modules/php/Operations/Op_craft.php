@@ -25,7 +25,7 @@ use Bga\Games\skarabrae\Material;
 
 class Op_craft extends Operation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
 
     public function getPrompt() {

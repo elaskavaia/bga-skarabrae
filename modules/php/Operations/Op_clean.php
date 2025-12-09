@@ -93,7 +93,7 @@ class Op_clean extends Operation {
     }
 
     function getArgType() {
-        return "token_array";
+        return Operation::TTYPE_TOKEN_ARRAY;
     }
 
     function getPrompt() {

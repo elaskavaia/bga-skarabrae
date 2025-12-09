@@ -22,7 +22,7 @@ turnmarker|Turn Marker|1|wooden|4|tableau_{COLOR}
 tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
 tracker_trade|Trade Marker|1|wooden tracker trade|4|slot_trade_0_{COLOR}
 tracker_hearth|Hearth Limit|1|wooden tracker hearth|4|miniboard_{COLOR}
-tracker_slider|Storage Slider|1|tracker slider|4|tableau_{COLOR}
+tracker_slider|Slider|1|tracker slider|4|tableau_{COLOR}
 
 #3 Boar
 

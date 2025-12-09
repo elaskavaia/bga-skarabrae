@@ -43,6 +43,24 @@
   }
 }
 
+#gameaction_status_wrap {
+  display: block !important;
+
+  img {
+    display: none;
+  }
+}
+.subtitle {
+  font-size: x-small;
+}
+#page-title {
+  min-height: 76px !important;
+  line-height: 24px;
+}
+#pagemaintitle_wrap {
+  min-height: 42px !important;
+}
+
 #oversurface {
   position: absolute;
   width: 100%;

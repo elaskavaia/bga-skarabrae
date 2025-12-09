@@ -592,6 +592,7 @@ class Game1Tokens extends Game0Basics {
     const div = document.createElement("div");
     div.id = tokenId + "_tt_" + this.globlog++;
     this.updateToken(div, { key: tokenId, location: "log", state: 0 });
+    div.title = this.getTokenName(tokenId);
     return div.outerHTML;
   }
 

@@ -1,18 +1,15 @@
 @charset "UTF-8";
 .card,
 .action {
-  height: 30em;
+  height: 200px;
   aspect-ratio: 640/1000;
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5019607843);
 }
 
 .card {
-  border-radius: 10px;
+  border-radius: 5%;
 }
 
-#mainarea .card {
-  height: 200px;
-}
 #mainarea .cardset {
   position: relative;
   display: block;
@@ -21,10 +18,6 @@
   display: inline-block;
   position: relative;
   vertical-align: top;
-}
-
-.tableau .card {
-  height: 200px;
 }
 
 .action.main {
@@ -549,6 +542,10 @@
   background-position: 20% 63%;
 }
 
+.wooden.boar {
+  background-position: 30% 67%;
+}
+
 .wooden.stone {
   background-position: 80% 38%;
 }
@@ -745,6 +742,26 @@
     transform: scale(1) !important;
   }
 }
+#gameaction_status_wrap {
+  display: block !important;
+}
+#gameaction_status_wrap img {
+  display: none;
+}
+
+.subtitle {
+  font-size: x-small;
+}
+
+#page-title {
+  min-height: 76px !important;
+  line-height: 24px;
+}
+
+#pagemaintitle_wrap {
+  min-height: 42px !important;
+}
+
 #oversurface {
   position: absolute;
   width: 100%;

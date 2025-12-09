@@ -25,7 +25,7 @@ use Bga\Games\skarabrae\Material;
 
 class Op_cook extends Operation {
     function getArgType() {
-        return Operation::ARG_TOKEN;
+        return Operation::TTYPE_TOKEN;
     }
     function resolve() {
         $owner = $this->getOwner();
@@ -39,7 +39,7 @@ class Op_cook extends Operation {
         if (!$recipe_rule) {
             throw new \BgaSystemException("$recipe_token => $recipe_rule");
         }
-        $this->queue($recipe_rule);
+        $this->queue($recipe_rule, $this->getOwner(), null, "action_main_2_$owner"); // cook action is the reason
         if ($prevWeight + $weight < $hearth_limit) {
             $this->queue("cook", $this->getOwner(), ["weight" => $prevWeight + $weight]);
         }

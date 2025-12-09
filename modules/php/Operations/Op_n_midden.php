@@ -20,7 +20,9 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
+use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_n_midden extends CountableOperation {
     function getResType() {
@@ -31,35 +33,45 @@ class Op_n_midden extends CountableOperation {
         $owner = $this->getOwner();
         $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
         $canSlider = !$this->game->machine->instanciateOperation("n_slider", $owner)->isVoid();
-        return [$this->game->tokens->getTrackerId($owner, "midden"), $this->game->tokens->getTrackerId($owner, "slider")];
-        if ($canSlider && $current > 0) {
-            return [$this->game->tokens->getTrackerId($owner, "midden"), $this->game->tokens->getTrackerId($owner, "slider")];
-        } elseif ($canSlider) {
-            return [$this->game->tokens->getTrackerId($owner, "slider")];
-        } else {
-            return [$this->game->tokens->getTrackerId($owner, "midden")];
-        }
+        $midden = $this->game->tokens->getTrackerId($owner, "midden");
+        $slider = $this->game->tokens->getTrackerId($owner, "slider");
+        return [
+            $midden => ["q" => $current > 0 ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH],
+            $slider => ["q" => $canSlider ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH],
+        ];
+    }
+
+    function canSkip() {
+        return true;
     }
 
     function resolve() {
         $owner = $this->getOwner();
         $res = $this->getCheckedArg();
+        $count = $this->getCount();
         if (str_starts_with($res, "tracker_slider")) {
             $this->queue("n_slider", $owner, null, $this->getReason());
-            return;
-        }
-
-        $count = $this->getCount();
-        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
-        if ($current < $count) {
-            $count = $current;
-        }
-        if ($count > 0) {
-            $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason(), [
-                "message" => clienttranslate('${player_name} cleans ${token_div} x ${absInc}'),
-            ]);
+            $count = 1;
         } else {
-            $this->notifyMessage(clienttranslate('${player_name} has no midden to clean'));
+            $canSlider = !$this->game->machine->instanciateOperation("n_slider", $owner)->isVoid();
+            if ($canSlider) {
+                $count = 1;
+            }
+            $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+            if ($current < $count) {
+                $count = $current;
+            }
+            if ($count > 0) {
+                $this->game->effect_incCount($this->getOwner(), $this->getResType(), -1, $this->getReason(), [
+                    "message" => clienttranslate('${player_name} cleans ${token_div} x ${absInc}'),
+                ]);
+            } else {
+                $this->notifyMessage(clienttranslate('${player_name} has no midden to clean'));
+            }
+        }
+        $rem = $this->getCount() - $count;
+        if ($rem > 0) {
+            $this->queue("{$rem}n_midden", $owner, null, $this->getReason());
         }
         return;
     }
@@ -73,10 +85,7 @@ class Op_n_midden extends CountableOperation {
     }
 
     public function getPrompt() {
-        if ($this->isOneChoice()) {
-            return parent::getPrompt();
-        }
-        return clienttranslate("Select to clean midden or shift the slider back");
+        return clienttranslate('Select to clean midden or shift the slider back (${count} left)');
     }
 
     public function requireConfirmation() {
