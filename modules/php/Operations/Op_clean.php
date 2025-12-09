@@ -48,7 +48,7 @@ class Op_clean extends Operation {
             $this->game->effect_incCount($this->getOwner(), $name, -1, $this->getReason());
         }
 
-        $mc = [2, 3, 0];
+        $mc = [1, 3, 0];
         if ($maxcount == 4) {
             $mc = [2, 4, 6];
         }

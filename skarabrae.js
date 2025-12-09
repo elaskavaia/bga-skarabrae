@@ -1650,10 +1650,13 @@ var GameXBody = /** @class */ (function (_super) {
                         itemNode = $(item);
                         if (!!itemNode) return [3 /*break*/, 4];
                         location_2 = tokenId;
-                        if (result.place_from)
-                            location_2 = result.place_from;
-                        if (!$(location_2)) {
-                            console.error("missing location " + location_2);
+                        if (result.place_from) {
+                            if (!$(result.place_from)) {
+                                console.error("missing location " + location_2);
+                            }
+                            else {
+                                location_2 = result.place_from;
+                            }
                         }
                         targetLoc = "storage_".concat(color);
                         div = document.createElement("div");

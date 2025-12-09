@@ -23,6 +23,7 @@ namespace Bga\Games\skarabrae;
 use Bga\GameFramework\NotificationMessage;
 use Bga\Games\skarabrae\Common\PGameTokens;
 use Bga\Games\skarabrae\Db\DbTokens;
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\States\GameDispatch;
 
 class Game extends Base {
@@ -76,9 +77,9 @@ class Game extends Base {
         //5. Each player takes 2 Skaill Knives from the Main Supply, placing them to the left of the Slider on their Player Board (each in a separate space of the Storage Area).
         foreach ($players as $player_id => $player) {
             $color = $this->getPlayerColorById((int) $player_id);
+            $this->tokens->tokens->setTokenState("tracker_slider_$color", 1);
             $this->effect_incCount($color, "skaill", 2, "setup");
             $this->effect_incCount($color, "hearth", 4, "setup");
-            $this->effect_incCount($color, "slider", 1, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
@@ -414,6 +415,14 @@ class Game extends Base {
         $color = $this->getCurrentPlayerColor();
         $this->machine->push($type, $color);
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
+    }
+
+    function debug_q() {
+        $rules = "(2n_bone/2n_food):boar";
+        $color = $this->getCurrentPlayerColor();
+        /** @var ComplexOperation */
+        $op = $this->machine->instanciateOperation($rules, $color);
+        $this->debugLog("$rules", $op->delegates[0]->getArgs());
     }
     /**
      * Example of debug function.

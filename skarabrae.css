@@ -338,6 +338,9 @@
   position: relative;
   display: block;
 }
+.tableau .settlers_area {
+  position: relative;
+}
 .tableau .settlers_area > * {
   position: relative;
   display: inline-block;
@@ -348,12 +351,15 @@
   position: relative;
   margin-top: -130%;
 }
+.tableau .cards_area {
+  position: relative;
+  max-width: 486px;
+}
 .tableau .cards_area > * {
   position: relative;
   display: inline-block;
 }
 .tableau .cards_area .card ~ .card {
-  position: relative;
   margin-left: -20%;
 }
 .tableau .action_area {

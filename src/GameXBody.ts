@@ -161,9 +161,12 @@ class GameXBody extends GameMachine {
       const itemNode = $(item);
       if (!itemNode) {
         let location: string = tokenId;
-        if (result.place_from) location = result.place_from;
-        if (!$(location)) {
-          console.error("missing location " + location);
+        if (result.place_from) {
+          if (!$(result.place_from)) {
+            console.error("missing location " + location);
+          } else {
+            location = result.place_from;
+          }
         }
         let targetLoc = `storage_${color}`;
         const div = document.createElement("div");

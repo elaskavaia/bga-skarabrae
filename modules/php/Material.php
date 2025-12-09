@@ -160,6 +160,10 @@ class Material {
         "type" => "feed",
         "name" => clienttranslate("Feeding Action"),
 ],
+    "Op_clutter" => [ 
+        "type" => "clutter",
+        "name" => clienttranslate("Gain Midden"),
+],
     "Op_shell" => [ 
         "class" => "Op_gain",
         "type" => "shell",
@@ -670,7 +674,7 @@ class Material {
         "type" => "action special",
         "location" => "deck_action",
         "craft" => "n_bone,n_hide",
-        "rb" => "nop",
+        "rb" => "2(n_bone/n_food):(boar,skaill)",
         "num" => 7,
         "name" => clienttranslate("Hunt Boar"),
         "r" => "2(n_bone/n_food):boar",
@@ -810,7 +814,7 @@ class Material {
         "rb" => "nop",
         "num" => 8,
         "name" => clienttranslate("Boar Bites"),
-        "r" => "n_boar:2food,hide,bone",
+        "r" => "n_boar:2food,2hide,bone",
         "tooltip" => clienttranslate("Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide."),
 ],
     "slot_trade_0" => [ 

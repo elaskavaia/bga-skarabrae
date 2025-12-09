@@ -22,7 +22,7 @@ namespace Bga\Games\skarabrae\OpCommon;
 
 abstract class ComplexOperation extends CountableOperation {
     /** @var Operation[] */
-    protected array $delegates = [];
+    public array $delegates = [];
 
     function expandOperation($rank = 1) {
         $ranged = $this->isRanged();

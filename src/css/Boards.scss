@@ -45,6 +45,7 @@
     }
   }
   .settlers_area {
+    position: relative;
     & > * {
       position: relative;
       display: inline-block;
@@ -57,12 +58,13 @@
     }
   }
   .cards_area {
+    position: relative;
+    max-width: 486px;
     & > * {
       position: relative;
       display: inline-block;
     }
     .card ~ .card {
-      position: relative;
       margin-left: -20%;
     }
   }

@@ -83,6 +83,7 @@ class Op_act extends Operation {
             if ($op->isVoid()) {
                 $res[$act]["err"] = $op->getError();
                 $res[$act]["q"] = 1;
+                $res[$act]["r"] = $rules;
             }
         }
         return $res;

@@ -61,14 +61,14 @@ class Op_or extends ComplexOperation {
     function resolve() {
         $target = $this->getCheckedArg();
 
-        foreach ($this->delegates as $arg) {
-            if ($arg->getId() == $target) {
-                $this->game->machine->push($arg->getTypeFullExpr(false), $arg->getOwner(), ["reason" => $this->getReason()]);
+        foreach ($this->delegates as $i => $sub) {
+            if ("choice_$i" == $target) {
+                $this->game->machine->push($sub->getTypeFullExpr(false), $sub->getOwner(), ["reason" => $this->getReason()]);
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $this->incMinCount(-1);
                 $this->incCount(-1);
             }
-            $arg->destroy();
+            $sub->destroy();
         }
         $this->game->machine->interrupt(2);
         $this->expandOperation(2);
@@ -77,7 +77,7 @@ class Op_or extends ComplexOperation {
 
     function getPossibleMoves() {
         $res = [];
-        foreach ($this->delegates as $sub) {
+        foreach ($this->delegates as $i => $sub) {
             $err = "";
             if ($sub->isVoid()) {
                 $err = $sub->getError();
@@ -86,10 +86,12 @@ class Op_or extends ComplexOperation {
             if ($err) {
                 $q = 1;
             }
-            $res[$sub->getId()] = [
+
+            $res["choice_$i"] = [
                 "name" => $sub->getButtonName(),
                 "args" => $sub->getExtraArgs(),
                 "err" => $err,
+                "r" => $sub->getTypeFullExpr(),
                 "q" => $q,
             ];
         }

@@ -17,6 +17,7 @@ roof|Gain Roof Card
 n_slider|Shift Slider
 night|Night Actions
 feed|Feeding Action
+clutter|Gain Midden
 
 
 #set class=Op_gain

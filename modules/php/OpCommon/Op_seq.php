@@ -53,7 +53,7 @@ class Op_seq extends ComplexOperation {
         if ($this->isRangedChoice()) {
             return parent::getRangeMoves();
         }
-        foreach ($this->delegates as $i => $sub) {
+        foreach ($this->delegates as $sub) {
             if ($sub->isVoid()) {
                 return ["err" => $sub->getError()];
             }

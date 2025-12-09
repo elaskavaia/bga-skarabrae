@@ -40,7 +40,7 @@ class Op_trade extends Operation {
         } else {
             $rules = "?(n_skaill:$good)";
         }
-        $this->queue($rules);
+        $this->queue($rules, $owner, null, "action_main_5_{$owner}");
         return;
     }
 }

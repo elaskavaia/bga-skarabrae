@@ -19,23 +19,19 @@
 declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
-use Bga\Games\skarabrae\OpCommon\Operation;
 
-class Op_night extends Operation {
-    function auto(): bool {
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
+
+// gain midden
+class Op_clutter extends CountableOperation {
+    function resolve() {
         $color = $this->getOwner();
-        $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "tableau_{$color}");
-        foreach ($cards as $card => $info) {
-            $state = $info["state"];
-            if ($state) {
-                $n = $this->game->getRulesFor($card, "n");
-                if ($n) {
-                    $this->queue("$n", $this->getOwner());
-                }
-            }
-        }
-        $this->queue("feed", $this->getOwner());
-        $this->queue("clutter", $this->getOwner());
-        return true;
+        $v = $this->game->tokens->getTrackerValue($color, "slider");
+        $m = $this->game->getRulesFor("slot_slider_$v", "r", 0);
+
+        $cards = $this->game->tokens->getTokensOfTypeInLocation("card_util", "tableau_{$color}");
+        $count = count($cards);
+        $res = max(0, (int) $m - $count);
+        $this->game->effect_incCount($color, "midden", $res, $this->getOpName());
     }
 }
