@@ -87,6 +87,76 @@
   background-position: 100% 0;
 }
 
+.card.task {
+  background-image: url(img/solo_cards.jpg);
+  background-size: 1000% auto;
+}
+.card.task.card_task_1 {
+  background-position: 0% 100%;
+}
+.card.task.card_task_2 {
+  background-position: 11.1111111111% 100%;
+}
+.card.task.card_task_3 {
+  background-position: 22.2222222222% 100%;
+}
+.card.task.card_task_4 {
+  background-position: 33.3333333333% 100%;
+}
+.card.task.card_task_5 {
+  background-position: 44.4444444444% 100%;
+}
+.card.task.card_task_6 {
+  background-position: 55.5555555556% 100%;
+}
+.card.task.card_task_7 {
+  background-position: 66.6666666667% 100%;
+}
+.card.task.card_task_8 {
+  background-position: 77.7777777778% 100%;
+}
+.card.task.card_task_9 {
+  background-position: 88.8888888889% 100%;
+}
+.card.task.card_task_10 {
+  background-position: 100% 100%;
+}
+
+.card.goal {
+  background-image: url(img/solo_cards.jpg);
+  background-size: 1000% auto;
+}
+.card.goal.card_goal_1 {
+  background-position: 0% 0%;
+}
+.card.goal.card_goal_2 {
+  background-position: 11.1111111111% 0%;
+}
+.card.goal.card_goal_3 {
+  background-position: 22.2222222222% 0%;
+}
+.card.goal.card_goal_4 {
+  background-position: 33.3333333333% 0%;
+}
+.card.goal.card_goal_5 {
+  background-position: 44.4444444444% 0%;
+}
+.card.goal.card_goal_6 {
+  background-position: 55.5555555556% 0%;
+}
+.card.goal.card_goal_7 {
+  background-position: 66.6666666667% 0%;
+}
+.card.goal.card_goal_8 {
+  background-position: 77.7777777778% 0%;
+}
+.card.goal.card_goal_9 {
+  background-position: 88.8888888889% 0%;
+}
+.card.goal.card_goal_10 {
+  background-position: 100% 0%;
+}
+
 .card.setl {
   background-image: url(img/set_cards.jpg);
   background-size: 1500% auto;
@@ -313,7 +383,8 @@
   position: absolute;
   width: 25%;
   height: 10%;
-  top: 15%;
+  top: 13%;
+  left: 3%;
 }
 .tableau .pboard .breakroom > * {
   display: inline-block;
@@ -350,6 +421,14 @@
 .tableau .settlers_area > * .card ~ .card {
   position: relative;
   margin-top: -130%;
+}
+.tableau .tasks_area {
+  position: relative;
+  width: 100%;
+}
+.tableau .tasks_area > * {
+  position: relative;
+  display: inline-block;
 }
 .tableau .cards_area {
   position: relative;
@@ -580,7 +659,7 @@
   aspect-ratio: 2/3;
 }
 .worker[data-state="0"] {
-  opacity: 0.5;
+  opacity: 0;
 }
 .worker.color_ff0000 {
   background-position: 14% 97%;

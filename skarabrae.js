@@ -1166,8 +1166,7 @@ var GameMachine = /** @class */ (function (_super) {
         if (opInfo.descriptionOnMyTurn) {
             this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
         }
-        if (opInfo.subtitle)
-            this.setSubPrompt(opInfo.subtitle, opInfo);
+        this.setSubPrompt(opInfo.subtitle, opInfo);
         if (opInfo.err) {
             var button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), function () { }, {
                 color: "alert",
@@ -1185,18 +1184,13 @@ var GameMachine = /** @class */ (function (_super) {
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
-            var name_2 = paramInfo.name;
             if (div) {
                 if (active)
                     (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
-                if (!name_2)
-                    name_2 = div.dataset.name;
             }
             if (opInfo.ui.buttons == false) {
                 return "continue";
             }
-            if (!name_2)
-                name_2 = target;
             var handler = void 0;
             if (multiselect) {
                 handler = function () { return _this.onMultiCount(target, opInfo); };
@@ -1205,7 +1199,7 @@ var GameMachine = /** @class */ (function (_super) {
                 handler = function () { return _this.resolveAction({ target: target }); };
             }
             var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
-            var button = this_1.statusBar.addActionButton(this_1.getTr(name_2, paramInfo.args), handler, {
+            var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), handler, {
                 color: color,
                 disabled: !active,
                 id: "button_" + target
@@ -1220,6 +1214,10 @@ var GameMachine = /** @class */ (function (_super) {
             if (!active) {
                 button.title = this_1.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo.args);
             }
+            else {
+                if (paramInfo.args.tooltip)
+                    button.title = this_1.getTr(paramInfo.args.tooltip, paramInfo.args);
+            }
         };
         var this_1 = this;
         for (var _i = 0, sortedTargets_1 = sortedTargets; _i < sortedTargets_1.length; _i++) {
@@ -1231,7 +1229,7 @@ var GameMachine = /** @class */ (function (_super) {
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
                 var color = (_d = paramInfo.color) !== null && _d !== void 0 ? _d : "secondary";
-                var button = this_2.statusBar.addActionButton(this_2.getTr(paramInfo.name, paramInfo.args), function () { return _this.bgaPerformAction("action_".concat(target), {}); }, {
+                var button = this_2.statusBar.addActionButton(this_2.getParamPresentation(target, paramInfo), function () { return _this.bgaPerformAction("action_".concat(target), {}); }, {
                     color: color,
                     id: "button_" + target
                 });
@@ -1252,6 +1250,21 @@ var GameMachine = /** @class */ (function (_super) {
         }
         // need a global condition when this can be added
         this.addUndoButton();
+    };
+    GameMachine.prototype.getParamPresentation = function (target, paramInfo) {
+        var _a;
+        var div = $(target);
+        var q = paramInfo.q;
+        var name = paramInfo.name;
+        if (!name && div) {
+            name = div.dataset.name;
+        }
+        if (!name)
+            name = target;
+        if (!paramInfo.args) {
+            paramInfo.args = {};
+        }
+        return this.getTr(name, (_a = paramInfo.args) !== null && _a !== void 0 ? _a : paramInfo);
     };
     GameMachine.prototype.isMultiSelectArgs = function (args) {
         return args.ttype == "token_count" || args.ttype == "token_array";
@@ -1549,7 +1562,7 @@ var GameXBody = /** @class */ (function (_super) {
         var pp = "player_panel_content_".concat(playerInfo.color);
         document.querySelectorAll("#".concat(pp, ">.miniboard")).forEach(function (node) { return node.remove(); });
         placeHtml("<div id='miniboard_".concat(playerInfo.color, "' class='miniboard'></div>"), pp);
-        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
+        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div id='tasks_area_").concat(playerInfo.color, "' class='tasks_area'>\n        </div>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
         for (var i = 0; i <= 6; i++) {
             placeHtml("<div id='slot_furnish_".concat(i, "_").concat(playerInfo.color, "' class='slot_furnish slot_furnish_").concat(i, "'></div>"), "track_furnish_".concat(playerInfo.color));
         }
@@ -1593,6 +1606,11 @@ var GameXBody = /** @class */ (function (_super) {
                 var color = getPart(location, 1);
                 var t = this.getRulesFor(tokenId, "t");
                 result.location = "settlers_col_".concat(color, "_").concat(t);
+            }
+            else if ((tokenId.startsWith("card_task") || tokenId.startsWith("card_goal")) && location.startsWith("tableau")) {
+                var color = getPart(location, 1);
+                result.location = "tasks_area_".concat(color);
+                result.onClick = function (x) { return _this.onToken(x); };
             }
             else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
                 var color = getPart(location, 1);
@@ -1701,11 +1719,11 @@ var GameXBody = /** @class */ (function (_super) {
             case "worker":
                 {
                     var tokenId = tokenInfo.key;
-                    var name_3 = tokenInfo.name;
+                    var name_2 = tokenInfo.name;
                     tokenInfo.tooltip = {
                         log: "${name} (${color_name})",
                         args: {
-                            name: this.getTr(name_3),
+                            name: this.getTr(name_2),
                             color_name: this.getTr(this.getColorName(getPart(tokenId, 2)))
                         }
                     };
@@ -1714,11 +1732,14 @@ var GameXBody = /** @class */ (function (_super) {
             case "card":
                 {
                     var tokenId = tokenInfo.key;
-                    var name_4 = tokenInfo.name;
+                    var name_3 = tokenInfo.name;
                     if (tokenId.startsWith("card_setl")) {
-                        tokenInfo.tooltip = "When gaining this card you must resolve top harvest and you may resolve bottom effect";
+                        tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
                         tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName("env_".concat(tokenInfo.t)));
                         tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+                    }
+                    else if (tokenId.startsWith("card_goal")) {
+                        tokenInfo.tooltip += this.ttSection(undefined, _("If you have NOT met the condition shown on the Focus Card at the end of the game, you lose 5VP."));
                     }
                 }
                 return;

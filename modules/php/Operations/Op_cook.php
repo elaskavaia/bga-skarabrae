@@ -35,7 +35,7 @@ class Op_cook extends Operation {
         $recipe_rule = $this->game->getRulesFor($recipe_token, "r");
         $weight = $this->game->getRulesFor($recipe_token, "craft");
         $prevWeight = $this->getWeight();
-        $hearth_limit = $this->game->tokens->getTrackerValue($owner, "hearth");
+        $hearth_limit = $this->game->getHearthLimit($owner);
         if (!$recipe_rule) {
             throw new \BgaSystemException("$recipe_token => $recipe_rule");
         }
@@ -51,15 +51,29 @@ class Op_cook extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $hearth_limit = $this->game->tokens->getTrackerValue($owner, "hearth");
+        $hearth_limit = $this->game->getHearthLimit($owner);
         $limit = $hearth_limit - $this->getWeight();
         $list = [];
 
-        for ($i = 1; $i <= 8; $i++) {
+        $max = 7;
+        if ($this->game->hasSpecial(7, $owner)) {
+            // boar hunt
+            $max = 8;
+        }
+        for ($i = 1; $i <= $max; $i++) {
             $recipe_token = "recipe_$i";
             $recipe_rule = $this->game->getRulesFor($recipe_token, "r");
             $weight = $this->game->getRulesFor($recipe_token, "craft");
-            $list[$recipe_token] = ["q" => 0, "name" => $this->game->getRulesFor($recipe_token, "name"), "w" => $weight];
+            $item = substr(explode(":", $recipe_rule)[0], 2);
+            $list[$recipe_token] = [
+                "q" => 0,
+                "name" => '${token_div}',
+                "w" => $weight,
+                "args" => [
+                    "token_div" => "tracker_$item",
+                    "tooltip" => $this->game->getTokenName($recipe_token),
+                ],
+            ];
 
             if ($weight > $limit) {
                 $list[$recipe_token]["q"] = Material::MA_ERR_PREREQ;
@@ -75,11 +89,13 @@ class Op_cook extends Operation {
 
     public function getExtraArgs() {
         $owner = $this->getOwner();
-        return parent::getExtraArgs() + ["hearth" => $this->game->tokens->getTrackerValue($owner, "hearth") - $this->getWeight()];
+        $hearth_limit = $this->game->getHearthLimit($owner);
+        $limit = $hearth_limit - $this->getWeight();
+        return parent::getExtraArgs() + ["x" => $limit, "hearth" => $hearth_limit, "token_div" => "tracker_hearth"];
     }
 
     public function getPrompt() {
-        return clienttranslate('Select recipe to cook, you have ${hearth} hearth');
+        return clienttranslate('Select recipe to cook, you have ${x}/${hearth} ${token_div} left');
     }
 
     function canSkip() {

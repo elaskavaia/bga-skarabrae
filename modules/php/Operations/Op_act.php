@@ -73,11 +73,14 @@ class Op_act extends Operation {
                 $res[$act]["worker"] = $anyWorker;
             }
             $state = $this->game->getActionTileSide($act);
-            $rulesField = "r";
+
             if ($state) {
-                $rulesField = "rb";
+                $rules = $this->game->getRulesFor($act, "rb", "nop");
+            } else {
+                $rules = $this->game->getRulesFor($act, "r", "nop");
             }
-            $rules = $this->game->getRulesFor($act, $rulesField, "nop");
+            $this->game->systemAssert("no rules for $act $state", $rules);
+
             $op = $this->game->machine->instanciateOperation($rules, $owner);
 
             if ($op->isVoid()) {

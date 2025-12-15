@@ -49,8 +49,10 @@ class Op_round extends Operation {
         }
 
         $this->notifyMessage(clienttranslate("games deals new village cards for the round"));
+        $num = $this->game->getPlayersNumber();
+        $cardsNum = $num == 4 ? 5 : 4;
         for ($i = 1; $i <= 3; $i++) {
-            $cards = $this->game->tokens->tokens->pickTokensForLocation(4, "deck_village", "cardset_$i"); // XXX 5 for 4 ppl
+            $cards = $this->game->tokens->tokens->pickTokensForLocation($num == 1 ? 5 - $i : $cardsNum, "deck_village", "cardset_$i");
             $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", 0, "", ["place_from" => "deck_village"]);
             $this->queue("turnall", null, ["num" => $i]);
         }

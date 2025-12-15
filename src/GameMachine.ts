@@ -65,7 +65,7 @@ class GameMachine extends Game1Tokens {
     if (opInfo.descriptionOnMyTurn) {
       this.statusBar.setTitle(opInfo.descriptionOnMyTurn, opInfo);
     }
-    if (opInfo.subtitle) this.setSubPrompt(opInfo.subtitle, opInfo);
+    this.setSubPrompt(opInfo.subtitle, opInfo);
     if (opInfo.err) {
       const button = this.statusBar.addActionButton(this.getTr(opInfo.err, opInfo), () => {}, {
         color: "alert",
@@ -85,15 +85,14 @@ class GameMachine extends Game1Tokens {
       const div = $(target);
       const q = paramInfo.q;
       const active = q == 0;
-      let name = paramInfo.name;
+
       if (div) {
         if (active) div.classList?.add(this.classActiveSlot);
-        if (!name) name = div.dataset.name;
       }
       if (opInfo.ui.buttons == false) {
         continue;
       }
-      if (!name) name = target;
+
       let handler: any;
       if (multiselect) {
         handler = () => this.onMultiCount(target, opInfo);
@@ -101,12 +100,13 @@ class GameMachine extends Game1Tokens {
         handler = () => this.resolveAction({ target });
       }
       const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
-      const button = this.statusBar.addActionButton(this.getTr(name, paramInfo.args), handler, {
+      const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), handler, {
         color: color,
         disabled: !active,
         id: "button_" + target
       });
       button.dataset.targetId = target;
+
       if (paramInfo.max !== undefined) {
         button.dataset.max = String(paramInfo.max);
       } else {
@@ -114,6 +114,8 @@ class GameMachine extends Game1Tokens {
       }
       if (!active) {
         button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo.args);
+      } else {
+        if (paramInfo.args.tooltip) button.title = this.getTr(paramInfo.args.tooltip, paramInfo.args);
       }
     }
 
@@ -124,7 +126,7 @@ class GameMachine extends Game1Tokens {
         // skip, whatever TODO: anytime
         const color: any = paramInfo.color ?? "secondary";
         const button = this.statusBar.addActionButton(
-          this.getTr(paramInfo.name, paramInfo.args),
+          this.getParamPresentation(target, paramInfo),
           () => this.bgaPerformAction(`action_${target}`, {}),
           {
             color: color,
@@ -143,6 +145,20 @@ class GameMachine extends Game1Tokens {
 
     // need a global condition when this can be added
     this.addUndoButton();
+  }
+
+  getParamPresentation(target: string, paramInfo: ParamInfo) {
+    const div = $(target);
+    const q = paramInfo.q;
+    let name = paramInfo.name;
+    if (!name && div) {
+      name = div.dataset.name;
+    }
+    if (!name) name = target;
+    if (!paramInfo.args) {
+      paramInfo.args = {};
+    }
+    return this.getTr(name, paramInfo.args ?? paramInfo);
   }
 
   isMultiSelectArgs(args: OpInfo) {

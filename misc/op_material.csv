@@ -18,7 +18,8 @@ n_slider|Shift Slider
 night|Night Actions
 feed|Feeding Action
 clutter|Gain Midden
-
+discard|Discard Settler
+muster|Action Muster
 
 #set class=Op_gain
 

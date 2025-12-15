@@ -61,6 +61,41 @@
     }
   }
 }
+
+.card.task {
+  background-image: url(img/solo_cards.jpg);
+  $cols: 10;
+  $rows: 2;
+
+  background-size: calc($cols * 100%) auto;
+
+  @for $num from 1 through $cols {
+    $i: $num - 1;
+    $col: $i % $cols;
+    $row: calc(($i - $col) / $cols);
+
+    &.card_task_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) 100%;
+    }
+  }
+}
+.card.goal {
+  background-image: url(img/solo_cards.jpg);
+  $cols: 10;
+  $rows: 2;
+
+  background-size: calc($cols * 100%) auto;
+
+  @for $num from 1 through $cols {
+    $i: $num - 1;
+    $col: $i % $cols;
+    $row: calc(($i - $col) / $cols);
+
+    &.card_goal_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) 0%;
+    }
+  }
+}
 .card.setl {
   background-image: url(img/set_cards.jpg);
 

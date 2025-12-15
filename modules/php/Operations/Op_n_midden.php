@@ -62,7 +62,7 @@ class Op_n_midden extends CountableOperation {
                 $count = $current;
             }
             if ($count > 0) {
-                $this->game->effect_incCount($this->getOwner(), $this->getResType(), -1, $this->getReason(), [
+                $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason(), [
                     "message" => clienttranslate('${player_name} cleans ${token_div} x ${absInc}'),
                 ]);
             } else {

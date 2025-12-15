@@ -21,16 +21,15 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
-class Op_discard extends CountableOperation {
+class Op_muster extends CountableOperation {
     function getArgType() {
         return Operation::TTYPE_TOKEN;
     }
 
     public function getPrompt() {
-        return "Select a settler to discard";
+        return "Select an environment to activate";
     }
 
     function getPossibleMoves() {
@@ -60,11 +59,7 @@ class Op_discard extends CountableOperation {
     }
     function resolve() {
         $card = $this->getCheckedArg();
-
-        $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));
-        $rem = $this->getCount() - 1;
-        if ($rem > 0) {
-            $this->queue("$rem" . $this->getType());
-        }
+        $owner = $this->getOwner();
+        $this->game->effect_settlerCard($owner, $card, !!$this->game->getActionTileSide("action_special_5"));
     }
 }

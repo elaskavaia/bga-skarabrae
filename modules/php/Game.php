@@ -79,7 +79,6 @@ class Game extends Base {
             $color = $this->getPlayerColorById((int) $player_id);
             $this->tokens->tokens->setTokenState("tracker_slider_$color", 1);
             $this->effect_incCount($color, "skaill", 2, "setup");
-            $this->effect_incCount($color, "hearth", 4, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
@@ -91,6 +90,15 @@ class Game extends Base {
         /*
          * 8. Solo games only: Shuffle the Focus Cards, placing 1 faceup above the Player Board. Return the rest to box. Shuffle the Task Cards, placing 4 faceup above the Player Board. Return the rest to box.
          */
+        if ($this->isSolo()) {
+            $tokens->shuffle("deck_task");
+            $tokens->shuffle("deck_goal");
+            foreach ($players as $player_id => $player) {
+                $color = $this->getPlayerColorById((int) $player_id);
+                $tokens->pickTokensForLocation(4, "deck_task", "tableau_$color");
+                $tokens->pickTokensForLocation(1, "deck_goal", "tableau_$color");
+            }
+        }
         /*
          * 9. Shuffle all Special Action Tiles and deal 2 to each player. Players must select 1 to keep, returning the other to the box.
          * 1-2 Players: If desired, 3 Special Action Tiles can be dealt to each player instead, with each player returning 2 of them.
@@ -262,13 +270,7 @@ class Game extends Base {
         $data = ["reason" => $card];
         switch ($type) {
             case "setl":
-                $r = $this->getRulesFor($card, "r");
-                $terr = $this->getTerrainNum($card);
-                $ac = $terr + 5;
-                $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
-                $this->machine->push("?($r)", $owner, $data);
-                $this->machine->push("cotag($terr,$gain)", $owner, $data);
-
+                $this->effect_settlerCard($owner, $card);
                 break;
             case "ball":
                 $r = $this->getRulesFor($card, "r");
@@ -279,8 +281,20 @@ class Game extends Base {
             case "util":
                 $r = $this->getRulesFor($card, "r");
                 $this->machine->push("$r", $owner, $data);
-                $this->effect_incCount($owner, "hearth", 1, $card);
                 break;
+        }
+    }
+    function effect_settlerCard(string $owner, string $card, bool $and = true) {
+        $data = ["reason" => $card];
+        $r = $this->getRulesFor($card, "r");
+        $terr = $this->getTerrainNum($card);
+        $ac = $terr + 5;
+        $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
+        if (!$and) {
+            $this->machine->push("cotag($terr,$gain)/$r", $owner, $data);
+        } else {
+            $this->machine->push("?($r)", $owner, $data);
+            $this->machine->push("cotag($terr,$gain)", $owner, $data);
         }
     }
 
@@ -303,6 +317,29 @@ class Game extends Base {
     function getActionTileSide(string $action_tile) {
         $state = $this->tokens->tokens->getTokenState($action_tile, 0);
         return $state;
+    }
+
+    function getHearthLimit(string $color) {
+        $owner = $color;
+        $hearth_limit = 4;
+        $craftState = $this->getActionTileSide("action_main_2_$owner");
+        if ($craftState) {
+            $hearth_limit += 2;
+        }
+        $cards = $this->tokens->getTokensOfTypeInLocation("card_util", "tableau_{$color}");
+        $count = count($cards);
+        $hearth_limit += $count;
+
+        if ($this->hasSpecial(5, $color)) {
+            // muster
+            $hearth_limit += 1;
+        }
+        return $hearth_limit;
+    }
+
+    function hasSpecial(int $num, string $color) {
+        $cards = $this->tokens->getTokensOfTypeInLocation("action_special_$num", "tableau_{$color}");
+        return count($cards) > 0;
     }
 
     function countTags(int $tagtype, string $owner) {

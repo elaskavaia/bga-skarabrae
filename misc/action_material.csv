@@ -26,7 +26,7 @@ num|name|r|rb|craft|tooltip|php
 6|Explore|2(n_bone/n_food):nop|||Draw 2 Village Cards from the top of the Draw Pile. Select 1 to keep and discard the other. If this was a Settler Card, do not resolve the top harvest or bottom effect. If this was a Stone Ball or Utensils Card, gain the immediate Resources as normal. Once flipped, a player can instead draw 3 Village Cards, discarding 2. Also, if they select a Settler Card, they may resolve the bottom effect after placing it. 
 7|Hunt Boar|2(n_bone/n_food):boar|2(n_bone/n_food):(boar,skaill)||Gain 1 Boar. This Action Tile also shows the weight of Boar, and Resources gained when cooked. Players can never have more than 3 Boar at the same time. Once flipped, this action also provides 1 Skaill Knife, and Boars produce 1 more Hide when cooked.
 2|Innovate|2(n_bone/n_food):craft|||Take a Craft Action, spending 2 fewer Resources (ignoring the usual costs). Once flipped, this action also allows a player to spend 1 Food to immediately take the action that was just turned over, just as if they had placed a Worker there.
-5|Muster|2(n_bone/n_food):nop|||Resolve either the top harvest or bottom effect of 1 Environment. This follows all the same rules as when placing a new Settler Card. The player with the Muster Action Tile also has an increase of 1 on their Hearth limit. Once flipped, this action resolves both the top harvest and bottom effect, rather than the choice of either. As with placing new Settlers, the bottom effect is still optional.
+5|Muster|2(n_bone/n_food):muster|2(n_bone/n_food):muster||Resolve either the top harvest or bottom effect of 1 Environment. This follows all the same rules as when placing a new Settler Card. The player with the Muster Action Tile also has an increase of 1 on their Hearth limit. Once flipped, this action resolves both the top harvest and bottom effect, rather than the choice of either. As with placing new Settlers, the bottom effect is still optional.
 3|Recruit|2(n_bone/n_food):nop|||Immediately gain 1 Black Worker. A player can never have more than 3 Black Workers at the same time. Black Workers must be returned at the Round’s end, ready to be recruited again in the next Round. Black Workers act just like regular Small Workers. Once flipped, Action Tiles that have been turned over may now have up to 2 Small Workers placed on them per turn (and still 1 Large Worker as well).
 1|Spin Wool|2(n_bone/n_food):nop|||Gain 1 Spindle Whorl Card. These should be taken from those stored nearby the Player Board during Setup. Spindle Whorl Cards should be placed below the Player Board, much like Roofs, Stone Balls, and Utensils. After doing so, the player immediately gains 1 Wool per Spindle Whorl they have, including from the Card they just placed. Spindle Whorl Cards are worth 1VP at the game’s end. Once flipped, after resolving the Spindle Whorl, a player may optionally spend 3 Wool to gain 1 Roof Card. This is resolved in the same way as gaining Roof Cards from the Clean Action Tile.
 4|Tend Land|2(n_bone/n_food):nop|||Resolve up to 3 different Gather Action Tiles, just as if Workers had been placed there. Alternatively this player may forgo any of these Gather actions to instead clear 1 Midden. As with the Clean action, they may either discard 1 Midden from their Storage Area, or move their Slider 1 column to the left. For example, a player might decide to Gather from the Hills and Fields, and clear 1 Midden, or simply just clear 3 Midden. Once flipped, this action allows players to do this up to 4 times, instead of 3.
@@ -86,3 +86,36 @@ num|name|r|rb|craft|tooltip|php
 8||5|-4
 9||6|-5
 10||7|-6
+
+#set name=Goal Card
+#set type=card goal
+#set id=card_goal_{num}
+1|||||Have 6 or more Settlers from 1 Environment.
+2|||||Have 2 or more full sets of 4 Settlers from different Environments.
+3|||||Have 7 or more Roof Cards.
+4|||||Have only 0-2 Midden in the Storage Area.
+5|||||Advance the Trade Marker 6 or more spaces.
+6|||||Advance the Furnish Marker 5 or more spaces.
+7|||||Have 7 or more Food remaining (after feeding Settlers).
+8|||||Have 8 or more flipped Action Tiles.
+
+#set name=Task Card
+#set type=card task
+#set id=card_task_{num}
+1||n_cow:cook|||Pay 1 Cow to Cook
+2||n_deer:trade|||Pay 1 Deer to Trade
+3||(n_sheep/2n_hide):trade|||Pay 1 Sheep/2 Hide to Trade
+4||2(n_fish/n_rabbit):craft|||Pay 2 Fish/Rabit to Craft
+5||3n_barley:craft|||Pay 3 Barley to Craft
+6||3n_wood:furnish|||Pay 3 Wood to Furnish
+7||3n_stone:clean|||Pay 3 Stone to Clean
+8||3n_wool:clean|||Pay 3 Wool to Clean
+9||3n_seaweed:cook|||Pay 3 Seaweed to Cook
+10||3n_shell:furnish|||Pay 3 Shell to Furnish
+
+
+
+
+
+
+

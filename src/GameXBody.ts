@@ -53,6 +53,8 @@ class GameXBody extends GameMachine {
     placeHtml(
       `
       <div id='tableau_${playerInfo.color}' class='tableau'>
+        <div id='tasks_area_${playerInfo.color}' class='tasks_area'>
+        </div>
         <div class='pboard_area'>
            <div id='pboard_${playerInfo.color}' class='pboard'>
                  <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
@@ -122,6 +124,10 @@ class GameXBody extends GameMachine {
         const color = getPart(location, 1);
         const t = this.getRulesFor(tokenId, "t");
         result.location = `settlers_col_${color}_${t}`;
+      } else if ((tokenId.startsWith("card_task") || tokenId.startsWith("card_goal")) && location.startsWith("tableau")) {
+        const color = getPart(location, 1);
+        result.location = `tasks_area_${color}`;
+        result.onClick = (x) => this.onToken(x);
       } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `cards_area_${color}`;
@@ -217,9 +223,14 @@ class GameXBody extends GameMachine {
           const tokenId = tokenInfo.key;
           const name = tokenInfo.name;
           if (tokenId.startsWith("card_setl")) {
-            tokenInfo.tooltip = "When gaining this card you must resolve top harvest and you may resolve bottom effect";
+            tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
             tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName(`env_${tokenInfo.t}`));
             tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+          } else if (tokenId.startsWith("card_goal")) {
+            tokenInfo.tooltip += this.ttSection(
+              undefined,
+              _("If you have NOT met the condition shown on the Focus Card at the end of the game, you lose 5VP.")
+            );
           }
         }
         return;

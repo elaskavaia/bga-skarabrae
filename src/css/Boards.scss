@@ -16,7 +16,8 @@
       width: 25%;
       height: 10%;
 
-      top: 15%;
+      top: 13%;
+      left: 3%;
       & > * {
         display: inline-block;
       }
@@ -55,6 +56,14 @@
         position: relative;
         margin-top: -130%;
       }
+    }
+  }
+  .tasks_area {
+    position: relative;
+    width: 100%;
+    & > * {
+      position: relative;
+      display: inline-block;
     }
   }
   .cards_area {
