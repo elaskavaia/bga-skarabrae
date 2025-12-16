@@ -121,6 +121,9 @@
 .card.task.card_task_10 {
   background-position: 100% 100%;
 }
+.card.task[data-state="1"] {
+  background-position: 100% 0% !important;
+}
 
 .card.goal {
   background-image: url(img/solo_cards.jpg);
@@ -425,6 +428,10 @@
 .tableau .tasks_area {
   position: relative;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
 }
 .tableau .tasks_area > * {
   position: relative;
@@ -933,6 +940,9 @@ a.bgabutton_white {
 */
 .bgabutton.gg_selected, .bgabutton.gg_selected_alt {
   border: 1px solid blue;
+}
+.bgabutton[data-count]::after {
+  content: "x" attr(data-count);
 }
 
 #undoredo_wrap {

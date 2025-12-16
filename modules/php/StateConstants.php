@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae;
 
 class StateConstants {
-    const STATE_MULTI_PLAYER_TURN = 4;
-
     // states for operaton stack games
     const STATE_PLAYER_TURN_OP = 12;
     const STATE_GAME_DISPATCH = 13;

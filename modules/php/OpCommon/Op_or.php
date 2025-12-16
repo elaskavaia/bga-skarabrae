@@ -59,14 +59,19 @@ class Op_or extends ComplexOperation {
     }
 
     function resolve() {
-        $target = $this->getCheckedArg();
+        $res = $this->getCheckedArg();
+        if ($this->getCount() == 1 || !is_array($res)) {
+            $res = [$res => 1];
+        }
 
         foreach ($this->delegates as $i => $sub) {
-            if ("choice_$i" == $target) {
-                $this->game->machine->push($sub->getTypeFullExpr(false), $sub->getOwner(), ["reason" => $this->getReason()]);
+            $key = "choice_$i";
+            $c = $res[$key] ?? 0;
+            if ($c > 0) {
+                $this->game->machine->push("$c(" . $sub->getTypeFullExpr(false) . ")", $sub->getOwner(), ["reason" => $this->getReason()]);
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
-                $this->incMinCount(-1);
-                $this->incCount(-1);
+                $this->incMinCount(-$c);
+                $this->incCount(-$c);
             }
             $sub->destroy();
         }
@@ -83,8 +88,13 @@ class Op_or extends ComplexOperation {
                 $err = $sub->getError();
             }
             $q = 0;
+            $max = 0;
             if ($err) {
                 $q = 1;
+            } elseif ($sub instanceof CountableOperation) {
+                $count = $this->getCount();
+                $limit = $this->getLimitCount();
+                $max = min($count, $limit);
             }
 
             $res["choice_$i"] = [
@@ -93,14 +103,22 @@ class Op_or extends ComplexOperation {
                 "err" => $err,
                 "r" => $sub->getTypeFullExpr(),
                 "q" => $q,
+                "max" => $max,
             ];
         }
         return $res;
     }
 
+    function getArgType() {
+        if ($this->getCount() > 1) {
+            return Operation::TTYPE_TOKEN_COUNT;
+        }
+        return parent::getArgType();
+    }
+
     function getPrompt() {
         if ($this->getCount() > 1) {
-            return clienttranslate('Choose one of the options ${name} (${count} left)');
+            return clienttranslate('Choose one of the options ${name} (count: ${count})');
         }
         return clienttranslate('Choose one of the options ${name}');
     }

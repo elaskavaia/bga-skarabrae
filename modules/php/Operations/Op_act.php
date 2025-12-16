@@ -31,6 +31,8 @@ class Op_act extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
+        $taskop = null;
+
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         if (count($workers) == 0) {
             return ["err" => clienttranslate("No available workers")];
@@ -89,6 +91,17 @@ class Op_act extends Operation {
                 $res[$act]["r"] = $rules;
             }
         }
+        if ($this->game->isSolo()) {
+            $taskop = $this->game->machine->instanciateOperation("task", $owner);
+            if (!$taskop->noValidTargets()) {
+                return $res + [
+                    "task" => [
+                        "name" => clienttranslate("Task Card"),
+                        "q" => 0,
+                    ],
+                ];
+            }
+        }
         return $res;
     }
     function getUiArgs() {
@@ -98,6 +111,11 @@ class Op_act extends Operation {
         $owner = $this->getOwner();
         $args = $this->getArgs();
         $action_tile = $this->getCheckedArg();
+        if ($action_tile == "task") {
+            $this->queue("task", $owner);
+            $this->queue($this->getType(), $owner);
+            return;
+        }
         $worker = $args["info"][$action_tile]["worker"];
         $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
         $side = $this->game->getActionTileSide($action_tile);
@@ -112,6 +130,13 @@ class Op_act extends Operation {
         $worker = array_shift($workers);
         if ($worker) {
             $this->queue($this->getType(), $owner);
+        } else {
+            if ($this->game->isSolo()) {
+                $taskop = $this->game->machine->instanciateOperation("task", $owner);
+                if (!$taskop->noValidTargets()) {
+                    $this->queue("task", $owner);
+                }
+            }
         }
     }
 

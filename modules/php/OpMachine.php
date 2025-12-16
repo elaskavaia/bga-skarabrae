@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae;
 
 use Bga\Games\skarabrae\Common\OpExpression;
+use Bga\Games\skarabrae\Common\OpExpressionRanged;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\Db\DbMachine;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
 use Bga\Games\skarabrae\OpCommon\UnresolvedOperation;
 use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurnConfirm;
@@ -99,7 +101,21 @@ class OpMachine {
                 $params = $matches[2];
                 $unrangedType = $matches[1];
             }
-            return $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params)->withCounts($expr);
+            $sub = $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params);
+            if ($expr instanceof OpExpressionRanged) {
+                if ($sub instanceof CountableOperation) {
+                    $sub->withCounts($expr);
+                    return $sub;
+                } else {
+                    $operand = ",";
+                    /** @var ComplexOperation */
+                    $op = $this->instanciateCommonOperation("seq", $owner, $data, $id)->withDataField("op", $operand);
+                    $op->withDelegate($sub)->withCounts($expr);
+                    return $op;
+                }
+            } else {
+                return $sub;
+            }
         } catch (Exception $e) {
             throw new BgaSystemException("Cannot instanciate '$type': " . $e->getMessage());
         }
@@ -287,9 +303,10 @@ class OpMachine {
     }
 
     function action_undo(int $player_id, int $move_id = 0) {
-        $op = $this->createTopOperationFromDb($player_id);
-        $op->undo($move_id);
-        $this->push("nop", $this->game->getActivePlayerColor());
+        //$op = $this->createTopOperationFromDb($player_id);
+        //$op->undo($move_id);
+        //$this->push("nop", $this->game->getActivePlayerColor());
+        $this->game->undoRestorePoint();
         return GameDispatch::class;
     }
 }

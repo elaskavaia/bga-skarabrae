@@ -78,6 +78,9 @@
       background-position: calc($col * 100% / ($cols - 1)) 100%;
     }
   }
+  &[data-state="1"] {
+    background-position: 100% 0% !important;
+  }
 }
 .card.goal {
   background-image: url(img/solo_cards.jpg);

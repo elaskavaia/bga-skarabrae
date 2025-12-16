@@ -270,7 +270,7 @@ class Game extends Base {
         $data = ["reason" => $card];
         switch ($type) {
             case "setl":
-                $this->effect_settlerCard($owner, $card);
+                $this->effect_settlerCard($owner, $card, $args["flags"] ?? 3);
                 break;
             case "ball":
                 $r = $this->getRulesFor($card, "r");
@@ -284,17 +284,20 @@ class Game extends Base {
                 break;
         }
     }
-    function effect_settlerCard(string $owner, string $card, bool $and = true) {
+    function effect_settlerCard(string $owner, string $card, int $flags = 3) {
         $data = ["reason" => $card];
         $r = $this->getRulesFor($card, "r");
         $terr = $this->getTerrainNum($card);
         $ac = $terr + 5;
         $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
-        if (!$and) {
+        if ($flags == 1) {
             $this->machine->push("cotag($terr,$gain)/$r", $owner, $data);
-        } else {
+        } elseif ($flags == 3) {
             $this->machine->push("?($r)", $owner, $data);
             $this->machine->push("cotag($terr,$gain)", $owner, $data);
+        } elseif ($flags == 2) {
+            // bottom only
+            $this->machine->push("?($r)", $owner, $data);
         }
     }
 
@@ -425,6 +428,23 @@ class Game extends Base {
             $vp = $this->getRulesFor("slot_slider_$v", "rb", 0);
             $this->effect_incVp($color, (int) $vp, "game_vp_slider");
 
+            // Tasks (negative vp)
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_task", "tableau_$color", 0);
+            $this->effect_incVp($color, -2 * count($cards), "game_vp_tasks");
+            // Goal (negative vp)
+            $cards = $this->tokens->getTokensOfTypeInLocation("card_goal", "tableau_$color", 0);
+            foreach ($cards as $card => $info) {
+                $r = $this->getRulesFor($card, "vp", 0);
+                if ($this->isGoalAchieved($card, $color)) {
+                    $this->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} achieves goal ${token_name}'));
+                } else {
+                    $this->notifyMessage(clienttranslate('${player_name} does not achieve goal ${token_name}'), [
+                        "token_name" => $this->getTokenName($card),
+                    ]);
+                    $this->effect_incVp($color, -5, "game_vp_goals");
+                }
+            }
+
             $score = $this->playerScore->get($player_id);
             $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
             if ($this->isSolo()) {
@@ -437,6 +457,67 @@ class Game extends Base {
                 }
             }
         }
+    }
+
+    function isGoalAchieved(string $card, string $color) {
+        switch ($card) {
+            case "card_goal_1":
+                //Have 6 or more Settlers from 1 Environment.
+                $count = 0;
+                $keys = array_keys($this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$color"));
+                $types = [0, 0, 0, 0, 0];
+                foreach ($keys as $card) {
+                    $num = $this->getTerrainNum($card);
+                    $types[$num]++;
+                }
+                unset($types[0]);
+                foreach ($types as $t => $v) {
+                    if ($v >= 6) {
+                        return true;
+                    }
+                }
+                return false;
+            case "card_goal_2": //Have 2 or more full sets of 4 Settlers from different Environments.
+                $count = 0;
+                $keys = array_keys($this->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$color"));
+                $types = [0, 0, 0, 0, 0];
+                foreach ($keys as $card) {
+                    $num = $this->getTerrainNum($card);
+                    $types[$num]++;
+                }
+                unset($types[0]);
+                $sets = min($types);
+                return $sets >= 2;
+
+            case "card_goal_3": //Have 7 or more Roof Cards.
+                $cards = $this->tokens->getTokensOfTypeInLocation("card_roof%", "tableau_$color");
+                return count($cards) >= 7;
+            case "card_goal_4": //Have only 0-2 Midden in the Storage Area.
+                $count = $this->tokens->getTrackerValue($color, "midden");
+                return $count <= 2;
+            case "card_goal_5": //Advance the Trade Marker 6 or more spaces.
+                $count = $this->tokens->getTrackerValue($color, "trade");
+                return $count >= 6;
+            case "card_goal_6":
+                //Advance the Furnish Marker 5 or more spaces.
+                $count = $this->tokens->getTrackerValue($color, "furnish");
+                return $count >= 5;
+            case "card_goal_7":
+                //Have 7 or more Food remaining (after feeding Settlers).
+                $count = $this->tokens->getTrackerValue($color, "food");
+                return $count >= 7;
+            case "card_goal_8": // craft 8
+                $count = 0;
+                $keys = array_keys($this->tokens->getTokensOfTypeInLocation("action", "tableau_$color"));
+                foreach ($keys as $act) {
+                    $state = $this->getActionTileSide($act);
+                    if ($state) {
+                        $count++;
+                    }
+                }
+                return $count >= 8;
+        }
+        return true;
     }
 
     function getTotalResCount(string $color) {

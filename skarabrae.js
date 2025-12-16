@@ -1155,8 +1155,8 @@ var GameMachine = /** @class */ (function (_super) {
     }
     GameMachine.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         var _this = this;
-        var _a, _b, _c, _d;
-        if (!this.isCurrentPlayerActive()) {
+        var _a, _b, _c, _d, _e;
+        if (!this.bga.players.isCurrentPlayerActive()) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
             return;
@@ -1184,11 +1184,11 @@ var GameMachine = /** @class */ (function (_super) {
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
-            if (div) {
-                if (active)
-                    (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
+            if (div && active) {
+                (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
+                div.dataset.targetOpType = opInfo.type;
             }
-            if (opInfo.ui.buttons == false) {
+            if (opInfo.ui.buttons == false && div) {
                 return "continue";
             }
             var handler = void 0;
@@ -1205,6 +1205,7 @@ var GameMachine = /** @class */ (function (_super) {
                 id: "button_" + target
             });
             button.dataset.targetId = target;
+            button.dataset.targetOpType = opInfo.type;
             if (paramInfo.max !== undefined) {
                 button.dataset.max = String(paramInfo.max);
             }
@@ -1229,7 +1230,12 @@ var GameMachine = /** @class */ (function (_super) {
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
                 var color = (_d = paramInfo.color) !== null && _d !== void 0 ? _d : "secondary";
-                var button = this_2.statusBar.addActionButton(this_2.getParamPresentation(target, paramInfo), function () { return _this.bgaPerformAction("action_".concat(target), {}); }, {
+                var call_1 = (_e = paramInfo.call) !== null && _e !== void 0 ? _e : target;
+                var button = this_2.statusBar.addActionButton(this_2.getParamPresentation(target, paramInfo), function () {
+                    return _this.bga.actions.performAction("action_".concat(call_1), {
+                        data: JSON.stringify({ target: target })
+                    });
+                }, {
                     color: color,
                     id: "button_" + target
                 });
@@ -1238,8 +1244,8 @@ var GameMachine = /** @class */ (function (_super) {
         };
         var this_2 = this;
         // secondary buttons
-        for (var _e = 0, sortedTargets_2 = sortedTargets; _e < sortedTargets_2.length; _e++) {
-            var target = sortedTargets_2[_e];
+        for (var _f = 0, sortedTargets_2 = sortedTargets; _f < sortedTargets_2.length; _f++) {
+            var target = sortedTargets_2[_f];
             _loop_2(target);
         }
         if (opInfo.ui.buttons == false) {
@@ -1361,15 +1367,15 @@ var GameMachine = /** @class */ (function (_super) {
     };
     GameMachine.prototype.resolveAction = function (args) {
         if (args === void 0) { args = {}; }
-        this.bgaPerformAction("action_resolve", {
+        this.bga.actions.performAction("action_resolve", {
             data: JSON.stringify(args)
         });
     };
     GameMachine.prototype.addUndoButton = function () {
         var _this = this;
         var _a;
-        if (!$("button_undo") && !this.isSpectator && this.isCurrentPlayerActive()) {
-            var div = this.statusBar.addActionButton(_("Undo"), function () { return _this.bgaPerformAction("action_undo"); }, {
+        if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && this.bga.players.isCurrentPlayerActive()) {
+            var div = this.statusBar.addActionButton(_("Undo"), function () { return _this.bga.actions.performAction("action_undo"); }, {
                 color: "alert",
                 id: "button_undo"
             });
@@ -1413,10 +1419,16 @@ var GameMachine = /** @class */ (function (_super) {
         var max = Number((_b = cnode.dataset.max) !== null && _b !== void 0 ? _b : 1);
         if (count + 1 > max) {
             cnode.dataset.count = "0";
-            node.classList.remove(this.classSelected);
+            if (node)
+                node.classList.remove(this.classSelected);
+            else
+                cnode.classList.remove(this.classSelected);
         }
         else {
-            node.classList.add(this.classSelected);
+            if (node)
+                node.classList.add(this.classSelected);
+            else
+                cnode.classList.add(this.classSelected);
         }
         this.onMultiSelectionUpdate(opInfo);
         return;
@@ -1612,6 +1624,11 @@ var GameXBody = /** @class */ (function (_super) {
                 result.location = "tasks_area_".concat(color);
                 result.onClick = function (x) { return _this.onToken(x); };
             }
+            else if (location.startsWith("hand")) {
+                var color = getPart(location, 1);
+                result.location = "tasks_area_".concat(color);
+                result.onClick = function (x) { return _this.onToken(x); };
+            }
             else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
                 var color = getPart(location, 1);
                 result.location = "cards_area_".concat(color);
@@ -1709,7 +1726,7 @@ var GameXBody = /** @class */ (function (_super) {
         });
     };
     GameXBody.prototype.updateTokenDisplayInfo = function (tokenInfo) {
-        var _a;
+        var _a, _b;
         // override to generate dynamic tooltips and such
         var mainType = tokenInfo.mainType;
         var token = $(tokenInfo.tokenId);
@@ -1729,10 +1746,22 @@ var GameXBody = /** @class */ (function (_super) {
                     };
                 }
                 return;
+            case "slot":
+                {
+                    var tokenId = tokenInfo.key;
+                    var slotNum = getPart(tokenId, 2);
+                    var name_3 = (_b = tokenInfo.name) !== null && _b !== void 0 ? _b : _("Slot") + " #" + slotNum;
+                    if (tokenId.startsWith("slot_furnish")) {
+                        name_3 = _("Furnish Slot") + " #" + slotNum;
+                    }
+                    tokenInfo.tooltip += "tbd";
+                    tokenInfo.name = name_3;
+                }
+                return;
             case "card":
                 {
                     var tokenId = tokenInfo.key;
-                    var name_3 = tokenInfo.name;
+                    var name_4 = tokenInfo.name;
                     if (tokenId.startsWith("card_setl")) {
                         tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
                         tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName("env_".concat(tokenInfo.t)));

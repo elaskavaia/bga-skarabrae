@@ -27,16 +27,23 @@ class Op_n_slider extends CountableOperation {
         return "slider";
     }
 
+    public function getLimitCount() {
+        $owner = $this->getOwner();
+        $x = $this->game->getTotalResCount($owner);
+        $cap = $this->game->tokens->getTrackerValue($owner, "slider") * 3;
+        if ($x >= $cap) {
+            return 0;
+        }
+        $possible = floor(($cap - $x) / 3);
+        return $possible;
+    }
+
     function getPossibleMoves() {
-        $color = $this->getOwner();
         $count = $this->getCount();
 
-        $x = $this->game->getTotalResCount($color);
-        $cap = $this->game->tokens->getTrackerValue($color, "slider") * 3;
+        $possible = $this->getLimitCount();
 
-        $possible = floor(($cap - $x) / 3);
-
-        if ($x < $cap && $count <= $possible) {
+        if ($count <= $possible) {
             return [$this->getResType()];
         } else {
             return ["err" => clienttranslate("Cannot shift slider")];

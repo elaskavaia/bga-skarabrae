@@ -387,7 +387,7 @@ abstract class Operation {
 
     function getError(): mixed {
         $arg = $this->getArgs();
-        return $arg["err"] ?: "";
+        return $arg["err"] ?? "";
     }
 
     function noValidTargets(): bool {
@@ -566,7 +566,7 @@ abstract class Operation {
     }
 
     function undo() {
-        $this->game->undoRestorePoint();
+        throw new BgaSystemException("Not implemented");
     }
 
     function action_whatever() {
@@ -580,6 +580,7 @@ abstract class Operation {
         if ($num == 0) {
             $state = $this->skip();
         } else {
+            // TODO: support multi-select
             $state = $this->resolve([Operation::ARG_TARGET => $targets[bga_rand(0, $num - 1)]]);
         }
         return $state;

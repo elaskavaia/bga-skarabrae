@@ -20,6 +20,10 @@ feed|Feeding Action
 clutter|Gain Midden
 discard|Discard Settler
 muster|Action Muster
+explore|Action Explore
+task|Complete Task
+draw|Draw Card
+keep|Keep Card
 
 #set class=Op_gain
 

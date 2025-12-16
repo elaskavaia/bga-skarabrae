@@ -128,6 +128,10 @@ class GameXBody extends GameMachine {
         const color = getPart(location, 1);
         result.location = `tasks_area_${color}`;
         result.onClick = (x) => this.onToken(x);
+      } else if (location.startsWith("hand")) {
+        const color = getPart(location, 1);
+        result.location = `tasks_area_${color}`;
+        result.onClick = (x) => this.onToken(x);
       } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `cards_area_${color}`;
@@ -216,6 +220,19 @@ class GameXBody extends GameMachine {
               color_name: this.getTr(this.getColorName(getPart(tokenId, 2)))
             }
           };
+        }
+        return;
+      case "slot":
+        {
+          const tokenId = tokenInfo.key;
+          const slotNum = getPart(tokenId, 2);
+          let name = tokenInfo.name ?? _("Slot") + " #" + slotNum;
+
+          if (tokenId.startsWith("slot_furnish")) {
+            name = _("Furnish Slot") + " #" + slotNum;
+          }
+          tokenInfo.tooltip += "tbd";
+          tokenInfo.name = name;
         }
         return;
       case "card":

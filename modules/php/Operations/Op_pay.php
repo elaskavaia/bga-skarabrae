@@ -29,6 +29,12 @@ class Op_pay extends CountableOperation {
         return substr($type, 2); // n_XYZ -> XYZ
     }
 
+    public function getLimitCount() {
+        $owner = $this->getOwner();
+        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+        return $current;
+    }
+
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());

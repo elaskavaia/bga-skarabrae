@@ -21,28 +21,28 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
-class Op_muster extends CountableOperation {
+/**
+ * Keep a village card, discard the rest
+ */
+class Op_keep extends Operation {
     function getArgType() {
         return Operation::TTYPE_TOKEN;
     }
 
     public function getPrompt() {
-        return clienttranslate("Select an environment to activate");
+        return "Select a card to keep, rest will be discarded";
     }
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner"));
+        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("card", "hand_$owner"));
 
         $res = [];
-        $set = [];
+
         foreach ($keys as $card) {
-            $t = $this->game->getRulesFor($card, "t");
-            $set[$t] = $card;
-        }
-        foreach ($set as $card) {
             $res[$card] = [
                 "name" => $this->game->tokens->getTokenName($card),
                 "q" => 0,
@@ -58,9 +58,11 @@ class Op_muster extends CountableOperation {
         return ["buttons" => false];
     }
     function resolve() {
-        $card = $this->getCheckedArg();
         $owner = $this->getOwner();
-        $and = !!$this->game->getActionTileSide("action_special_5");
-        $this->game->effect_settlerCard($owner, $card, $and ? 3 : 1);
+        $card = $this->getCheckedArg();
+        $state = $this->game->getActionTileSide($this->getReason() ?: "action_special_6");
+        $this->game->effect_gainCard($owner, $card, $this->getReason(), ["flags" => $state ? 2 : 0]);
+        $cards = $this->game->tokens->getTokensOfTypeInLocation("card", "hand_$owner");
+        $this->game->tokens->dbSetTokensLocation($cards, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));
     }
 }

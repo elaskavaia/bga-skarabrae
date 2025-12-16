@@ -9,6 +9,9 @@ use Bga\Games\skarabrae\Material;
  * Tag counter. Count specific tags to change counter of the  operation passed as second arg
  */
 class Op_cotag extends Operation {
+    function requireConfirmation() {
+        return parent::requireConfirmation();
+    }
     function resolve() {
         // counter function, followed by expression
         $owner = $this->getOwner();

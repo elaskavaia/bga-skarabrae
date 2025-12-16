@@ -25,10 +25,25 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 class Op_furnish extends Operation {
     function resolve() {
         $owner = $this->getOwner();
-        $type = $this->getType();
-        $value = $this->game->tokens->getTrackerValue($owner, $type);
-        $this->game->userAssert("Maximum is reached", $value < 6); // NOI18N
-        $this->game->effect_incTrack($owner, $type, 1, $this->getReason());
-        return;
+        if ($this->getDataField("paid", false)) {
+            $type = $this->getType();
+            $value = $this->game->tokens->getTrackerValue($owner, $type);
+            $this->game->userAssert("Maximum is reached", $value < 6); // NOI18N
+            $this->game->effect_incTrack($owner, $type, 1, $this->getReason());
+        } else {
+            $this->queue("furnishPay", $owner, null, $this->getReason());
+            $this->queue("furnish", $owner, ["paid" => true], $this->getReason());
+        }
+    }
+
+    function getPossibleMoves() {
+        if (!$this->getDataField("paid", false)) {
+            $owner = $this->getOwner();
+            $op = $this->game->machine->instanciateOperation("furnishPay", $owner);
+            if ($op->isVoid()) {
+                return ["err" => $op->getError() ?: "err"];
+            }
+        }
+        return parent::getPossibleMoves();
     }
 }

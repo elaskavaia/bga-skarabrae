@@ -13,6 +13,7 @@ use Bga\Games\skarabrae\OpCommon\Op_paygain;
 use Bga\Games\skarabrae\OpCommon\Op_seq;
 use Bga\Games\skarabrae\Operations\Op_cotag;
 use Bga\Games\skarabrae\Operations\Op_craft;
+use Bga\Games\skarabrae\Operations\Op_pay;
 use Bga\Games\skarabrae\OpMachine;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
@@ -367,16 +368,20 @@ final class GameTest extends TestCase {
     }
 
     public function testFurnish() {
-        $rule = "furnishPay:furnish,(barley/skaill)";
+        $rule = "furnish,(barley/skaill)";
         $color = PCOLOR;
         $res = OpExpression::parseExpression($rule);
         $this->assertEquals($rule, OpExpression::str($res));
         $this->game->tokens->createTokens();
         $this->game->effect_incCount(PCOLOR, "hide", 1, "");
         $this->game->machine->push($rule, PCOLOR);
+
+        $this->dispatchOneStep(GameDispatch::class);
+        $this->dispatchOneStep(GameDispatch::class);
+        $this->dispatchOneStep(GameDispatch::class);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
-        $this->assertTrue($op instanceof Op_paygain);
-        $this->assertEquals($rule, $op->getTypeFullExpr());
+        $this->assertTrue($op instanceof Op_pay);
+        $this->assertEquals("n_hide", $op->getTypeFullExpr());
     }
 
     public function testData() {

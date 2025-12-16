@@ -56,7 +56,7 @@ interface OpInfo {
 class GameMachine extends Game1Tokens {
   opInfo: OpInfo;
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
-    if (!this.isCurrentPlayerActive()) {
+    if (!this.bga.players.isCurrentPlayerActive()) {
       if (opInfo?.description) this.statusBar.setTitle(opInfo.description, opInfo);
       return;
     }
@@ -86,10 +86,11 @@ class GameMachine extends Game1Tokens {
       const q = paramInfo.q;
       const active = q == 0;
 
-      if (div) {
-        if (active) div.classList?.add(this.classActiveSlot);
+      if (div && active) {
+        div.classList?.add(this.classActiveSlot);
+        div.dataset.targetOpType = opInfo.type;
       }
-      if (opInfo.ui.buttons == false) {
+      if (opInfo.ui.buttons == false && div) {
         continue;
       }
 
@@ -106,6 +107,7 @@ class GameMachine extends Game1Tokens {
         id: "button_" + target
       });
       button.dataset.targetId = target;
+      button.dataset.targetOpType = opInfo.type;
 
       if (paramInfo.max !== undefined) {
         button.dataset.max = String(paramInfo.max);
@@ -125,9 +127,13 @@ class GameMachine extends Game1Tokens {
       if (paramInfo.sec) {
         // skip, whatever TODO: anytime
         const color: any = paramInfo.color ?? "secondary";
+        const call = (paramInfo as any).call ?? target;
         const button = this.statusBar.addActionButton(
           this.getParamPresentation(target, paramInfo),
-          () => this.bgaPerformAction(`action_${target}`, {}),
+          () =>
+            this.bga.actions.performAction(`action_${call}`, {
+              data: JSON.stringify({ target })
+            }),
           {
             color: color,
             id: "button_" + target
@@ -264,14 +270,14 @@ class GameMachine extends Game1Tokens {
   }
 
   resolveAction(args: any = {}) {
-    this.bgaPerformAction("action_resolve", {
+    this.bga.actions.performAction("action_resolve", {
       data: JSON.stringify(args)
     });
   }
 
   addUndoButton() {
-    if (!$("button_undo") && !this.isSpectator && this.isCurrentPlayerActive()) {
-      const div = this.statusBar.addActionButton(_("Undo"), () => this.bgaPerformAction("action_undo"), {
+    if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && this.bga.players.isCurrentPlayerActive()) {
+      const div = this.statusBar.addActionButton(_("Undo"), () => this.bga.actions.performAction("action_undo"), {
         color: "alert",
         id: "button_undo"
       });
@@ -315,9 +321,11 @@ class GameMachine extends Game1Tokens {
     const max = Number(cnode.dataset.max ?? 1);
     if (count + 1 > max) {
       cnode.dataset.count = "0";
-      node.classList.remove(this.classSelected);
+      if (node) node.classList.remove(this.classSelected);
+      else cnode.classList.remove(this.classSelected);
     } else {
-      node.classList.add(this.classSelected);
+      if (node) node.classList.add(this.classSelected);
+      else cnode.classList.add(this.classSelected);
     }
 
     this.onMultiSelectionUpdate(opInfo);

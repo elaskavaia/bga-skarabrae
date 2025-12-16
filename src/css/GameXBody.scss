@@ -157,6 +157,9 @@ a.bgabutton_white {
   &.gg_selected_alt {
     border: 1px solid blue;
   }
+  &[data-count]::after {
+    content: "x" attr(data-count);
+  }
 }
 
 #undoredo_wrap {

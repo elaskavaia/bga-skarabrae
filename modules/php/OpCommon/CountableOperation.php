@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\OpCommon;
 
 abstract class CountableOperation extends Operation {
+    const RES_INFINITE = 1000;
     function getRangeMoves() {
         $res = [];
         $count = $this->getCount();
@@ -58,6 +59,10 @@ abstract class CountableOperation extends Operation {
 
     function getCount() {
         return $this->getDataField("count", 1);
+    }
+
+    function getLimitCount() {
+        return self::RES_INFINITE;
     }
 
     function getMinCount() {

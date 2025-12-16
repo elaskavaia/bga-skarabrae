@@ -25,7 +25,6 @@ class PlayerTurn extends GameState {
     public function getArgs(int $active_player_id): array {
         // Send playable card ids of the active player privately
         $args = $this->game->machine->getArgs($active_player_id);
-        //XXX send description to other players?
         return [
             "description" => $args["description"] ?? "",
             "_private" => [
