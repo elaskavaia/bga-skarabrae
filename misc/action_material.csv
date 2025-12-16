@@ -90,6 +90,8 @@ num|name|r|rb|craft|tooltip|php
 #set name=Goal Card
 #set type=card goal
 #set id=card_goal_{num}
+#set location=deck_goal
+#set create=1
 1|||||Have 6 or more Settlers from 1 Environment.
 2|||||Have 2 or more full sets of 4 Settlers from different Environments.
 3|||||Have 7 or more Roof Cards.
@@ -102,6 +104,8 @@ num|name|r|rb|craft|tooltip|php
 #set name=Task Card
 #set type=card task
 #set id=card_task_{num}
+#set location=deck_task
+#set create=1
 1||n_cow:?cook|||Pay 1 Cow to Cook
 2||n_deer:?trade|||Pay 1 Deer to Trade
 3||(n_sheep/2n_hide):?trade|||Pay 1 Sheep/2 Hide to Trade
