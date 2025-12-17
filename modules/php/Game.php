@@ -301,6 +301,20 @@ class Game extends Base {
         }
     }
 
+    function effect_cleanCards(mixed $n) {
+        $cards = $this->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
+        $this->tokens->dbSetTokensLocation($cards, "discard_village", 0, "");
+    }
+
+    function getTurnNumber() {
+        if (!$this->globals) {
+            $n = 1; // for testing
+        } else {
+            $n = $this->globals->get(Game::TURNS_NUMBER_GLOBAL);
+        }
+        return $n;
+    }
+
     function getRulesFor($token_id, $field = "r", $default = "") {
         return $this->material->getRulesFor($token_id, $field, $default);
     }
@@ -448,7 +462,7 @@ class Game extends Base {
             $score = $this->playerScore->get($player_id);
             $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
             if ($this->isSolo()) {
-                $goal = 55;
+                $goal = 45;
                 if ($score < $goal) {
                     $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
                         "points" => $goal,
@@ -496,11 +510,11 @@ class Game extends Base {
                 $count = $this->tokens->getTrackerValue($color, "midden");
                 return $count <= 2;
             case "card_goal_5": //Advance the Trade Marker 6 or more spaces.
-                $count = $this->tokens->getTrackerValue($color, "trade");
+                $count = $this->tokens->getTrackerValue($color, "trade") + 1;
                 return $count >= 6;
             case "card_goal_6":
                 //Advance the Furnish Marker 5 or more spaces.
-                $count = $this->tokens->getTrackerValue($color, "furnish");
+                $count = $this->tokens->getTrackerValue($color, "furnish") + 1;
                 return $count >= 5;
             case "card_goal_7":
                 //Have 7 or more Food remaining (after feeding Settlers).
@@ -533,6 +547,13 @@ class Game extends Base {
         $color = $this->getCurrentPlayerColor();
         $this->machine->push($type, $color);
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
+    }
+
+    function debug_specialCard(int $num) {
+        $color = $this->getCurrentPlayerColor();
+        $cards = $this->tokens->getTokensOfTypeInLocation("action_special", "tableau_{$color}");
+        $this->tokens->dbSetTokensLocation($cards, "limbo", 0);
+        $this->tokens->dbSetTokenLocation("action_special_$num", "tableau_{$color}", 0);
     }
 
     function debug_q() {

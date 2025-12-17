@@ -161,6 +161,9 @@ a.bgabutton_white {
     content: "x" attr(data-count);
   }
 }
+.action-button {
+  min-width: 4em;
+}
 
 #undoredo_wrap {
   margin-left: 5px;

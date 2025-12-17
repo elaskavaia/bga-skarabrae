@@ -44,11 +44,8 @@ class Op_tradePay extends Operation {
     }
 
     function getDiscount() {
-        $dis = $this->getDataField("dis", false) || $this->getParams() == "dis";
-        if ($dis) {
-            return 2;
-        }
-        return 0;
+        $dis = $this->getDataField("dis", 0);
+        return $dis;
     }
 
     function getCount() {
@@ -62,6 +59,9 @@ class Op_tradePay extends Operation {
 
     function getCostOp() {
         $n = $this->getCount();
+        if ($n <= 0) {
+            return "nop";
+        }
         return "{$n}payAny";
     }
 

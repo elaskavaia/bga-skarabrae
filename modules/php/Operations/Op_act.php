@@ -83,7 +83,7 @@ class Op_act extends Operation {
             }
             $this->game->systemAssert("no rules for $act $state", $rules);
 
-            $op = $this->game->machine->instanciateOperation($rules, $owner);
+            $op = $this->game->machine->instanciateOperation($rules, $owner, ["reason" => $act]);
 
             if ($op->isVoid()) {
                 $res[$act]["err"] = $op->getError();
@@ -107,6 +107,17 @@ class Op_act extends Operation {
     function getUiArgs() {
         return ["buttons" => false];
     }
+    function activateAction($action_tile) {
+        $owner = $this->getOwner();
+        $side = $this->game->getActionTileSide($action_tile);
+        if ($side) {
+            $r = $this->game->getRulesFor($action_tile, "rb");
+        } else {
+            $r = $this->game->getRulesFor($action_tile, "r");
+        }
+        $this->queue($r, $owner, [], $action_tile);
+    }
+
     function resolve() {
         $owner = $this->getOwner();
         $args = $this->getArgs();
@@ -118,13 +129,8 @@ class Op_act extends Operation {
         }
         $worker = $args["info"][$action_tile]["worker"];
         $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
-        $side = $this->game->getActionTileSide($action_tile);
-        if ($side) {
-            $r = $this->game->getRulesFor($action_tile, "rb");
-        } else {
-            $r = $this->game->getRulesFor($action_tile, "r");
-        }
-        $this->queue($r, $owner, [], $action_tile);
+
+        $this->activateAction($action_tile);
 
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $worker = array_shift($workers);

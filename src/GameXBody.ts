@@ -14,6 +14,8 @@ class GameXBody extends GameMachine {
   private inSetup = true;
   readonly gameTemplate = `
 <div id="thething">
+<div id='selection_area' class='selection_area'></div>
+<div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
 <div id="mainarea">
  <div id="cardset_1" class="cardset cardset_1"></div>
@@ -53,8 +55,6 @@ class GameXBody extends GameMachine {
     placeHtml(
       `
       <div id='tableau_${playerInfo.color}' class='tableau'>
-        <div id='tasks_area_${playerInfo.color}' class='tasks_area'>
-        </div>
         <div class='pboard_area'>
            <div id='pboard_${playerInfo.color}' class='pboard'>
                  <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
@@ -92,6 +92,31 @@ class GameXBody extends GameMachine {
     }
   }
 
+  onEnteringState_PlayerTurn(opInfo: OpInfo) {
+    super.onEnteringState_PlayerTurn(opInfo);
+    switch (opInfo.type) {
+      case "village":
+        // move cards up
+        const divId = `cardset_${(opInfo as any).nturn}`;
+        console.log("village", opInfo);
+        this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+        break;
+    }
+  }
+
+  onLeavingState_PlayerTurn() {
+    const opInfo = this.opInfo;
+    switch (opInfo.type) {
+      case "village":
+        // move cards up
+        console.log("leave village", opInfo);
+        const divId = `cardset_${(opInfo as any).nturn}`;
+
+        this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
+        break;
+    }
+  }
+
   showHelp(id: string) {
     return false;
   }
@@ -126,11 +151,11 @@ class GameXBody extends GameMachine {
         result.location = `settlers_col_${color}_${t}`;
       } else if ((tokenId.startsWith("card_task") || tokenId.startsWith("card_goal")) && location.startsWith("tableau")) {
         const color = getPart(location, 1);
-        result.location = `tasks_area_${color}`;
+        result.location = `tasks_area`;
         result.onClick = (x) => this.onToken(x);
       } else if (location.startsWith("hand")) {
         const color = getPart(location, 1);
-        result.location = `tasks_area_${color}`;
+        result.location = `tasks_area`;
         result.onClick = (x) => this.onToken(x);
       } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
@@ -140,6 +165,8 @@ class GameXBody extends GameMachine {
       result.onEnd = (node) => this.hideCard(node);
     } else if (location.startsWith("deck")) {
       result.onEnd = (node) => this.hideCard(node);
+    } else if (tokenId.startsWith("tableau")) {
+      result.nop = true;
     } else if (tokenId.startsWith("slot")) {
       result.nop = true; // do not move slots
     } else if (tokenId.startsWith("tracker_slider")) {
@@ -160,14 +187,14 @@ class GameXBody extends GameMachine {
     return result;
   }
   async syncStorage(result: TokenMoveInfo) {
-    console.log("storage anim", result);
+    //console.log("storage anim", result);
     const tokenId = result.key;
     const tokenNode = $(result.key);
     let count = result.state;
     const type = getPart(tokenId, 1);
     const color = getPart(tokenId, 2);
     for (let i = 0; i < count; i++) {
-      const item = `item_${type}_${i}`;
+      const item = `item_${tokenId}_${i}`;
       const itemNode = $(item);
       if (!itemNode) {
         let location: string = tokenId;
@@ -193,7 +220,7 @@ class GameXBody extends GameMachine {
     }
     let i = count;
     while (i < 100) {
-      const itemNode = $(`item_${type}_${i}`);
+      const itemNode = $(`item_${tokenId}_${i}`);
       if (itemNode) {
         // remove
         itemNode.remove();

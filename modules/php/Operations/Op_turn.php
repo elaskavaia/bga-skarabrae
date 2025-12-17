@@ -25,6 +25,9 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_turn extends Operation {
     function auto(): bool {
+        $player_id = $this->getPlayerId();
+        $this->game->giveExtraTime($player_id);
+        $this->game->gamestate->changeActivePlayer($player_id);
         $this->queue("village", $this->getOwner());
         $this->queue("act", $this->getOwner());
         $this->queue("recall", $this->getOwner());

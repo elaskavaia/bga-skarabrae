@@ -95,6 +95,7 @@ class Game1Tokens extends Game0Basics {
     if (!this.on_client_state) {
       this.removeAllClasses(this.classSelected, this.classSelectedAlt);
     }
+    super.onLeavingState(stateName);
   }
 
   cancelLocalStateEffects() {

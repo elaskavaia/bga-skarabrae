@@ -29,6 +29,11 @@ class Op_furnishPay extends Operation {
         return Operation::TTYPE_TOKEN;
     }
 
+    function getDiscount() {
+        $dis = $this->getDataField("dis", 0);
+        return $dis;
+    }
+
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $cost = $this->getCost();
@@ -48,6 +53,10 @@ class Op_furnishPay extends Operation {
         $value += 1;
         $multi = [0, 1, 2, 2, 2, 3, 3];
         $coeff = $multi[$value];
+        $coeff -= $this->getDiscount();
+        if ($coeff <= 0) {
+            return "nop";
+        }
         return "{$coeff}n_hide";
     }
 

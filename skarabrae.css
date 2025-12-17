@@ -10,16 +10,6 @@
   border-radius: 5%;
 }
 
-#mainarea .cardset {
-  position: relative;
-  display: block;
-}
-#mainarea .cardset > * {
-  display: inline-block;
-  position: relative;
-  vertical-align: top;
-}
-
 .action.main {
   background-image: url(img/action_Purple_front.jpg);
   background-size: 500% auto;
@@ -368,8 +358,67 @@
   background-position: 57.1428571429% 0;
 }
 
+.tasks_area,
+.selection_area {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+.tasks_area > *,
+.selection_area > * {
+  position: relative;
+  display: inline-block;
+}
+
+#mainarea {
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+#mainarea > .cardset {
+  order: 1;
+}
+#mainarea > .cardset_2 {
+  order: 2;
+}
+#mainarea > .cardset_3 {
+  order: 3;
+}
+
+.cardset {
+  position: relative;
+  display: block;
+  min-width: 250px;
+  min-height: 20px;
+  padding-top: 20px;
+}
+.cardset > * {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+}
+
+.cardset::after {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  width: 100%;
+  height: 20px;
+  content: attr(data-name);
+  z-index: 20;
+}
+
 .tableau {
   position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
 }
 .tableau > * {
   position: relative;
@@ -414,6 +463,9 @@
 }
 .tableau .settlers_area {
   position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 .tableau .settlers_area > * {
   position: relative;
@@ -424,18 +476,6 @@
 .tableau .settlers_area > * .card ~ .card {
   position: relative;
   margin-top: -130%;
-}
-.tableau .tasks_area {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-}
-.tableau .tasks_area > * {
-  position: relative;
-  display: inline-block;
 }
 .tableau .cards_area {
   position: relative;
@@ -943,6 +983,10 @@ a.bgabutton_white {
 }
 .bgabutton[data-count]::after {
   content: "x" attr(data-count);
+}
+
+.action-button {
+  min-width: 4em;
 }
 
 #undoredo_wrap {

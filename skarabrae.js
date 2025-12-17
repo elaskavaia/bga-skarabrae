@@ -491,6 +491,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (!this.on_client_state) {
             this.removeAllClasses(this.classSelected, this.classSelectedAlt);
         }
+        _super.prototype.onLeavingState.call(this, stateName);
     };
     Game1Tokens.prototype.cancelLocalStateEffects = function () {
         //console.log(this.last_server_state);
@@ -1548,7 +1549,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n</div>\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n</div>\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1574,12 +1575,34 @@ var GameXBody = /** @class */ (function (_super) {
         var pp = "player_panel_content_".concat(playerInfo.color);
         document.querySelectorAll("#".concat(pp, ">.miniboard")).forEach(function (node) { return node.remove(); });
         placeHtml("<div id='miniboard_".concat(playerInfo.color, "' class='miniboard'></div>"), pp);
-        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div id='tasks_area_").concat(playerInfo.color, "' class='tasks_area'>\n        </div>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
+        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
         for (var i = 0; i <= 6; i++) {
             placeHtml("<div id='slot_furnish_".concat(i, "_").concat(playerInfo.color, "' class='slot_furnish slot_furnish_").concat(i, "'></div>"), "track_furnish_".concat(playerInfo.color));
         }
         for (var i = 0; i <= 7; i++) {
             placeHtml("<div id='slot_trade_".concat(i, "_").concat(playerInfo.color, "' class='slot_trade slot_trade_").concat(i, "'></div>"), "track_trade_".concat(playerInfo.color));
+        }
+    };
+    GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {
+        _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
+        switch (opInfo.type) {
+            case "village":
+                // move cards up
+                var divId = "cardset_".concat(opInfo.nturn);
+                console.log("village", opInfo);
+                this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+                break;
+        }
+    };
+    GameXBody.prototype.onLeavingState_PlayerTurn = function () {
+        var opInfo = this.opInfo;
+        switch (opInfo.type) {
+            case "village":
+                // move cards up
+                console.log("leave village", opInfo);
+                var divId = "cardset_".concat(opInfo.nturn);
+                this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
+                break;
         }
     };
     GameXBody.prototype.showHelp = function (id) {
@@ -1621,12 +1644,12 @@ var GameXBody = /** @class */ (function (_super) {
             }
             else if ((tokenId.startsWith("card_task") || tokenId.startsWith("card_goal")) && location.startsWith("tableau")) {
                 var color = getPart(location, 1);
-                result.location = "tasks_area_".concat(color);
+                result.location = "tasks_area";
                 result.onClick = function (x) { return _this.onToken(x); };
             }
             else if (location.startsWith("hand")) {
                 var color = getPart(location, 1);
-                result.location = "tasks_area_".concat(color);
+                result.location = "tasks_area";
                 result.onClick = function (x) { return _this.onToken(x); };
             }
             else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
@@ -1639,6 +1662,9 @@ var GameXBody = /** @class */ (function (_super) {
         }
         else if (location.startsWith("deck")) {
             result.onEnd = function (node) { return _this.hideCard(node); };
+        }
+        else if (tokenId.startsWith("tableau")) {
+            result.nop = true;
         }
         else if (tokenId.startsWith("slot")) {
             result.nop = true; // do not move slots
@@ -1671,7 +1697,6 @@ var GameXBody = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log("storage anim", result);
                         tokenId = result.key;
                         tokenNode = $(result.key);
                         count = result.state;
@@ -1681,7 +1706,7 @@ var GameXBody = /** @class */ (function (_super) {
                         _a.label = 1;
                     case 1:
                         if (!(i_1 < count)) return [3 /*break*/, 5];
-                        item = "item_".concat(type, "_").concat(i_1);
+                        item = "item_".concat(tokenId, "_").concat(i_1);
                         itemNode = $(item);
                         if (!!itemNode) return [3 /*break*/, 4];
                         location_2 = tokenId;
@@ -1713,7 +1738,7 @@ var GameXBody = /** @class */ (function (_super) {
                     case 5:
                         i = count;
                         while (i < 100) {
-                            itemNode = $("item_".concat(type, "_").concat(i));
+                            itemNode = $("item_".concat(tokenId, "_").concat(i));
                             if (itemNode) {
                                 // remove
                                 itemNode.remove();

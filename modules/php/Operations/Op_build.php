@@ -25,6 +25,9 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 // special action
 class Op_build extends Operation {
     function resolve() {
-        $this->game->systemAssert("Not implemented");
+        $card = "action_special_8";
+        $state = $this->game->getActionTileSide($card);
+        $dis = $state == 0 ? 2 : 3;
+        $this->queue("trade($dis)/furnish($dis)", $this->getOwner(), null, $card);
     }
 }

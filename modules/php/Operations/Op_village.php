@@ -27,11 +27,7 @@ use function Bga\Games\skarabrae\getPart;
 
 class Op_village extends Operation {
     public function getPossibleMoves() {
-        if (!$this->game->globals) {
-            $n = 1; // XXX
-        } else {
-            $n = $this->game->globals->get(Game::TURNS_NUMBER_GLOBAL);
-        }
+        $n = $this->game->getTurnNumber();
         $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
         return array_keys($cards);
     }
@@ -47,12 +43,24 @@ class Op_village extends Operation {
     public function getPrompt() {
         return clienttranslate('${You} must select a village card');
     }
+
+    public function getDescription() {
+        return clienttranslate('${actplayer} chooses one of the village cards');
+    }
+
+    public function getExtraArgs() {
+        $n = $this->game->getTurnNumber();
+        return parent::getExtraArgs() + ["nturn" => $n];
+    }
     function resolve() {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
 
         $this->game->effect_gainCard($owner, $card, $this->getOpId());
-
+        if ($this->game->isSolo()) {
+            $n = $this->game->getTurnNumber();
+            $this->game->effect_cleanCards($n);
+        }
         return;
     }
 }

@@ -43,7 +43,8 @@ class Op_trade extends Operation {
             }
             $this->queue($rules, $owner, null, "action_main_5_{$owner}");
         } else {
-            $this->queue("tradePay", $owner, null, $this->getReason());
+            $param = (int) $this->getParams() ?: 0;
+            $this->queue("tradePay", $owner, ["dis" => $param], $this->getReason());
             $this->queue("trade", $owner, ["paid" => true], $this->getReason());
         }
     }
@@ -51,7 +52,8 @@ class Op_trade extends Operation {
     function getPossibleMoves() {
         if (!$this->getDataField("paid", false)) {
             $owner = $this->getOwner();
-            $op = $this->game->machine->instanciateOperation("tradePay", $owner);
+            $param = (int) $this->getParams() ?: 0;
+            $op = $this->game->machine->instanciateOperation("tradePay", $owner, ["dis" => $param]);
             if ($op->isVoid()) {
                 return ["err" => $op->getError() ?: "err"];
             }

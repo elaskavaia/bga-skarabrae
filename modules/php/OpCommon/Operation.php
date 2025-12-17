@@ -162,7 +162,7 @@ abstract class Operation {
         return $this->getDataField("params", null);
     }
 
-    function getParam(int $index = 0, string $default = "") {
+    function getParam(int $index = 0, ?string $default = "") {
         $params = $this->getParams();
         if (!$params) {
             return $default;
@@ -487,7 +487,9 @@ abstract class Operation {
         return PlayerTurn::class;
     }
 
-    /** Automatic action perform in game state, if cannot be done automatically turn one of player's states */
+    /** Automatic action perform in game state, if cannot be done automatically turn one of player's states
+     * Return false to enter player state
+     */
     function auto(): bool {
         if (!$this->canResolveAutomatically()) {
             return false;

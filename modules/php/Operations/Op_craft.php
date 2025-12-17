@@ -60,7 +60,12 @@ class Op_craft extends Operation {
                 $res[$card]["q"] = Material::MA_ERR_NOT_APPLICABLE;
                 continue;
             }
+
             $cost = $this->game->getRulesFor($card, "craft");
+            $res[$card]["cost"] = $cost;
+            if ($this->isPaid()) {
+                continue;
+            }
             $this->game->systemAssert("Cannot determine cost for $card", $cost);
             $op = $this->game->machine->instanciateOperation($cost, $owner);
 
@@ -68,13 +73,12 @@ class Op_craft extends Operation {
                 $res[$card]["err"] = $op->getError();
                 $res[$card]["q"] = 1;
             }
-            $res[$card]["cost"] = $cost;
         }
         return $res;
     }
 
     function isPaid() {
-        return $this->getDataField("paid", false) || $this->getParams() == "paid";
+        return $this->getDataField("paid", false) || $this->getParams() == "paid" || $this->getReason() == "action_special_2";
     }
     function getCard() {
         return $this->getDataField("card", false);
@@ -100,8 +104,12 @@ class Op_craft extends Operation {
     }
     function resolve() {
         if ($this->isPaid()) {
-            $card = $this->getDataField("card");
+            $card = $this->getCheckedArg();
+            $this->game->systemAssert("Cannot determine card", $card);
             $this->game->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} crafts ${token_name}'));
+            if ($this->getReason() == "action_special_2" && $this->game->getActionTileSide("action_special_2")) {
+                $this->queue("?(n_food:activate($card))", $this->getOwner(), null, $this->getReason());
+            }
         } else {
             $card = $this->getCheckedArg();
             $cost = $this->game->getRulesFor($card, "craft", "");

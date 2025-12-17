@@ -24,6 +24,7 @@ explore|Action Explore
 task|Complete Task
 draw|Draw Card
 keep|Keep Card
+activate|Activate Action
 
 #set class=Op_gain
 

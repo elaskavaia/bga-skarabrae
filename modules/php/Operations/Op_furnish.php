@@ -31,7 +31,8 @@ class Op_furnish extends Operation {
             $this->game->userAssert("Maximum is reached", $value < 6); // NOI18N
             $this->game->effect_incTrack($owner, $type, 1, $this->getReason());
         } else {
-            $this->queue("furnishPay", $owner, null, $this->getReason());
+            $param = (int) $this->getParams() ?: 0;
+            $this->queue("furnishPay", $owner, ["dis" => $param], $this->getReason());
             $this->queue("furnish", $owner, ["paid" => true], $this->getReason());
         }
     }
@@ -39,7 +40,8 @@ class Op_furnish extends Operation {
     function getPossibleMoves() {
         if (!$this->getDataField("paid", false)) {
             $owner = $this->getOwner();
-            $op = $this->game->machine->instanciateOperation("furnishPay", $owner);
+            $param = (int) $this->getParams() ?: 0;
+            $op = $this->game->machine->instanciateOperation("furnishPay", $owner, ["dis" => $param]);
             if ($op->isVoid()) {
                 return ["err" => $op->getError() ?: "err"];
             }

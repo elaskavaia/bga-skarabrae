@@ -188,6 +188,10 @@ class Material {
         "type" => "keep",
         "name" => clienttranslate("Keep Card"),
 ],
+    "Op_activate" => [ 
+        "type" => "activate",
+        "name" => clienttranslate("Activate Action"),
+],
     "Op_shell" => [ 
         "class" => "Op_gain",
         "type" => "shell",
@@ -427,150 +431,156 @@ class Material {
 ],
             /* --- gen php end op_material --- */
             /* --- gen php begin token_material --- */
-            // # create is one of the numbers
-            // # 0 - do not create token
-            // # 1 - the token with id $id will be created, count must be set to 1 if used
-            // # 2 - the token with id "${id}_{INDEX}" will be created, using count starting from 1
-            // # 3 - the token with id "${id}_{COLOR}_{INDEX}" will be created, using count, per player
-            // # 4 - the token with id "${id}_{COLOR}" for each player will be created, count must be 1
-            // # 5 - the token with id "${id}_{INDEX}_{COLOR}" for each player will be created
-            // # 6 - custom placeholders
-            // #4 Large Workers (1 per player colour)
-            "worker_1" => [
-                "name" => clienttranslate("Large Worker"),
-                "count" => 1,
-                "type" => "worker wooden large",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            // #15 Small Workers (3 Black + 3 per player colour)
-            "worker_2" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_3" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_4" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_{INDEX}_000000" => [
-                "name" => clienttranslate("Small Black Worker"),
-                "count" => 3,
-                "type" => "worker wooden small color_000000",
-                "create" => 6,
-                "location" => "supply",
-                "start" => 2,
-            ],
-            // #4 Turn Markers (1 per player colour)
-            "turnmarker" => [
-                "name" => clienttranslate("Turn Marker"),
-                "count" => 1,
-                "type" => "wooden",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            // #4 Furnish Markers
-            // #4 Trade Markers
-            "tracker_furnish" => [
-                "name" => clienttranslate("Furnish Marker"),
-                "count" => 1,
-                "type" => "wooden tracker furnish",
-                "create" => 4,
-                "location" => "slot_furnish_0_{COLOR}",
-            ],
-            "tracker_trade" => [
-                "name" => clienttranslate("Trade Marker"),
-                "count" => 1,
-                "type" => "wooden tracker trade",
-                "create" => 4,
-                "location" => "slot_trade_0_{COLOR}",
-            ],
-            "tracker_slider" => [
-                "name" => clienttranslate("Slider"),
-                "count" => 1,
-                "type" => "tracker slider",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "tracker_hearth" => [
-                "name" => clienttranslate("Hearth Limit"),
-                "count" => 0,
-                "type" => "wooden tracker hearth",
-                "create" => 0,
-                "location" => "miniboard_{COLOR}",
-            ],
-            // #cards
-            // #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
-            "card_roof" => [
-                "name" => clienttranslate("Village Roof Card"),
-                "count" => 8,
-                "type" => "card village roof",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 2,
-            ],
-            "card_ball" => [
-                "name" => clienttranslate("Village Stone Ball Card"),
-                "count" => 8,
-                "type" => "card village ball",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 2,
-                "r" => "skaill",
-            ],
-            "card_util" => [
-                "name" => clienttranslate("Village Utencil Card"),
-                "count" => 4,
-                "type" => "card village util",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 1,
-                "r" => "hide",
-            ],
-            "card_roofi" => [
-                "name" => clienttranslate("Roof Card"),
-                "count" => 40,
-                "type" => "card roofi",
-                "create" => 2,
-                "location" => "deck_roof",
-                "vp" => 1,
-            ],
-            "card_spin" => [
-                "name" => clienttranslate("Spindle Card"),
-                "count" => 10,
-                "type" => "card spin",
-                "create" => 2,
-                "location" => "deck_spin",
-                "vp" => 1,
-                "r" => "wool",
-            ],
-            // #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
-            // #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5
-            // #create=0
-            "env_1" => [
-                "name" => clienttranslate("Shore"),
-            ],
-            "env_2" => [
-                "name" => clienttranslate("Hills"),
-            ],
-            "env_3" => [
-                "name" => clienttranslate("Thickets"),
-            ],
-            "env_4" => [
-                "name" => clienttranslate("Fields"),
-            ],
+// # create is one of the numbers
+// # 0 - do not create token
+// # 1 - the token with id $id will be created, count must be set to 1 if used
+// # 2 - the token with id "${id}_{INDEX}" will be created, using count starting from 1
+// # 3 - the token with id "${id}_{COLOR}_{INDEX}" will be created, using count, per player
+// # 4 - the token with id "${id}_{COLOR}" for each player will be created, count must be 1
+// # 5 - the token with id "${id}_{INDEX}_{COLOR}" for each player will be created
+// # 6 - custom placeholders
+// #4 Large Workers (1 per player colour)
+    "worker_1" => [ 
+        "name" => clienttranslate("Large Worker"),
+        "count" => 1,
+        "type" => "worker wooden large",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+// #15 Small Workers (3 Black + 3 per player colour)
+    "worker_2" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_3" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_4" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_{INDEX}_000000" => [ 
+        "name" => clienttranslate("Small Black Worker"),
+        "count" => 3,
+        "type" => "worker wooden small color_000000",
+        "create" => 6,
+        "location" => "supply",
+        'start'=>2,
+],
+// #4 Turn Markers (1 per player colour)
+    "turnmarker" => [ 
+        "name" => clienttranslate("Turn Marker"),
+        "count" => 1,
+        "type" => "wooden",
+        "create" => 4,
+        "location" => "limbo",
+],
+// #4 Furnish Markers
+// #4 Trade Markers
+    "tracker_furnish" => [ 
+        "name" => clienttranslate("Furnish Marker"),
+        "count" => 1,
+        "type" => "wooden tracker furnish",
+        "create" => 4,
+        "location" => "slot_furnish_0_{COLOR}",
+],
+    "tracker_trade" => [ 
+        "name" => clienttranslate("Trade Marker"),
+        "count" => 1,
+        "type" => "wooden tracker trade",
+        "create" => 4,
+        "location" => "slot_trade_0_{COLOR}",
+],
+    "tracker_slider" => [ 
+        "name" => clienttranslate("Slider"),
+        "count" => 1,
+        "type" => "tracker slider",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "tracker_hearth" => [ 
+        "name" => clienttranslate("Hearth Limit"),
+        "count" => 0,
+        "type" => "wooden tracker hearth",
+        "create" => 0,
+        "location" => "miniboard_{COLOR}",
+],
+// #cards
+// #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
+    "card_roof" => [ 
+        "name" => clienttranslate("Village Roof Card"),
+        "count" => 8,
+        "type" => "card village roof",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>2,
+],
+    "card_ball" => [ 
+        "name" => clienttranslate("Village Stone Ball Card"),
+        "count" => 8,
+        "type" => "card village ball",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>2,'r'=>'skaill',
+],
+    "card_util" => [ 
+        "name" => clienttranslate("Village Utencil Card"),
+        "count" => 4,
+        "type" => "card village util",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>1,'r'=>'hide',
+],
+    "card_roofi" => [ 
+        "name" => clienttranslate("Roof Card"),
+        "count" => 40,
+        "type" => "card roofi",
+        "create" => 2,
+        "location" => "deck_roof",
+        'vp'=>1,
+],
+    "card_spin" => [ 
+        "name" => clienttranslate("Spindle Card"),
+        "count" => 10,
+        "type" => "card spin",
+        "create" => 2,
+        "location" => "deck_spin",
+        'vp'=>1,'r'=>'wool',
+],
+// #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
+// #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5
+// #create=0
+    "env_1" => [ 
+        "name" => clienttranslate("Shore"),
+],
+    "env_2" => [ 
+        "name" => clienttranslate("Hills"),
+],
+    "env_3" => [ 
+        "name" => clienttranslate("Thickets"),
+],
+    "env_4" => [ 
+        "name" => clienttranslate("Fields"),
+],
+    "cardset_1" => [ 
+        "name" => clienttranslate("Turn 1 Cards"),
+],
+    "cardset_2" => [ 
+        "name" => clienttranslate("Turn 2 Cards"),
+],
+    "cardset_3" => [ 
+        "name" => clienttranslate("Turn 3 Cards"),
+],
             /* --- gen php end token_material --- */
             /* --- gen php begin action_material --- */
 // #general actions
@@ -679,7 +689,7 @@ class Material {
         "type" => "action special",
         "location" => "deck_action",
         "craft" => "n_bone,n_hide",
-        "rb" => "nop",
+        "rb" => "2(n_bone/n_food):build",
         "num" => 8,
         "name" => clienttranslate("Build"),
         "r" => "2(n_bone/n_food):build",
@@ -712,7 +722,7 @@ class Material {
         "type" => "action special",
         "location" => "deck_action",
         "craft" => "n_bone,n_hide",
-        "rb" => "nop",
+        "rb" => "2(n_bone/n_food):craft",
         "num" => 2,
         "name" => clienttranslate("Innovate"),
         "r" => "2(n_bone/n_food):craft",

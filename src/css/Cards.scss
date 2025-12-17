@@ -9,17 +9,6 @@
 .card {
   border-radius: 5%;
 }
-#mainarea {
-  .cardset {
-    position: relative;
-    display: block;
-    & > * {
-      display: inline-block;
-      position: relative;
-      vertical-align: top;
-    }
-  }
-}
 
 .action.main {
   background-image: url(img/action_Purple_front.jpg);

@@ -16,13 +16,14 @@ worker_3|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
 worker_4|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
 worker_{INDEX}_000000|Small Black Worker|3|worker wooden small color_000000|6|supply|'start'=>2
 #4 Turn Markers (1 per player colour) 
-turnmarker|Turn Marker|1|wooden|4|tableau_{COLOR}
+turnmarker|Turn Marker|1|wooden|4|limbo
 #4 Furnish Markers 
 #4 Trade Markers 
 tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
 tracker_trade|Trade Marker|1|wooden tracker trade|4|slot_trade_0_{COLOR}
 tracker_slider|Slider|1|tracker slider|4|tableau_{COLOR}
 tracker_hearth|Hearth Limit|0|wooden tracker hearth|0|miniboard_{COLOR}
+
 
 #cards
 #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
@@ -40,6 +41,10 @@ env_1|Shore
 env_2|Hills
 env_3|Thickets
 env_4|Fields
+
+cardset_1|Turn 1 Cards
+cardset_2|Turn 2 Cards
+cardset_3|Turn 3 Cards
 
 
 

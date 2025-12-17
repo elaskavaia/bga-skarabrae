@@ -24,19 +24,18 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 
 class Op_turnall extends Operation {
-    function auto(): bool {
+    function resolve() {
         $curturn = $this->game->globals->inc(Game::TURNS_NUMBER_GLOBAL, 1);
         $players_basic = $this->game->loadPlayersBasicInfos();
         // schedle player in order of disk TODO
+        $this->notifyMessage(clienttranslate('turn ${turn}'), ["turn" => $curturn]);
         foreach ($players_basic as $player_info) {
             $color = $player_info["player_color"];
             $this->queue("turn", $color);
         }
         if ($curturn > 1) {
             $n = $curturn - 1;
-            $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
-            $this->game->tokens->dbSetTokensLocation($cards, "discard_village");
+            $this->game->effect_cleanCards($n);
         }
-        return true;
     }
 }
