@@ -13,6 +13,7 @@
 }
 
 #mainarea {
+  width: 100%;
   padding-top: 20px;
   display: flex;
   justify-content: center;
@@ -50,6 +51,7 @@
   height: 20px;
   content: attr(data-name);
   z-index: 20;
+  color: #999;
 }
 .tableau {
   position: relative;

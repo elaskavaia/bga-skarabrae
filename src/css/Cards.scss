@@ -118,7 +118,11 @@
   background-position: calc(2 * 100% / 7) 0;
   background-size: 800% auto;
 }
-
+.card.spin {
+  background-image: url(img/nset_cards.jpg);
+  background-position: calc(6 * 100% / 7) 0;
+  background-size: 800% auto;
+}
 .card.util {
   background-image: url(img/nset_cards.jpg);
   background-size: 800% auto;

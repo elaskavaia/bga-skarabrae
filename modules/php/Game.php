@@ -256,6 +256,8 @@ class Game extends Base {
             $args + ["reason" => $reason, "place_from" => $from],
             $this->getPlayerIdByColor($color)
         );
+
+        return $tokens;
     }
 
     function effect_gainCard(string $color, string $card, string $reason = "", array $args = []) {
@@ -275,6 +277,10 @@ class Game extends Base {
             case "ball":
                 $r = $this->getRulesFor($card, "r");
                 $this->machine->push("cotag(5,$r)", $owner, $data);
+                break;
+            case "spin":
+                $r = $this->getRulesFor($card, "r");
+                $this->machine->push("cotag(6,$r)", $owner, $data);
                 break;
             case "roof":
                 break;

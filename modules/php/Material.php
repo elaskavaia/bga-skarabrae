@@ -755,10 +755,10 @@ class Material {
         "type" => "action special",
         "location" => "deck_action",
         "craft" => "n_bone,n_hide",
-        "rb" => "nop",
+        "rb" => "2(n_bone/n_food):spin",
         "num" => 1,
         "name" => clienttranslate("Spin Wool"),
-        "r" => "2(n_bone/n_food):nop",
+        "r" => "2(n_bone/n_food):spin",
         "tooltip" => clienttranslate("Gain 1 Spindle Whorl Card. These should be taken from those stored nearby the Player Board during Setup. Spindle Whorl Cards should be placed below the Player Board, much like Roofs, Stone Balls, and Utensils. After doing so, the player immediately gains 1 Wool per Spindle Whorl they have, including from the Card they just placed. Spindle Whorl Cards are worth 1VP at the game's end. Once flipped, after resolving the Spindle Whorl, a player may optionally spend 3 Wool to gain 1 Roof Card. This is resolved in the same way as gaining Roof Cards from the Clean Action Tile."),
 ],
     "action_special_4" => [ 
