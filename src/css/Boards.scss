@@ -17,6 +17,7 @@
   padding-top: 20px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
   & > .cardset {
@@ -59,12 +60,23 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
+  margin-top: 5px;
+  padding-top: 32px; // player name
 
   $height: 400px;
   & > * {
     position: relative;
     display: inline-block;
     vertical-align: top;
+  }
+  &::after {
+    content: attr(data-player-name);
+    position: absolute;
+    width: 100%;
+    height: 32px;
+    top: 10px;
+    left: 10px;
+    color: var(--player-color);
   }
   .pboard {
     aspect-ratio: 332 / 273;
@@ -73,7 +85,7 @@
     height: $height;
     .breakroom {
       position: absolute;
-      width: 25%;
+      width: 40%;
       height: 10%;
 
       top: 13%;

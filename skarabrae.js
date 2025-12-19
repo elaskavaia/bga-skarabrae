@@ -244,7 +244,7 @@ var Game0Basics = /** @class */ (function (_super) {
         if (log && args && !args.processed) {
             args.processed = true;
             if (!args.player_id) {
-                args.player_id = this.getActivePlayerId();
+                args.player_id = this.bga.players.getActivePlayerId();
             }
             if (args.player_id && !args.player_name) {
                 args.player_name = this.gamedatas.players[args.player_id].name;
@@ -1575,7 +1575,7 @@ var GameXBody = /** @class */ (function (_super) {
         var pp = "player_panel_content_".concat(playerInfo.color);
         document.querySelectorAll("#".concat(pp, ">.miniboard")).forEach(function (node) { return node.remove(); });
         placeHtml("<div id='miniboard_".concat(playerInfo.color, "' class='miniboard'></div>"), pp);
-        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau'>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
+        placeHtml("\n      <div id='tableau_".concat(playerInfo.color, "' class='tableau' data-player-name='").concat(playerInfo.name, "' style='--player-color: #").concat(playerInfo.color, "'>\n        <div class='pboard_area'>\n           <div id='pboard_").concat(playerInfo.color, "' class='pboard'>\n                 <div id='track_furnish_").concat(playerInfo.color, "' class='track_furnish track'></div>\n                 <div id='track_trade_").concat(playerInfo.color, "' class='track_trade track'></div>\n                 <div id='breakroom_").concat(playerInfo.color, "' class='breakroom'></div>\n                 <div id='storage_").concat(playerInfo.color, "' class='storage'></div>\n           </div>\n           <div id='cards_area_").concat(playerInfo.color, "' class='cards_area'>\n           </div>\n         </div>\n         <div class='village_area'>\n            <div id='action_area_").concat(playerInfo.color, "' class='action_area'></div>\n            <div id='settlers_area_").concat(playerInfo.color, "' class='settlers_area'>\n               <div id='settlers_col_").concat(playerInfo.color, "_1' class='settlers_col_1'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_2' class='settlers_col_2'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_3' class='settlers_col_3'></div>\n               <div id='settlers_col_").concat(playerInfo.color, "_4' class='settlers_col_4'></div>\n            </div>\n         </div>\n      </div>"), "players_panels");
         for (var i = 0; i <= 6; i++) {
             placeHtml("<div id='slot_furnish_".concat(i, "_").concat(playerInfo.color, "' class='slot_furnish slot_furnish_").concat(i, "'></div>"), "track_furnish_".concat(playerInfo.color));
         }
@@ -1591,6 +1591,9 @@ var GameXBody = /** @class */ (function (_super) {
                 var divId = "cardset_".concat(opInfo.nturn);
                 console.log("village", opInfo);
                 this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+                break;
+            case "act":
+                //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
                 break;
         }
     };
@@ -1842,11 +1845,11 @@ var GameXBody = /** @class */ (function (_super) {
     };
     /** @Override */
     GameXBody.prototype.bgaFormatText = function (log, args) {
-        if (log && args && !args.processed) {
-            args.processed = true;
-            try {
+        try {
+            if (log && args && !args.processed) {
+                args.processed = true;
                 if (!args.player_id) {
-                    args.player_id = this.getActivePlayerId();
+                    args.player_id = this.bga.players.getActivePlayerId();
                 }
                 if (args.player_id && !args.player_name) {
                     args.player_name = this.gamedatas.players[args.player_id].name;
@@ -1861,9 +1864,9 @@ var GameXBody = /** @class */ (function (_super) {
                 log = res.log;
                 args = res.args;
             }
-            catch (e) {
-                console.error(log, args, "Exception thrown", e.stack);
-            }
+        }
+        catch (e) {
+            console.error(log, args, "Exception thrown", e.stack);
         }
         return { log: log, args: args };
     };

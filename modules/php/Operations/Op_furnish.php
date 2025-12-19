@@ -30,6 +30,9 @@ class Op_furnish extends Operation {
             $value = $this->game->tokens->getTrackerValue($owner, $type);
             $this->game->userAssert("Maximum is reached", $value < 6); // NOI18N
             $this->game->effect_incTrack($owner, $type, 1, $this->getReason());
+            if ($this->game->getActionTileSide("action_main_1_$owner")) {
+                $this->queue("barley/skaill", $owner, null, $this->getReason());
+            }
         } else {
             $param = (int) $this->getParams() ?: 0;
             $this->queue("furnishPay", $owner, ["dis" => $param], $this->getReason());

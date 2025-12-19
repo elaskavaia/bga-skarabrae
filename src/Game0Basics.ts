@@ -222,7 +222,7 @@ class Game0Basics extends GameGui<any> {
       args.processed = true;
 
       if (!args.player_id) {
-        args.player_id = this.getActivePlayerId();
+        args.player_id = this.bga.players.getActivePlayerId();
       }
       if (args.player_id && !args.player_name) {
         args.player_name = this.gamedatas.players[args.player_id].name;

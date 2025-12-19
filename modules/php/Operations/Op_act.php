@@ -50,6 +50,15 @@ class Op_act extends Operation {
             $anyWorker = $largeWorker;
         }
         $workersf = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
+        $workersPerAction = 2;
+        if ($this->game->hasSpecial(3, $owner)) {
+            // recruit
+            $workers_extra = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
+            $workersf = array_merge($workersf, $workers_extra);
+            if ($this->game->getActionTileSide("action_special_3")) {
+                $workersPerAction = 3;
+            }
+        }
         $locs = $this->game->tokens->getReverseLocationTokensMapping($workersf);
         $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
         $res = [];
@@ -60,12 +69,12 @@ class Op_act extends Operation {
             ];
             $occupied = $locs[$act] ?? [];
             $countw = count($occupied);
-            if ($countw >= 2) {
+            if ($countw >= $workersPerAction) {
                 $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
                 continue;
             }
 
-            if ($countw >= 1) {
+            if ($countw >= $workersPerAction - 1) {
                 if (!$largeWorker) {
                     $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
                     continue;
@@ -74,14 +83,7 @@ class Op_act extends Operation {
             } else {
                 $res[$act]["worker"] = $anyWorker;
             }
-            $state = $this->game->getActionTileSide($act);
-
-            if ($state) {
-                $rules = $this->game->getRulesFor($act, "rb", "nop");
-            } else {
-                $rules = $this->game->getRulesFor($act, "r", "nop");
-            }
-            $this->game->systemAssert("no rules for $act $state", $rules);
+            $rules = $this->game->getActionRules($act);
 
             $op = $this->game->machine->instanciateOperation($rules, $owner, ["reason" => $act]);
 
@@ -109,12 +111,7 @@ class Op_act extends Operation {
     }
     function activateAction($action_tile) {
         $owner = $this->getOwner();
-        $side = $this->game->getActionTileSide($action_tile);
-        if ($side) {
-            $r = $this->game->getRulesFor($action_tile, "rb");
-        } else {
-            $r = $this->game->getRulesFor($action_tile, "r");
-        }
+        $r = $this->game->getActionRules($action_tile);
         $this->queue($r, $owner, [], $action_tile);
     }
 
@@ -134,22 +131,29 @@ class Op_act extends Operation {
 
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $worker = array_shift($workers);
-        if ($worker) {
-            $this->queue($this->getType(), $owner);
-        } else {
-            if ($this->game->isSolo()) {
-                $taskop = $this->game->machine->instanciateOperation("task", $owner);
-                if (!$taskop->noValidTargets()) {
-                    $this->queue("task", $owner);
-                }
-            }
-        }
+
+        $this->queue($this->getType(), $owner);
     }
 
     public function getPrompt() {
         return clienttranslate("Select an action for worker");
     }
+    public function getSubTitle() {
+        return [
+            "log" => clienttranslate('Round ${round} of 4 - Turn ${turn} of 3'),
+            "args" => [
+                "round" => $this->game->getRoundNumber(),
+                "turn" => $this->game->getTurnNumber(),
+            ],
+        ];
+    }
 
+    function getExtraArgs() {
+        return [
+            "round" => $this->game->getRoundNumber(),
+            "turn" => $this->game->getTurnNumber(),
+        ];
+    }
     public function canSkip() {
         return true;
     }

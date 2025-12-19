@@ -54,7 +54,7 @@ class GameXBody extends GameMachine {
     placeHtml(`<div id='miniboard_${playerInfo.color}' class='miniboard'></div>`, pp);
     placeHtml(
       `
-      <div id='tableau_${playerInfo.color}' class='tableau'>
+      <div id='tableau_${playerInfo.color}' class='tableau' data-player-name='${playerInfo.name}' style='--player-color: #${playerInfo.color}'>
         <div class='pboard_area'>
            <div id='pboard_${playerInfo.color}' class='pboard'>
                  <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
@@ -100,6 +100,9 @@ class GameXBody extends GameMachine {
         const divId = `cardset_${(opInfo as any).nturn}`;
         console.log("village", opInfo);
         this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+        break;
+      case "act":
+        //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
         break;
     }
   }
@@ -321,11 +324,12 @@ class GameXBody extends GameMachine {
   }
   /** @Override */
   bgaFormatText(log: string, args: any) {
-    if (log && args && !args.processed) {
-      args.processed = true;
-      try {
+    try {
+      if (log && args && !args.processed) {
+        args.processed = true;
+
         if (!args.player_id) {
-          args.player_id = this.getActivePlayerId();
+          args.player_id = this.bga.players.getActivePlayerId();
         }
         if (args.player_id && !args.player_name) {
           args.player_name = this.gamedatas.players[args.player_id].name;
@@ -340,9 +344,9 @@ class GameXBody extends GameMachine {
         const res = super.bgaFormatText(log, args);
         log = res.log;
         args = res.args;
-      } catch (e) {
-        console.error(log, args, "Exception thrown", e.stack);
       }
+    } catch (e) {
+      console.error(log, args, "Exception thrown", e.stack);
     }
     return { log, args };
   }

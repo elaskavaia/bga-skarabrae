@@ -640,6 +640,7 @@ class Game1Tokens extends Game0Basics {
         console.error(log, args, "Exception thrown", e.stack);
       }
     }
+
     return super.bgaFormatText(log, args);
   }
 

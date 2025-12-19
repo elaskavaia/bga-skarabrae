@@ -312,6 +312,15 @@ class Game extends Base {
         $this->tokens->dbSetTokensLocation($cards, "discard_village", 0, "");
     }
 
+    function getRoundNumber() {
+        if (!$this->globals) {
+            $n = 1; // for testing
+        } else {
+            $n = $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL);
+        }
+        return $n;
+    }
+
     function getTurnNumber() {
         if (!$this->globals) {
             $n = 1; // for testing
@@ -340,6 +349,18 @@ class Game extends Base {
     function getActionTileSide(string $action_tile) {
         $state = $this->tokens->tokens->getTokenState($action_tile, 0);
         return $state;
+    }
+
+    function getActionRules($act) {
+        $state = $this->getActionTileSide($act);
+
+        if ($state) {
+            $rules = $this->getRulesFor($act, "rb");
+        } else {
+            $rules = $this->getRulesFor($act, "r");
+        }
+        $this->systemAssert("no rules for $act $state", $rules);
+        return $rules;
     }
 
     function getHearthLimit(string $color) {

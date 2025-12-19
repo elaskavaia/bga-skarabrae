@@ -435,9 +435,6 @@ abstract class Operation {
         return false;
     }
 
-    function getExtraArgs() {
-        return [];
-    }
     function getUiArgs() {
         return [];
     }
@@ -448,9 +445,14 @@ abstract class Operation {
         return "";
     }
 
-    function getSubTitle() {
+    public function getSubTitle() {
         return "";
     }
+
+    function getExtraArgs() {
+        return [];
+    }
+
     function getPossibleMoves() {
         return ["confirm"];
     }

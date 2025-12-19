@@ -21,16 +21,12 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use BgaSystemException;
 
-class Op_recall extends Operation {
+class Op_tend extends Operation {
     function resolve() {
-        $owner = $this->getOwner();
-        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
-        $this->game->tokens->dbSetTokensLocation($workers, "tableau_$owner", 1);
-        if ($this->game->hasSpecial(3, $owner)) {
-            // recruit
-            $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
-            $this->game->tokens->dbSetTokensLocation($workers, "tableau_$owner", 1);
-        }
+        $this->notifyMessage(""); // empty message
+        throw new BgaSystemException("not impl");
+        return;
     }
 }

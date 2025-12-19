@@ -9,9 +9,6 @@ use Bga\Games\skarabrae\Material;
  * Tag counter. Count specific tags to change counter of the  operation passed as second arg
  */
 class Op_cotag extends Operation {
-    function requireConfirmation() {
-        return parent::requireConfirmation();
-    }
     function resolve() {
         // counter function, followed by expression
         $owner = $this->getOwner();
@@ -29,5 +26,21 @@ class Op_cotag extends Operation {
             }
         }
         return 1;
+    }
+
+    function getButtonName() {
+        return '${count} x ${p1}';
+    }
+
+    public function getExtraArgs() {
+        $owner = $this->getOwner();
+        $tnum = $this->getParam(0);
+        $count = $this->game->countTags((int) $tnum, $owner);
+        $op = $this->getParam(1, "");
+        $sub = $this->game->machine->instanciateOperation($op, $owner);
+        $args = [];
+        $args["p1"] = ["log" => $sub->getButtonName(), "args" => $sub->getExtraArgs()];
+        $args["count"] = $count;
+        return $args;
     }
 }

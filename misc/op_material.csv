@@ -19,12 +19,15 @@ night|Night Actions
 feed|Feeding Action
 clutter|Gain Midden
 discard|Discard Settler
-muster|Action Muster
-explore|Action Explore
+muster|Muster
+explore|Explore
 task|Complete Task
 draw|Draw Card
 keep|Keep Card
-activate|Activate Action
+activate|Activate
+recruit|Recruit
+spin|Spin Wool
+tend|Tend Land
 
 #set class=Op_gain
 

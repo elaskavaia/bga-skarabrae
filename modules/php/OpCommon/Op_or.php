@@ -19,6 +19,9 @@
 declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\OpCommon;
+
+use Bga\Games\skarabrae\Material;
+
 /** User choses operation. If count is used it is shared and decreases for all choices */
 class Op_or extends ComplexOperation {
     function withDelegate(Operation $sub) {
@@ -63,10 +66,13 @@ class Op_or extends ComplexOperation {
         if ($this->getCount() == 1 || !is_array($res)) {
             $res = [$res => 1];
         }
-
+        $total = 0;
+        $count = $this->getCount();
+        $minCount = $this->getMinCount();
         foreach ($this->delegates as $i => $sub) {
             $key = "choice_$i";
             $c = $res[$key] ?? 0;
+            $total += $c;
             if ($c > 0) {
                 $this->game->machine->push("$c(" . $sub->getTypeFullExpr(false) . ")", $sub->getOwner(), ["reason" => $this->getReason()]);
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
@@ -75,6 +81,10 @@ class Op_or extends ComplexOperation {
             }
             $sub->destroy();
         }
+
+        if ($total > $count) {
+            $this->game->userAssert(clienttranslate("Cannot use this action because superfluous amount of elements selected"));
+        }
         $this->game->machine->interrupt(2);
         $this->expandOperation(2);
         return;
@@ -82,6 +92,7 @@ class Op_or extends ComplexOperation {
 
     function getPossibleMoves() {
         $res = [];
+        $totalLimit = 0;
         foreach ($this->delegates as $i => $sub) {
             $err = "";
             if ($sub->isVoid()) {
@@ -93,9 +104,13 @@ class Op_or extends ComplexOperation {
                 $q = 1;
             } elseif ($sub instanceof CountableOperation) {
                 $count = $this->getCount();
-                $limit = $this->getLimitCount();
+                $limit = $sub->getLimitCount();
                 $max = min($count, $limit);
+            } else {
+                $max = 1000;
             }
+
+            $totalLimit += $max;
 
             $res["choice_$i"] = [
                 "name" => $sub->getButtonName(),
@@ -105,6 +120,9 @@ class Op_or extends ComplexOperation {
                 "q" => $q,
                 "max" => $max,
             ];
+        }
+        if ($totalLimit < $this->getMinCount()) {
+            return ["q" => Material::MA_ERR_COST];
         }
         return $res;
     }

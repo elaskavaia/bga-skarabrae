@@ -40,12 +40,7 @@ class Op_activate extends Operation {
 
     function activateAction($action_tile) {
         $owner = $this->getOwner();
-        $side = $this->game->getActionTileSide($action_tile);
-        if ($side) {
-            $r = $this->game->getRulesFor($action_tile, "rb");
-        } else {
-            $r = $this->game->getRulesFor($action_tile, "r");
-        }
+        $r = $this->game->getActionRules($action_tile);
         $this->queue($r, $owner, [], $action_tile);
     }
 

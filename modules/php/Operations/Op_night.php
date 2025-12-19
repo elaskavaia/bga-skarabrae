@@ -34,6 +34,12 @@ class Op_night extends Operation {
                 }
             }
         }
+        $owner = $color;
+        if ($this->game->hasSpecial(3, $owner)) {
+            // recruit
+            $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
+            $this->game->tokens->dbSetTokensLocation($workers, "mainarea", 0);
+        }
         $this->queue("feed", $this->getOwner());
         $this->queue("clutter", $this->getOwner());
         return true;

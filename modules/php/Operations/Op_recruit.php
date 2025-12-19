@@ -22,15 +22,19 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 
-class Op_recall extends Operation {
-    function resolve() {
-        $owner = $this->getOwner();
-        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
-        $this->game->tokens->dbSetTokensLocation($workers, "tableau_$owner", 1);
-        if ($this->game->hasSpecial(3, $owner)) {
-            // recruit
-            $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
-            $this->game->tokens->dbSetTokensLocation($workers, "tableau_$owner", 1);
+class Op_recruit extends Operation {
+    public function getPossibleMoves() {
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 0);
+        $worker = array_key_first($workers);
+        if (!$worker) {
+            return ["err" => clienttranslate("All workers already in use")];
         }
+
+        return [$worker];
+    }
+    function resolve() {
+        $worker = $this->getCheckedArg();
+        $owner = $this->getOwner();
+        $this->game->tokens->dbSetTokenLocation($worker, "tableau_$owner", 1);
     }
 }
