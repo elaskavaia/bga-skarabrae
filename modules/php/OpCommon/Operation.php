@@ -183,7 +183,7 @@ abstract class Operation {
 
     function expandOperation() {
         if ($this->isTrancient()) {
-            $this->saveToDb(1, true);
+            $this->saveToDb();
             return true;
         }
         return false;
@@ -194,7 +194,7 @@ abstract class Operation {
         return $data;
     }
 
-    function saveToDb($rank = 1, bool $interrupt = false) {
+    function saveToDb($rank = 1, bool $interrupt = true) {
         if ($interrupt) {
             $this->game->machine->interrupt($rank);
         }

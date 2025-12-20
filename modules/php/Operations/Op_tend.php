@@ -20,26 +20,43 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
+use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
-use Bga\Games\skarabrae\OpCommon\Operation;
-use BgaSystemException;
 
 class Op_tend extends CountableOperation {
     function resolve() {
-        $this->notifyMessage(""); // empty message
-        throw new BgaSystemException("not impl");
-        return;
+        $arg = $this->getCheckedArg();
+        $nc = $this->incCount(-1);
+        $this->incMinCount(-1);
+
+        if ($arg == "midden") {
+            $this->queue("n_midden");
+            return;
+        }
+        $action_tile = $arg;
+        $owner = $this->getOwner();
+        $r = $this->game->getActionRules($action_tile);
+        $this->queue($r, $owner, [], $action_tile);
+
+        if ($nc > 0) {
+            $this->withDataField($arg, 1);
+            $this->saveToDb($this->queueRank, true);
+        }
     }
 
     public function getPossibleMoves() {
         $owner = $this->getOwner();
         $res = [];
         for ($i = 6; $i <= 9; $i++) {
-            $id = "action_main_$i";
+            $id = "action_main_{$i}_{$owner}";
+
             $res[$id] = [
                 "name" => $this->game->tokens->getTokenName($id),
                 "q" => 0,
             ];
+            if ($this->getDataField($id, 0)) {
+                $res[$id]["q"] = Material::MA_ERR_MAX;
+            }
         }
         $res["midden"] = [
             "name" => $this->game->tokens->getTokenName("Op_n_midden"),
@@ -49,7 +66,10 @@ class Op_tend extends CountableOperation {
         return $res;
     }
 
+    public function canSkip() {
+        return true;
+    }
     public function getPrompt() {
-        return clienttranslate("Select action");
+        return clienttranslate('Select unique gather or clean (${count} left)');
     }
 }

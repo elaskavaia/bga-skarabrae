@@ -87,7 +87,7 @@ class Op_seq extends ComplexOperation {
             $this->withDataField("count", $c);
             $this->withDataField("mcount", $c);
 
-            $this->saveToDb(1, true);
+            $this->saveToDb();
             return;
         }
         return parent::resolve();

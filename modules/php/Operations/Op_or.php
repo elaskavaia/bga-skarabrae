@@ -59,7 +59,9 @@ class Op_or extends ComplexOperation {
             $this->game->userAssert(clienttranslate("Cannot use this action because superfluous amount of elements selected"));
         }
 
-        $this->saveToDb($rank, true);
+        if ($this->getCount() > 0) {
+            $this->saveToDb($rank, true);
+        }
         return;
     }
 

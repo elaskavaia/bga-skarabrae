@@ -33,9 +33,6 @@ class Op_cook extends Operation {
         return Operation::TTYPE_TOKEN_COUNT;
     }
 
-    public function requireConfirmation() {
-        return true;
-    }
     function resolve() {
         $owner = $this->getOwner();
 

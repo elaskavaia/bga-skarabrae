@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_turn extends Operation {
@@ -31,7 +30,7 @@ class Op_turn extends Operation {
         $this->queue("village", $this->getOwner());
         $this->queue("act", $this->getOwner());
         $this->queue("recall", $this->getOwner());
-        $curturn = $this->game->globals->get(Game::TURNS_NUMBER_GLOBAL, 1);
+        $curturn = $this->game->getTurnNumber();
         if ($curturn == 3) {
             $this->queue("night", $this->getOwner());
         }
