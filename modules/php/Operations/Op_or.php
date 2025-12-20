@@ -18,66 +18,36 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\OpCommon;
+namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\Material;
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\Operation;
 
 /** User choses operation. If count is used it is shared and decreases for all choices */
 class Op_or extends ComplexOperation {
-    function withDelegate(Operation $sub) {
-        if ($sub instanceof CountableOperation) {
-            // shared counter
-            $this->withDataField("count", $sub->getCount());
-            $this->withDataField("mcount", $sub->getMinCount());
-            $sub->withDataField("count", null);
-            $sub->withDataField("mcount", null);
-        }
-        return parent::withDelegate($sub);
-    }
-    function expandOperation($rank = 1) {
-        return false;
-    }
-    function expandOperationReal($rank = 1) {
-        if ($this->getCount() == 0) {
-            return true; // destroy
-        }
-        if (!$this->isSubTrancient()) {
-            return false;
-        }
-
-        $this->game->machine->interrupt($rank);
-
-        foreach ($this->delegates as $sub) {
-            $this->game->machine->put(
-                $sub->getTypeFullExpr(),
-                $sub->getOwner(),
-                [
-                    "xop" => $this->getOperator(),
-                    "count" => $this->getCount(),
-                    "mcount" => $this->getMinCount(),
-                    "reason" => $this->getReason(),
-                ],
-                $rank
-            );
-        }
-
-        return true;
-    }
-
     function resolve() {
         $res = $this->getCheckedArg();
-        if ($this->getCount() == 1 || !is_array($res)) {
+        if (!is_array($res)) {
             $res = [$res => 1];
         }
         $total = 0;
         $count = $this->getCount();
         $minCount = $this->getMinCount();
+        $rank = 1;
         foreach ($this->delegates as $i => $sub) {
             $key = "choice_$i";
             $c = $res[$key] ?? 0;
             $total += $c;
             if ($c > 0) {
-                $this->game->machine->push("$c(" . $sub->getTypeFullExpr(false) . ")", $sub->getOwner(), ["reason" => $this->getReason()]);
+                $sub->withDataField("reason", $this->getReason());
+                $sub->withDataField("count", $sub->getDataField("count", 1) * $c);
+                $sub->withDataField("mcount", $sub->getDataField("mcount", 1) * $c);
+
+                $sub->saveToDb($rank, true);
+                $rank++;
+
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $this->incMinCount(-$c);
                 $this->incCount(-$c);
@@ -88,8 +58,8 @@ class Op_or extends ComplexOperation {
         if ($total > $count) {
             $this->game->userAssert(clienttranslate("Cannot use this action because superfluous amount of elements selected"));
         }
-        $this->game->machine->interrupt(2);
-        $this->expandOperationReal(2);
+
+        $this->saveToDb($rank, true);
         return;
     }
 
@@ -148,5 +118,9 @@ class Op_or extends ComplexOperation {
     }
     function getOpName() {
         return $this->getRecName(" / ");
+    }
+
+    function getOperator() {
+        return "/";
     }
 }

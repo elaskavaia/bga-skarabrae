@@ -111,11 +111,14 @@ abstract class CountableOperation extends Operation {
         return $this->getMinCount() == 0;
     }
 
-    function getTypeFullExpr(bool $withCounts = true) {
-        $base = parent::getTypeFullExpr($withCounts);
-        if ($withCounts && $this->isRanged()) {
+    function getTypeFullExpr() {
+        $base = parent::getTypeFullExpr();
+        if ($this->isRanged()) {
             $min = $this->getMinCount();
             $max = $this->getCount();
+            if ($min == $max) {
+                return "$min($base)";
+            }
             return "[$min,$max]($base)";
         }
         return $base;

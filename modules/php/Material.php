@@ -781,7 +781,7 @@ class Material {
         "craft" => "n_bone,n_hide",
         "num" => 4,
         "name" => clienttranslate("Tend Land"),
-        "r" => "2(n_bone/n_food):tend",
+        "r" => "2(n_bone/n_food):3tend",
         "tooltip" => clienttranslate("Resolve up to 3 different Gather Action Tiles, just as if Workers had been placed there. Alternatively this player may forgo any of these Gather actions to instead clear 1 Midden. As with the Clean action, they may either discard 1 Midden from their Storage Area, or move their Slider 1 column to the left. For example, a player might decide to Gather from the Hills and Fields, and clear 1 Midden, or simply just clear 3 Midden. Once flipped, this action allows players to do this up to 4 times, instead of 3."),
 ],
 // #cooking Options

@@ -24,21 +24,21 @@ abstract class ComplexOperation extends CountableOperation {
     /** @var Operation[] */
     public array $delegates = [];
 
-    function expandOperation($rank = 1) {
-        $ranged = $this->isRanged();
-        if ($ranged) {
-            return false;
+    function getDataForDb() {
+        $data = $this->getData() ?? [];
+        $data["args"] = [];
+        foreach ($this->delegates as $i => $sub) {
+            $data["args"][$i] = ["type" => $sub->getType(), "data" => $sub->getDataForDb(), "owner" => $sub->getOwner()];
         }
-        if (!$this->isSubTrancient()) {
-            return false;
+        return $data;
+    }
+    function getDataForDbWithCounts(mixed $count = 1, mixed $mcount = null) {
+        if ($mcount == null) {
+            $mcount = $count;
         }
-        $this->game->machine->interrupt($rank);
-        foreach ($this->delegates as $sub) {
-            $sub->destroy();
-            $this->game->machine->put($sub->getType(), $sub->getOwner(), $sub->getData(), $rank);
-        }
-
-        return true;
+        $data = $this->getDataForDb();
+        $data["count"] = $count;
+        $data["mcount"] = $count;
     }
 
     function canSkip() {
@@ -78,6 +78,9 @@ abstract class ComplexOperation extends CountableOperation {
     function getRecName($join) {
         $args = [];
         $pars = [];
+        if (count($this->delegates) == 0) {
+            return $this->game->getRulesFor("Op_" . $this->getType(), "name", "?");
+        }
         foreach ($this->delegates as $i => $sub) {
             $pars[] = "p$i";
             $args["p$i"] = ["log" => $sub->getButtonName(), "args" => $sub->getExtraArgs()];
@@ -92,7 +95,7 @@ abstract class ComplexOperation extends CountableOperation {
         return ["log" => $log, "args" => $args];
     }
 
-    function getTypeFullExpr(bool $withCounts = true) {
+    function getTypeFullExpr() {
         $op = $this->getOperator();
 
         $opcount = count($this->delegates);
@@ -107,11 +110,15 @@ abstract class ComplexOperation extends CountableOperation {
             }
             $base = $res;
         }
-        if ($withCounts && $this->isRanged()) {
+        if ($this->isRanged()) {
             $min = $this->getMinCount();
             $max = $this->getCount();
+            if ($min == $max) {
+                return "$min($base)";
+            }
             return "[$min,$max]($base)";
         }
+
         return $base;
     }
 }

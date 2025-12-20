@@ -18,31 +18,32 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\OpCommon;
+namespace Bga\Games\skarabrae\Operations;
+
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 
 /** Sequence of operations, no user choice */
 class Op_seq extends ComplexOperation {
-    function expandOperation($rank = 1) {
+    function expandOperation() {
         if (count($this->delegates) == 0) {
             return true;
         }
-        $count = $this->getCount();
+
         if ($this->isRangedChoice()) {
             return false;
         }
         if (!$this->isSubTrancient()) {
             return false;
         }
-
+        $rank = 1;
         $this->game->machine->interrupt($rank, count($this->delegates));
+        $c = $this->getCount();
         foreach ($this->delegates as $sub) {
             $sub->destroy();
-            $this->game->machine->put(
-                $count . "(" . $sub->getTypeFullExpr() . ")",
-                $sub->getOwner(),
-                ["reason" => $this->getReason()],
-                $rank
-            );
+            $sub->withDataField("reason", $this->getReason());
+            $sub->withDataField("count", $sub->getDataField("count", 1) * $c);
+            $sub->withDataField("mcount", $sub->getDataField("mcount", 1) * $c);
+            $sub->saveToDb($rank, false);
             $rank++;
         }
 
@@ -57,6 +58,9 @@ class Op_seq extends ComplexOperation {
         }
         if ($this->isRangedChoice()) {
             return parent::getRangeMoves();
+        }
+        if (count($this->delegates) == 0) {
+            return [];
         }
         $sub = $this->delegates[0];
         return $sub->getPossibleMoves();
@@ -80,11 +84,16 @@ class Op_seq extends ComplexOperation {
     public function resolve() {
         if ($this->isRangedChoice()) {
             $c = $this->getCheckedArg();
-            $this->game->machine->interrupt(1, 2);
-            $choice = $this->getTypeFullExpr(false);
-            $this->game->machine->put("$c($choice)", $this->getOwner(), ["reason" => $this->getReason()], 1);
+            $this->withDataField("count", $c);
+            $this->withDataField("mcount", $c);
+
+            $this->saveToDb(1, true);
             return;
         }
         return parent::resolve();
+    }
+
+    function getOperator() {
+        return ",";
     }
 }

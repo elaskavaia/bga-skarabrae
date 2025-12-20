@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae;
+namespace Bga\Games\skarabrae\OpCommon;
 
 use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Common\OpExpressionRanged;
@@ -20,6 +20,8 @@ use BgaSystemException;
 use Exception;
 use ReflectionClass;
 use Throwable;
+
+use function Bga\Games\skarabrae\array_get;
 
 class OpMachine {
     protected Game $game;
@@ -44,86 +46,99 @@ class OpMachine {
         }
         $dop = reset($ops);
 
-        if (count($ops) > 1) {
-            $data = Operation::decodeData($dop["data"]);
-            $operand = $data["xop"] ?? ",";
-            $mnemonic = self::opToMnemonic($operand);
-            unset($data["xop"]);
-            /** @var ComplexOperation */
-            $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"], $data)->withDataField("op", $operand);
-            foreach ($ops as $sub) {
-                $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
-                $top->withDelegate($subOp);
-            }
-            return $top;
-        }
+        // if (count($ops) > 1) {
+        //     $data = Operation::decodeData($dop["data"]);
+        //     $operand = $data["xop"] ?? ",";
+        //     $mnemonic = self::opToMnemonic($operand);
+        //     unset($data["xop"]);
+        //     /** @var ComplexOperation */
+        //     $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"], $data)->withDataField("op", $operand);
+        //     foreach ($ops as $sub) {
+        //         $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
+        //         $top->withDelegate($subOp);
+        //     }
+        //     return $top;
+        // }
 
         return $this->instanciateOperationFromDbRow($dop);
     }
 
-    function instanciateOperationFromDbRow($dop): Operation {
-        return $this->instanciateOperation($dop["type"], $dop["owner"], $dop["data"], $dop["id"]);
+    function instanciateOperationFromDbRow(mixed $dop): Operation {
+        if (is_string($dop["data"])) {
+            $data = Operation::decodeData($dop["data"]);
+        } else {
+            $data = $dop["data"];
+        }
+        $args = $data["args"] ?? [];
+        if ($args) {
+            unset($data["args"]);
+        }
+        $op = $this->instanciateOperation($dop["type"], $dop["owner"], $data, $dop["id"] ?? 0);
+        if ($op instanceof ComplexOperation) {
+            foreach ($args as $sub) {
+                $subOp = $this->instanciateOperationFromDbRow(["owner" => $dop["owner"]] + $sub);
+                $op->withDelegate($subOp);
+            }
+        }
+        return $op;
     }
 
     function instanciateOperation(string $type, ?string $owner = null, mixed $data = null, mixed $id = 0): Operation {
         try {
-            $expr = OpExpression::parseExpression($type);
-            $operand = OpExpression::getop($expr);
             if ($owner === null) {
                 $owner = $this->game->getActivePlayerColor();
             }
 
             if ($id) {
                 $id = (int) $id;
-            }
-            //[op min max arg1 arg2 arg3]...
-
-            if (!$expr->isSimple()) {
-                $mnemonic = self::opToMnemonic($operand);
-                if ($mnemonic == $type) {
-                    throw new BgaSystemException("infinite rec $type");
-                }
-                /** @var ComplexOperation */
-                $op = $this->instanciateCommonOperation($mnemonic, $owner, $data, $id)->withDataField("op", $operand);
-                foreach ($expr->args as $arg) {
-                    $sub = $this->instanciateOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
-                    if ($sub instanceof CountableOperation && $sub->isRanged()) {
-                        /** @var ComplexOperation */
-                        $wop = $this->instanciateCommonOperation("seq", $owner, $data, $id)->withDataField("op", ",");
-                        $wop->withDelegate($sub);
-                        $sub = $wop;
-                    }
-                    $op->withDelegate($sub);
-                }
-                $op->withCounts($expr);
-                return $op;
-            }
-
-            $unrangedType = OpExpression::str($expr->toUnranged());
-            $matches = null;
-            $params = null;
-            if (preg_match("/^(\w+)\((.*)\)$/", $unrangedType, $matches)) {
-                // function call
-                $params = $matches[2];
-                $unrangedType = $matches[1];
-            }
-            $sub = $this->instanciateSimpleOperation($unrangedType, $owner, $data, $id)->withParams($params);
-            if ($expr instanceof OpExpressionRanged) {
-                if ($sub instanceof CountableOperation) {
-                    $sub->withCounts($expr);
-                    return $sub;
-                } else {
-                    $operand = ",";
-                    /** @var ComplexOperation */
-                    $op = $this->instanciateCommonOperation("seq", $owner, $data, $id)->withDataField("op", $operand);
-                    $op->withDelegate($sub)->withCounts($expr);
-                    return $op;
-                }
             } else {
-                return $sub;
+                $id = 0;
             }
+
+            $expr = OpExpression::parseExpression($type);
+            $op = $this->exprToOperation($expr, $owner)->withId($id)->withData($data);
+            return $op;
         } catch (Exception $e) {
             throw new BgaSystemException("Cannot instanciate '$type': " . $e->getMessage());
+        }
+    }
+    function exprToOperation(OpExpression $expr, string $owner) {
+        $operand = OpExpression::getop($expr);
+        //[op min max arg1 arg2 arg3]...
+
+        if (!$expr->isSimple()) {
+            $mnemonic = self::opToMnemonic($operand);
+            /** @var ComplexOperation */
+            $op = $this->instanciateCommonOperation($mnemonic, $owner);
+            foreach ($expr->args as $arg) {
+                $sub = $this->exprToOperation($arg, $owner);
+                $op->withDelegate($sub);
+            }
+            $op->withCounts($expr);
+            return $op;
+        }
+
+        $unrangedType = OpExpression::str($expr->toUnranged());
+        $matches = null;
+        $params = null;
+        if (preg_match("/^(\w+)\((.*)\)$/", $unrangedType, $matches)) {
+            // function call
+            $params = $matches[2];
+            $unrangedType = $matches[1];
+        }
+        $sub = $this->instanciateSimpleOperation($unrangedType, $owner)->withParams($params);
+        if ($expr instanceof OpExpressionRanged) {
+            if ($sub instanceof CountableOperation) {
+                $sub->withCounts($expr);
+                return $sub;
+            } else {
+                /** @var ComplexOperation */
+                $op = $this->instanciateCommonOperation("seq", $owner);
+                $op->withDelegate($sub)->withCounts($expr);
+                return $op;
+            }
+        } else {
+            return $sub;
         }
     }
     static function opToMnemonic(string $operand) {
@@ -138,39 +153,28 @@ class OpMachine {
             default => throw new BgaSystemException("Unknown operator $operand"),
         };
     }
-    function instanciateCommonOperation(string $type, string $owner, mixed $data = null, int $id = 0): Operation {
-        $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\OpCommon\\Op_$type");
+    function instanciateCommonOperation(string $type, ?string $owner = null, mixed $data = null): Operation {
+        $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\Operations\\Op_$type");
         $instance = $reflectionClass->newInstance($type, $owner, $data);
-        $instance->withId($id);
         return $instance;
     }
 
-    function instanciateSimpleOperation(string $type, string $owner, mixed $data = null, int $id = 0): Operation {
+    function instanciateSimpleOperation(string $type, ?string $owner = null, mixed $data = null): Operation {
         if (strlen($type) > 80) {
             throw new BgaSystemException("Cannot instantice op");
         }
 
-        $expr = OpExpression::parseExpression($type);
-        if ($expr->isSimple()) {
-            $operandclass = array_get($this->getOperationRules($type), "class", "Op_$type");
+        $operandclass = $this->game->getRulesFor("Op_$type", "class", "Op_$type");
 
-            // Instantiate the class with constructor arguments
-            try {
-                $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\Operations\\$operandclass");
-                $instance = $reflectionClass->newInstance($type, $owner, $data);
-            } catch (Throwable $e) {
-                $instance = new UnresolvedOperation($type, $owner, $data);
-            }
-        } else {
-            $instance = new UnresolvedOperation($type, $owner, $data);
+        // Instantiate the class with constructor arguments
+        try {
+            $reflectionClass = new ReflectionClass("Bga\\Games\\skarabrae\\Operations\\$operandclass");
+            $instance = $reflectionClass->newInstance($type, $owner, $data);
+        } catch (Throwable $e) {
+            throw new BgaSystemException("Cannot instanticate $type: " . $e->getMessage());
         }
-        $instance->withId($id);
 
         return $instance;
-    }
-
-    public function getOperationRules($id, $field = "*", $def = null) {
-        return $this->game->getRulesFor("Op_$id", $field, $def);
     }
 
     function getTopOperations($owner) {
@@ -178,16 +182,8 @@ class OpMachine {
         return $ops;
     }
 
-    function destroy(Operation $op) {
-        $op->destroy();
-    }
-
     function hide(int $id) {
         $this->db->hide($id);
-    }
-
-    function renice($list, $rank) {
-        $this->db->renice($list, $rank);
     }
 
     function interrupt(int $rank = 0, int $count = 1) {
@@ -195,21 +191,23 @@ class OpMachine {
     }
 
     function push(string $type, ?string $owner = null, mixed $data = null) {
-        $op = $this->db->createRow($type, $owner, $data);
         $this->interrupt();
-        return $this->db->insertRow(1, $op);
+        return $this->put($type, $owner, $data, 1);
     }
 
     function queue(string $type, ?string $owner = null, mixed $data = null) {
         $rank = $this->db->getExtremeRank(true);
         $rank++;
-        $op = $this->db->createRow($type, $owner, $data);
-        return $this->db->insertRow($rank, $op);
+        return $this->put($type, $owner, $data, $rank);
     }
 
     function put(string $type, ?string $owner = null, mixed $data = null, int $rank = 1) {
         $op = $this->db->createRow($type, $owner, $data);
         return $this->db->insertRow($rank, $op);
+    }
+
+    function insertRow(mixed $row, int $rank = 1) {
+        return $this->db->insertRow($rank, $row);
     }
 
     function insert(string $type, ?string $owner = null, mixed $data = null, ?int &$rank = null) {
@@ -239,7 +237,7 @@ class OpMachine {
             return StateConstants::STATE_MACHINE_HALTED;
         }
         if ($this->expandOperation($op)) {
-            $this->destroy($op);
+            $op->destroy();
             return GameDispatch::class;
         }
         //$this->game->notify->all("message", "starting op " . $op->getType());
@@ -255,22 +253,12 @@ class OpMachine {
             // $op["mcount"] = $count;
             $this->game->systemAssert("Not implemented");
         }
-        // if (!$this->isAtomicOperation($type) && $op["count"] == $op["mcount"]) {
+
         if ($op->expandOperation()) {
-            //$this->machine->hide($op);
-            // sanity to prevent recursion
             $operations = $this->getTopOperations(null);
             if (count($operations) == 0) {
                 $this->game->systemAssert("Failed expand for $type. Halt");
             }
-
-            // restore orignal rank
-            //$this->machine->renice($operations, $op['rank']);
-
-            // $nop = array_shift($operations);
-            // if ($nop["type"] == $type && $nop["mcount"] == $op["mcount"] && $nop["count"] == $op["count"]) {
-            //     $this->game->systemAssert("Failed expand for $type. Recursion");
-            // }
             return true;
         }
         return false;

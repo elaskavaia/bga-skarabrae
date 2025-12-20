@@ -125,7 +125,7 @@ class OpExpression {
         return new OpExpression($o, $args);
     }
 
-    public static function parseExpression($rule, $defaultOp = ",") {
+    public static function parseExpression($rule, $defaultOp = ","): OpExpression {
         return OpParser::parse($rule, $defaultOp);
     }
     function toUnranged() {

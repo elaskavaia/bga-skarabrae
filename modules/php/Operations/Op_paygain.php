@@ -18,7 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\skarabrae\OpCommon;
+namespace Bga\Games\skarabrae\Operations;
+
+use Bga\Games\skarabrae\Operations\Op_seq;
+
 /** Sequence of operations, no user choice. Usually pay/gain that is shown diffrently then sequence */
 class Op_paygain extends Op_seq {
     public function requireConfirmation() {
@@ -26,5 +29,8 @@ class Op_paygain extends Op_seq {
     }
     function getOpName() {
         return $this->getRecName(" ⤇ ");
+    }
+    function getOperator() {
+        return ":";
     }
 }

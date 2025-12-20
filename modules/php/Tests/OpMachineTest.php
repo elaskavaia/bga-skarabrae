@@ -6,10 +6,10 @@ namespace Bga\Games\skarabrae\Tests;
 
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 use Bga\Games\skarabrae\Operations\Op_gain;
-use Bga\Games\skarabrae\OpCommon\Op_or;
-use Bga\Games\skarabrae\Operations\Op_pay;
-use Bga\Games\skarabrae\OpMachine;
+use Bga\Games\skarabrae\Operations\Op_or;
+
 use PHPUnit\Framework\TestCase;
 
 class OpMachineTest extends TestCase {

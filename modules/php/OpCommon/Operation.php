@@ -49,13 +49,10 @@ abstract class Operation {
 
     protected $queueRank = 1;
 
-    public function __construct(private string $type, private string $owner, mixed $data = null, private int $id = 0) {
+    public function __construct(private string $type, private ?string $owner = null, mixed $data = null, private int $id = 0) {
         $this->game = Game::$instance;
-        $this->player_id = $this->game->getPlayerIdByColor($owner);
+
         $this->withData($data);
-        if (!$owner) {
-            throw new BgaSystemException("Owner must be set");
-        }
     }
 
     function getType() {
@@ -74,11 +71,15 @@ abstract class Operation {
         $this->id = $id;
         return $this;
     }
+    function withOwner(string $owner) {
+        $this->owner = $owner;
+        return $this;
+    }
     function withData($data) {
         $xdata = self::decodeData($data);
         if ($this->data === null) {
             $this->data = $xdata;
-        } else {
+        } elseif ($xdata) {
             $this->data = array_merge($this->data, $xdata);
         }
         return $this;
@@ -95,10 +96,14 @@ abstract class Operation {
         return $this->id;
     }
     final function getPlayerId() {
+        if ($this->player_id == 0) {
+            $this->player_id = $this->game->getPlayerIdByColor($this->getOwner());
+        }
+
         return $this->player_id;
     }
 
-    function getTypeFullExpr(bool $withCounts = true) {
+    function getTypeFullExpr() {
         $params = $this->getParams();
         if ($params) {
             return $this->getType() . "($params)";
@@ -120,8 +125,9 @@ abstract class Operation {
     }
 
     function getOperator() {
-        return $this->getDataField("op");
+        return "!";
     }
+
     function withDataField(string $field, mixed $value) {
         if ($this->data === null) {
             $this->data = [];
@@ -175,12 +181,24 @@ abstract class Operation {
         return $this->id <= 0;
     }
 
-    function expandOperation($rank = 1) {
+    function expandOperation() {
         if ($this->isTrancient()) {
-            $this->game->machine->put($this->getType(), $this->getOwner(), $this->getData(), $rank);
+            $this->saveToDb(1, true);
             return true;
         }
         return false;
+    }
+
+    function getDataForDb() {
+        $data = $this->getData() ?? [];
+        return $data;
+    }
+
+    function saveToDb($rank = 1, bool $interrupt = false) {
+        if ($interrupt) {
+            $this->game->machine->interrupt($rank);
+        }
+        $this->game->machine->put($this->getType(), $this->getOwner(), $this->getDataForDb(), $rank);
     }
 
     function destroy() {

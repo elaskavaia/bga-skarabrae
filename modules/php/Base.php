@@ -22,6 +22,7 @@ namespace Bga\Games\skarabrae;
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 use BgaSystemException;
 use BgaUserException;
 use Exception;
