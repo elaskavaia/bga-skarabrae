@@ -27,6 +27,10 @@ class PlayerTurnConfirm extends GameState {
     }
 
     public function onEnteringState(int $active_player_id) {
+        if ($this->game->isEndOfGame()) {
+            return StateConstants::STATE_END_GAME;
+        }
+
         return;
     }
     #[PossibleAction]

@@ -57,7 +57,7 @@ class Op_furnishPay extends Operation {
         if ($coeff <= 0) {
             return "nop";
         }
-        return "{$coeff}n_hide";
+        return "{$coeff}(n_hide/2n_wool)";
     }
 
     function resolve() {

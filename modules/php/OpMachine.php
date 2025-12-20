@@ -87,6 +87,12 @@ class OpMachine {
                 $op = $this->instanciateCommonOperation($mnemonic, $owner, $data, $id)->withDataField("op", $operand);
                 foreach ($expr->args as $arg) {
                     $sub = $this->instanciateOperation(OpExpression::str($arg), $owner, $data)->withDataField("xop", $operand);
+                    if ($sub instanceof CountableOperation && $sub->isRanged()) {
+                        /** @var ComplexOperation */
+                        $wop = $this->instanciateCommonOperation("seq", $owner, $data, $id)->withDataField("op", ",");
+                        $wop->withDelegate($sub);
+                        $sub = $wop;
+                    }
                     $op->withDelegate($sub);
                 }
                 $op->withCounts($expr);

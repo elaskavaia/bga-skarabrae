@@ -36,7 +36,7 @@ class Op_cotag extends Operation {
         $owner = $this->getOwner();
         $tnum = $this->getParam(0);
         $count = $this->game->countTags((int) $tnum, $owner);
-        $op = $this->getParam(1, "");
+        $op = $this->getParam(1, "nop");
         $sub = $this->game->machine->instanciateOperation($op, $owner);
         $args = [];
         $args["p1"] = ["log" => $sub->getButtonName(), "args" => $sub->getExtraArgs()];

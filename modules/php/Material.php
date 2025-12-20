@@ -777,7 +777,7 @@ class Material {
         "create" => 1,
         "type" => "action special",
         "location" => "deck_action",
-        "rb" => "2(n_bone/n_food):tend",
+        "rb" => "2(n_bone/n_food):(4tend)",
         "craft" => "n_bone,n_hide",
         "num" => 4,
         "name" => clienttranslate("Tend Land"),

@@ -25,23 +25,41 @@ use Bga\Games\skarabrae\Material;
 
 class Op_cook extends Operation {
     function getArgType() {
-        return Operation::TTYPE_TOKEN;
+        $owner = $this->getOwner();
+        $hearth_limit = $this->game->getHearthLimit($owner);
+        if ($hearth_limit == 1) {
+            Operation::TTYPE_TOKEN;
+        }
+        return Operation::TTYPE_TOKEN_COUNT;
+    }
+
+    public function requireConfirmation() {
+        return true;
     }
     function resolve() {
         $owner = $this->getOwner();
 
         $recipe_token = $this->getCheckedArg();
-
-        $recipe_rule = $this->game->getRulesFor($recipe_token, "r");
-        $weight = $this->game->getRulesFor($recipe_token, "craft");
+        if (is_array($recipe_token)) {
+            $res = $recipe_token;
+        } else {
+            $res = [$recipe_token => 1];
+        }
         $prevWeight = $this->getWeight();
         $hearth_limit = $this->game->getHearthLimit($owner);
-        if (!$recipe_rule) {
-            throw new \BgaSystemException("$recipe_token => $recipe_rule");
+        foreach ($res as $recipe_token => $c) {
+            $recipe_rule = $this->game->getRulesFor($recipe_token, "r");
+            $this->game->systemAssert("ERR:Op_cook:1", $recipe_rule);
+            $weight = $this->game->getRulesFor($recipe_token, "craft");
+            $this->queue("$c($recipe_rule)", $this->getOwner(), null, "action_main_2_$owner"); // cook action is the reason
+            $prevWeight += $weight * $c;
+            if ($prevWeight > $hearth_limit) {
+                $this->game->userAssert("Cannot cook that much stuff, if not sure select one thing at a time");
+            }
         }
-        $this->queue($recipe_rule, $this->getOwner(), null, "action_main_2_$owner"); // cook action is the reason
-        if ($prevWeight + $weight < $hearth_limit) {
-            $this->queue("cook", $this->getOwner(), ["weight" => $prevWeight + $weight]);
+
+        if ($prevWeight < $hearth_limit) {
+            $this->queue("cook", $this->getOwner(), ["weight" => $prevWeight]);
         }
     }
 
@@ -69,6 +87,7 @@ class Op_cook extends Operation {
                 "q" => 0,
                 "name" => '${token_div}',
                 "w" => $weight,
+                "max" => min(floor($limit / $weight), $this->game->tokens->getTrackerValue($owner, $item)),
                 "args" => [
                     "token_div" => "tracker_$item",
                     "tooltip" => $this->game->getTokenName($recipe_token),
@@ -91,11 +110,11 @@ class Op_cook extends Operation {
         $owner = $this->getOwner();
         $hearth_limit = $this->game->getHearthLimit($owner);
         $limit = $hearth_limit - $this->getWeight();
-        return parent::getExtraArgs() + ["x" => $limit, "hearth" => $hearth_limit, "token_div" => "tracker_hearth"];
+        return parent::getExtraArgs() + ["count" => $limit, "hearth" => $hearth_limit, "token_div" => "tracker_hearth", "mcount" => 0];
     }
 
     public function getPrompt() {
-        return clienttranslate('Select recipe to cook, you have ${x}/${hearth} ${token_div} left');
+        return clienttranslate('Select recipe to cook, you have ${count}/${hearth} ${token_div} left');
     }
 
     function canSkip() {

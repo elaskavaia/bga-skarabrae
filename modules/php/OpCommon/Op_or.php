@@ -35,6 +35,9 @@ class Op_or extends ComplexOperation {
         return parent::withDelegate($sub);
     }
     function expandOperation($rank = 1) {
+        return false;
+    }
+    function expandOperationReal($rank = 1) {
         if ($this->getCount() == 0) {
             return true; // destroy
         }
@@ -86,7 +89,7 @@ class Op_or extends ComplexOperation {
             $this->game->userAssert(clienttranslate("Cannot use this action because superfluous amount of elements selected"));
         }
         $this->game->machine->interrupt(2);
-        $this->expandOperation(2);
+        $this->expandOperationReal(2);
         return;
     }
 

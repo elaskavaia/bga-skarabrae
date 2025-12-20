@@ -8,6 +8,7 @@ use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
+use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\OpCommon\Op_or;
 use Bga\Games\skarabrae\OpCommon\Op_paygain;
 use Bga\Games\skarabrae\OpCommon\Op_seq;
@@ -237,22 +238,16 @@ final class GameTest extends TestCase {
     public function testBind() {
         $game = $this->game;
         $color = PCOLOR;
-        $game->machine->push("fish/pass", $color);
+        $game->machine->push("fish/wood", $color);
         $tops = $game->machine->getTopOperations($color);
         $op = array_shift($tops);
-        $this->assertEquals("fish/pass", $op["type"]);
+        $this->assertEquals("fish/wood", $op["type"]);
 
         $game->machine->dispatchOne();
-        $tops = $game->machine->getTopOperations($color);
-        $op = array_shift($tops);
-        $this->assertEquals("fish", $op["type"]);
-        $data = Operation::decodeData($op["data"]);
-        $this->assertEquals("/", $data["xop"]);
-        $op = array_shift($tops);
-        $this->assertEquals("pass", $op["type"]);
 
         $op = $game->machine->createTopOperationFromDbForOwner($color);
         $this->assertEquals("or", $op->getType());
+        $this->assertEquals("fish/wood", $op->getTypeFullExpr());
     }
 
     public function testFish() {
@@ -319,7 +314,6 @@ final class GameTest extends TestCase {
         $this->dispatchOneStep(GameDispatch::class);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_or);
-        $this->dispatchOneStep(GameDispatch::class);
         $this->dispatchOneStep(PlayerTurn::class);
     }
 
@@ -331,7 +325,7 @@ final class GameTest extends TestCase {
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals("xxx", $op->getReason());
         $this->assertEquals("[2,2](wool/stone)", $op->getTypeFullExpr());
-        $this->dispatchOneStep(GameDispatch::class);
+        $this->dispatchOneStep();
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals("xxx", $op->getReason());
@@ -393,5 +387,24 @@ final class GameTest extends TestCase {
         $this->assertTrue($op->isPaid());
         $this->assertFalse($op->requireConfirmation());
         $this->dispatchOneStep(GameDispatch::class);
+    }
+
+    public function testGatherWood() {
+        $rule = "(2wood)/(n_wood:deer)";
+        $color = PCOLOR;
+        $res = OpExpression::parseExpression($rule);
+        $this->assertEquals("(2wood)/(n_wood:deer)", OpExpression::str($res));
+
+        $this->game->tokens->createTokens();
+        $this->game->effect_incCount(PCOLOR, "wood", 1, "");
+
+        $this->game->machine->push($rule, PCOLOR);
+        $this->dispatchOneStep(PlayerTurn::class);
+        /** @var ComplexOperation */
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals("[2,2](wood)/(n_wood:deer)", $op->getTypeFullExpr(true));
+        $this->assertEquals("[2,2](wood)", $op->delegates[0]->getTypeFullExpr());
+        $this->assertEquals("n_wood:deer", $op->delegates[1]->getTypeFullExpr());
     }
 }

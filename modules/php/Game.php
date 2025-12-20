@@ -168,16 +168,8 @@ class Game extends Base {
 
         $token_id = $this->tokens->getTrackerId($color, $type);
 
-        $this->tokens->dbResourceInc(
-            $token_id,
-            $inc,
-            $message,
-            ["reason" => $reason, "place_from" => $reason] + $options,
-            $this->getPlayerIdByColor($color)
-        );
-
         if ($this->getRulesFor($token_id, "s") == 1) {
-            $x = $this->getTotalResCount($color);
+            $x = $this->getTotalResCount($color) + $inc;
             $cap = $this->tokens->getTrackerValue($color, "slider") * 3;
             if ($x > $cap) {
                 $this->tokens->dbResourceInc(
@@ -189,6 +181,13 @@ class Game extends Base {
                 );
             }
         }
+        $this->tokens->dbResourceInc(
+            $token_id,
+            $inc,
+            $message,
+            ["reason" => $reason, "place_from" => $reason] + $options,
+            $this->getPlayerIdByColor($color)
+        );
     }
 
     function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {

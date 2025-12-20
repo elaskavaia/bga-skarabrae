@@ -50,13 +50,13 @@ class Op_seq extends ComplexOperation {
     }
 
     function getPossibleMoves() {
-        if ($this->isRangedChoice()) {
-            return parent::getRangeMoves();
-        }
         foreach ($this->delegates as $sub) {
             if ($sub->isVoid()) {
                 return ["err" => $sub->getError()];
             }
+        }
+        if ($this->isRangedChoice()) {
+            return parent::getRangeMoves();
         }
         $sub = $this->delegates[0];
         return $sub->getPossibleMoves();

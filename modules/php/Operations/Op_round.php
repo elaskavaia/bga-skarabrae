@@ -23,16 +23,18 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
+use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 
 class Op_round extends Operation {
-    function auto(): bool {
+    function resolve() {
         // start the round
         $roundNum = $this->game->globals->inc(Game::ROUNDS_NUMBER_GLOBAL, 1);
 
         if ($this->game->isEndOfGame()) {
             $this->notifyMessage(clienttranslate("--- End of game ---"));
             $this->game->finalScoring();
-            return false;
+            return PlayerTurnConfirm::class;
+            //return StateConstants::STATE_END_GAME;
         }
 
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
@@ -58,10 +60,5 @@ class Op_round extends Operation {
         }
 
         $this->queue("endOfRound", null);
-        return true;
-    }
-
-    function getNextState() {
-        return StateConstants::STATE_END_GAME;
     }
 }

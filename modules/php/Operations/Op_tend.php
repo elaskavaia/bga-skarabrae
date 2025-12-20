@@ -20,13 +20,36 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
+use Bga\Games\skarabrae\OpCommon\CountableOperation;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use BgaSystemException;
 
-class Op_tend extends Operation {
+class Op_tend extends CountableOperation {
     function resolve() {
         $this->notifyMessage(""); // empty message
         throw new BgaSystemException("not impl");
         return;
+    }
+
+    public function getPossibleMoves() {
+        $owner = $this->getOwner();
+        $res = [];
+        for ($i = 6; $i <= 9; $i++) {
+            $id = "action_main_$i";
+            $res[$id] = [
+                "name" => $this->game->tokens->getTokenName($id),
+                "q" => 0,
+            ];
+        }
+        $res["midden"] = [
+            "name" => $this->game->tokens->getTokenName("Op_n_midden"),
+            "token_div" => "tracker_midden_$owner",
+            "q" => 0,
+        ];
+        return $res;
+    }
+
+    public function getPrompt() {
+        return clienttranslate("Select action");
     }
 }

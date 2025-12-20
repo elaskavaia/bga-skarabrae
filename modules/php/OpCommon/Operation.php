@@ -479,14 +479,10 @@ abstract class Operation {
 
         if (!$isAuto) {
             // switch to player state
-            return $this->getNextState();
+            return PlayerTurn::class;
         }
         $this->destroy();
         return;
-    }
-
-    function getNextState() {
-        return PlayerTurn::class;
     }
 
     /** Automatic action perform in game state, if cannot be done automatically turn one of player's states

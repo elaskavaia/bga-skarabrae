@@ -28,7 +28,7 @@ class Op_turnall extends Operation {
         $curturn = $this->game->globals->inc(Game::TURNS_NUMBER_GLOBAL, 1);
         $players_basic = $this->game->loadPlayersBasicInfos();
         // schedle player in order of disk TODO
-        $this->notifyMessage(clienttranslate('turn ${turn}'), ["turn" => $curturn]);
+        $this->notifyMessage(clienttranslate('-- Turn ${turn} --'), ["turn" => $curturn]);
         foreach ($players_basic as $player_info) {
             $color = $player_info["player_color"];
             $this->queue("turn", $color);

@@ -42,7 +42,7 @@ class OpExpression {
         $op = static::getop($expr);
         if ($expr instanceof OpExpression) {
             $res = $expr->__toString();
-            if (OpParser::compareOperationRank($topop, $op) > 0) {
+            if ($expr instanceof OpExpressionRanged || OpParser::compareOperationRank($topop, $op) > 0) {
                 $res = "($res)";
             }
         } else {
