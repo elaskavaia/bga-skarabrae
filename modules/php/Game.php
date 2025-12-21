@@ -30,14 +30,18 @@ use Bga\Games\skarabrae\States\GameDispatch;
 class Game extends Base {
     const TURNS_NUMBER_GLOBAL = "nturns";
     const ROUNDS_NUMBER_GLOBAL = "nrounds";
-    public static Game $instance;
+    public static Game $game;
     public OpMachine $machine;
     public Material $material;
     public PGameTokens $tokens;
 
     function __construct() {
+        Game::$game = $this;
         parent::__construct();
-        Game::$instance = $this;
+        self::initGameStateLabels([
+            "variant_draft_num" => 100,
+            "variant_solo_dif" => 101,
+        ]);
 
         $this->material = new Material();
         $this->machine = new OpMachine();
@@ -53,12 +57,12 @@ class Game extends Base {
     }
 
     /*
-        initTables:
+        setupGameTables:
         
         init all game tables (players and stats init in base class)
         called from setupNewGame
     */
-    protected function initTables() {
+    protected function setupGameTables() {
         $this->tokens->createTokens();
         $tokens = $this->tokens->tokens;
         // setup
@@ -68,6 +72,7 @@ class Game extends Base {
         They also place 1 Furnish Marker into the left-most slot of the Furnish Track, and 1 Trade Marker into the left-most slot of the Trade Track. 
         */
         $players = $this->loadPlayersBasicInfos();
+        $pnum = count($players);
 
         //2. Each player takes all 9 Standard Action Tiles in their chosen player colour (see the banner in the top-right corner of each Tile).
         //These should be placed in the correct order to the right of their Player Board so that the artwork lines up. Make sure that all Action Tiles are placed on their correct side. Each Action Tile should show 2 Resources on a tan banner along the bottom edge.
@@ -77,12 +82,17 @@ class Game extends Base {
         //4. Place all Resources, Roof Cards, and Extra Storage Tiles into a Main Supply.
         //5. Each player takes 2 Skaill Knives from the Main Supply, placing them to the left of the Slider on their Player Board (each in a separate space of the Storage Area).
         foreach ($players as $player_id => $player) {
-            $color = $this->getPlayerColorById((int) $player_id);
+            $color = $player["player_color"];
             $this->tokens->tokens->setTokenState("tracker_slider_$color", 1);
             $this->effect_incCount($color, "skaill", 2, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
+        $startingPlayer = $this->getFirstPlayer(); ///
+        if (!$this->gamestate->isPlayerActive($startingPlayer)) {
+            $this->gamestate->changeActivePlayer($startingPlayer);
+        }
+
         //2-Players: Include 1 more Turn Marker of an unused colour.
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
 
@@ -95,7 +105,7 @@ class Game extends Base {
             $tokens->shuffle("deck_task");
             $tokens->shuffle("deck_goal");
             foreach ($players as $player_id => $player) {
-                $color = $this->getPlayerColorById((int) $player_id);
+                $color = $player["player_color"];
                 $tokens->pickTokensForLocation(4, "deck_task", "tableau_$color");
                 $tokens->pickTokensForLocation(1, "deck_goal", "tableau_$color");
             }
@@ -104,15 +114,31 @@ class Game extends Base {
          * 9. Shuffle all Special Action Tiles and deal 2 to each player. Players must select 1 to keep, returning the other to the box.
          * 1-2 Players: If desired, 3 Special Action Tiles can be dealt to each player instead, with each player returning 2 of them.
          */
-        $tokens->shuffle("deck_action"); // XXX
-        foreach ($players as $player_id => $player) {
-            $color = $this->getPlayerColorById((int) $player_id);
-            $tokens->pickTokensForLocation(1, "deck_action", "tableau_$color");
+        $tokens->shuffle("deck_action");
+        $dnum = $this->getVariantDraftNum();
+        $n = $dnum;
+        if ($dnum == 3) {
+            //max possible
+            $x = 8; //$this->tokens->tokens->countTokensInLocation("deck_action");
+            $n = floor($x / $pnum);
+        }
+
+        $p = $this->getPlayerIdsInOrder($startingPlayer);
+        $order = 0;
+        foreach ($p as $player_id) {
+            $color = $this->getPlayerColorById($player_id);
+            $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
+            $this->machine->queue("draft", $color);
+            $this->effect_incCount($color, "turnmarker", $order, "", [
+                "message" => clienttranslate('${player_name} initial turn order ${order}'),
+                "order" => $order + 1,
+            ]);
+            $order++;
         }
 
         $this->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
         $this->globals->set(Game::ROUNDS_NUMBER_GLOBAL, 0);
-        $this->machine->push("round", $this->getPlayerColorById((int) $this->getActivePlayerId()));
+        $this->machine->queue("round", $this->getPlayerColorById($startingPlayer));
         return GameDispatch::class;
     }
 
@@ -226,19 +252,20 @@ class Game extends Base {
             ])
         );
         // XXX: inc stat
+        $this->playerStats->set($stat, $inc, $player_id);
 
-        // $this->notifyWithName(
-        //     "score",
-        //     $message,
-        //     [
-        //         "player_score" => $score,
-        //         "inc" => $inc,
-        //         "mod" => abs((int) $inc),
-        //         "duration" => 500,
-        //         "target" => $target,
-        //     ],
-        //     $player_id
-        // );
+        $this->notifyWithName(
+            "score",
+            "",
+            [
+                "player_score" => $score,
+                "inc" => $inc,
+                "absImc" => abs((int) $inc),
+                "duration" => 500,
+                //"target" => $target,
+            ],
+            $player_id
+        );
     }
 
     function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
@@ -330,6 +357,14 @@ class Game extends Base {
         return $n;
     }
 
+    function getVariantDraftNum() {
+        return (int) $this->getGameStateValue("variant_draft_num") ?: 2;
+    }
+
+    function getVariantSoloDif() {
+        return (int) $this->getGameStateValue("variant_solo_dif");
+    }
+
     function getRulesFor($token_id, $field = "r", $default = "") {
         return $this->material->getRulesFor($token_id, $field, $default);
     }
@@ -338,6 +373,10 @@ class Game extends Base {
             $default = "$token_id ?";
         }
         return $this->material->getRulesFor($token_id, "name", $default);
+    }
+
+    function getTrackerIdAndValue(?string $color, string $type, ?array &$arr = null) {
+        return $this->tokens->getTrackerIdAndValue($color, $type, $arr);
     }
 
     function getTerrainNum(string $card) {
@@ -489,7 +528,13 @@ class Game extends Base {
             $score = $this->playerScore->get($player_id);
             $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
             if ($this->isSolo()) {
-                $goal = 45;
+                $this->playerStats->set("total_solo", $score, $player_id);
+                $var = $this->game->getVariantSoloDif();
+                if ($var <= 1) {
+                    $goal = 45;
+                } else {
+                    $goal = 55;
+                }
                 if ($score < $goal) {
                     $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
                         "points" => $goal,
@@ -626,11 +671,12 @@ class Game extends Base {
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
 
-    function debug_initTables() {
+    function debug_setupGameTables() {
+        $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
         $this->DbQuery("DELETE FROM token");
         $this->DbQuery("DELETE FROM machine");
         $this->DbQuery("DELETE FROM multiundo");
-        $this->initTables();
+        $this->setupGameTables();
         //$newGameDatas = $this->getAllTableDatas(); // this is framework function
         //$this->notify->player($this->getActivePlayerId(), "resetInterfaceWithAllDatas", "", $newGameDatas); // this is notification to reset all data
         $this->notify->all("message", "setup is done", []);

@@ -158,11 +158,12 @@ a.bgabutton_white {
     border: 1px solid blue;
   }
   &[data-count]::after {
-    content: "x" attr(data-count);
+    content: " x " attr(data-count);
   }
 }
-.action-button {
+#page-title .action-button {
   min-width: 4em;
+  line-height: 24px;
 }
 
 #undoredo_wrap {
@@ -186,17 +187,38 @@ a.bgabutton_white {
   // }
 }
 
+#overall-content {
+  overflow: visible; // when hidden it prevents sticky position to work
+}
+
 html {
   background: url(img/stonex.jpg);
 }
 
 .player-board {
-  background-color: #cbdee2;
+  background-color: #f8f8f8;
 }
 html[data-theme="dark"],
 html[data-theme="dark"] body {
   background-image: url(img/stonex.jpg) !important;
 }
+//[data-theme="light"] #game_play_area_background {
+//   width: 100%;
+//   height: 100%;
+//   position: absolute;
+//   display: block;
+//   top: 0;
+//   left: 0;
+//   z-index: -1;
+//   background-color: white;
+//   /* border: 30px solid transparent; */
+//   /* Shorthand property: source | slice | width | outset | repeat */
+//   border-image-source: url(img/bg10.jpg);
+//   border-image-slice: 100 fill;
+//   border-image-width: 100px;
+//   border-image-outset: 0;
+//   border-image-repeat: stretch;
+// }
 [data-theme="light"] #game_play_area_background {
   width: 100%;
   height: 100%;
@@ -204,12 +226,7 @@ html[data-theme="dark"] body {
   display: block;
   top: 0;
   left: 0;
-  background-color: white;
-  /* border: 30px solid transparent; */
-  /* Shorthand property: source | slice | width | outset | repeat */
-  border-image-source: url(img/bg10.jpg);
-  border-image-slice: 100 fill;
-  border-image-width: 100px;
-  border-image-outset: 0;
-  border-image-repeat: stretch;
+  z-index: -1;
+  background-image: url(img/bg11.jpg);
+  background-size: auto 100%;
 }

@@ -1,1 +1,43 @@
-{}
+{
+  "100": {
+    "name": "Number of Special Actions to Draft",
+    "values": {
+      "2": {
+        "name": "2 (standard)"
+      },
+      "3": {
+        "name": "Maximum",
+        "description": "3 cards in 2 player game, all cards in solo"
+      }
+    },
+    "default": 2,
+    "displaycondition": [
+      {
+        "type": "maxplayers",
+        "value": [1, 2]
+      }
+    ],
+    "notdisplayedmessage": "This variant is not available for 3+ players"
+  },
+  "101": {
+    "name": "Solo Mode Difficulty",
+    "values": {
+      "1": {
+        "name": "Easy (45 vp)"
+      },
+      "2": {
+        "name": "Hard (55 vp)"
+      },
+      "3": {
+        "name": "Beat your own score"
+      }
+    },
+    "default": 1,
+    "displaycondition": [
+      {
+        "type": "maxplayers",
+        "value": 1
+      }
+    ]
+  }
+}

@@ -63,12 +63,32 @@ class Material {
             ],
 
             /* --- gen php begin loc_material --- */
+    "deck" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Deck"),
+        "location" => "mainarea",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "hidden",
+],
+    "discard" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Deck"),
+        "location" => "mainarea",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "public",
+],
     "deck_village" => [ 
         "type" => "location",
         "showtooltip" => 0,
         "create" => 0,
         "name" => clienttranslate("Village Deck"),
-        "location" => "supply",
+        "location" => "mainarea",
         "scope" => "global",
         "counter" => "public",
         "content" => "hidden",
@@ -78,10 +98,10 @@ class Material {
         "showtooltip" => 0,
         "create" => 0,
         "name" => clienttranslate("Village Discard"),
-        "location" => "supply",
+        "location" => "mainarea",
         "scope" => "global",
         "counter" => "public",
-        "content" => "hidden",
+        "content" => "public",
 ],
     "limbo" => [ 
         "type" => "location",
@@ -101,6 +121,16 @@ class Material {
         "scope" => "player",
         "counter" => "hidden",
         "content" => "public",
+],
+    "hand" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Player Hand"),
+        "location" => "players_panels",
+        "scope" => "player",
+        "counter" => "hidden",
+        "content" => "private",
 ],
             /* --- gen php end loc_material --- */
             /* --- gen php begin op_material --- */
@@ -203,6 +233,10 @@ class Material {
     "Op_tend" => [ 
         "type" => "tend",
         "name" => clienttranslate("Tend Land"),
+],
+    "Op_draft" => [ 
+        "type" => "draft",
+        "name" => clienttranslate("Select Special Action"),
 ],
     "Op_shell" => [ 
         "class" => "Op_gain",

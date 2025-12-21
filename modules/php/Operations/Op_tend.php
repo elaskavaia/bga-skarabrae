@@ -25,21 +25,24 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_tend extends CountableOperation {
     function resolve() {
-        $arg = $this->getCheckedArg();
-        $nc = $this->incCount(-1);
-        $this->incMinCount(-1);
+        $uargs = $this->getCheckedArg(true);
+        $nc = 0;
 
-        if ($arg == "midden") {
-            $this->queue("n_midden");
-            return;
+        foreach ($uargs as $arg => $count) {
+            if (str_starts_with($arg, "tracker_midden")) {
+                $this->queue("{$count}n_midden");
+            } else {
+                $action_tile = $arg;
+                $this->withDataField($action_tile, 1);
+                $owner = $this->getOwner();
+                $r = $this->game->getActionRules($action_tile);
+                $this->queue($r, $owner, [], $action_tile);
+            }
+            $nc = $this->incCount(-$count);
+            $this->incMinCount(-$count);
         }
-        $action_tile = $arg;
-        $owner = $this->getOwner();
-        $r = $this->game->getActionRules($action_tile);
-        $this->queue($r, $owner, [], $action_tile);
 
         if ($nc > 0) {
-            $this->withDataField($arg, 1);
             $this->saveToDb($this->queueRank, true);
         }
     }
@@ -53,23 +56,29 @@ class Op_tend extends CountableOperation {
             $res[$id] = [
                 "name" => $this->game->tokens->getTokenName($id),
                 "q" => 0,
+                "max" => 1,
             ];
             if ($this->getDataField($id, 0)) {
                 $res[$id]["q"] = Material::MA_ERR_MAX;
             }
         }
-        $res["midden"] = [
-            "name" => $this->game->tokens->getTokenName("Op_n_midden"),
-            "token_div" => "tracker_midden_$owner",
+        [$midden_id, $midden_value] = $this->game->getTrackerIdAndValue($owner, "midden");
+        $res[$midden_id] = [
+            "name" => '${token_div}',
+            "args" => ["token_div" => $midden_id],
+            "max" => $this->getCount(),
             "q" => 0,
         ];
         return $res;
     }
 
+    public function getArgType() {
+        return parent::TTYPE_TOKEN_COUNT;
+    }
     public function canSkip() {
         return true;
     }
     public function getPrompt() {
-        return clienttranslate('Select unique gather or clean (${count} left)');
+        return clienttranslate('Select unique gather or clean (count: ${count})');
     }
 }

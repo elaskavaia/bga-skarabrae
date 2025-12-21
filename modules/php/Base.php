@@ -43,14 +43,14 @@ class Base extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
 
-        self::initGameStateLabels([
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
-        ]);
+        //self::initGameStateLabels([
+        //    "my_first_global_variable" => 10,
+        //    "my_second_global_variable" => 11,
+        //      ...
+        //    "my_first_game_variant" => 100,
+        //    "my_second_game_variant" => 101,
+        //      ...
+        //]);
         $this->notify->addDecorator(function (string $message, array $args) {
             if (!isset($args["player_id"])) {
                 $args["player_id"] = $this->getActivePlayerId();
@@ -118,7 +118,7 @@ class Base extends Table {
 
         $this->initStats();
         // Setup the initial game situation here
-        return $this->initTables();
+        return $this->setupGameTables();
         /**
          * ********** End of the game initialization ****
          */
@@ -131,27 +131,45 @@ class Base extends Table {
         // we need a prefix because there is some other system stuff
         foreach ($player_stats as $key => $value) {
             if (startsWith($key, "game_")) {
-                $this->initStat("player", $key, 0);
-            }
-            if ($key === "turns_number") {
-                $this->initStat("player", $key, 0);
+                $this->playerStats->init($key, 0);
+            } elseif ($key === "turns_number") {
+                $this->playerStats->init($key, 0);
             }
         }
         $table_stats = $all_stats["table"];
         foreach ($table_stats as $key => $value) {
             if (startsWith($key, "game_")) {
-                $this->initStat("table", $key, 0);
+                $this->tableStats->init($key, 0);
+            } elseif ($key === "turns_number") {
+                $this->tableStats->init($key, 0);
             }
-            if ($key === "turns_number") {
-                $this->initStat("table", $key, 0);
+        }
+    }
+
+    public function debug_dumpStats() {
+        $all_stats = $this->getStatTypes();
+        $player_stats = $all_stats["player"];
+
+        $players = $this->loadPlayersBasicInfosWithBots();
+
+        foreach ($players as $player_id => $player) {
+            foreach ($player_stats as $key => $value) {
+                $stat = $this->playerStats->get($key, $player_id);
+                $this->notify->all("message", "$key=$stat");
             }
+        }
+
+        $table_stats = $all_stats["table"];
+        foreach ($table_stats as $key => $value) {
+            $stat = $this->tableStats->get($key);
+            $this->notify->all("message", "$key=$stat");
         }
     }
 
     /**
      * override to setup all custom tables
      */
-    protected function initTables() {}
+    protected function setupGameTables() {}
 
     /*
         getAllDatas: 
@@ -296,6 +314,28 @@ class Base extends Table {
         // run out of attempts
         return 0;
     }
+
+    /**
+     *
+     * @return array of player ids
+     */
+    function getPlayerIds() {
+        $players = $this->loadPlayersBasicInfosWithBots();
+        return array_keys($players);
+    }
+
+    function getPlayerIdsInOrder($starting) {
+        $player_ids = $this->getPlayerIds();
+        $rotate_count = array_search($starting, $player_ids);
+        if ($rotate_count === false) {
+            return $player_ids;
+        }
+        for ($i = 0; $i < $rotate_count; $i++) {
+            array_push($player_ids, array_shift($player_ids));
+        }
+        return $player_ids;
+    }
+
     function loadPlayersBasicInfosWithBots($bots = true) {
         return parent::loadPlayersBasicInfos();
     }

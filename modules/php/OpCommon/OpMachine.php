@@ -27,7 +27,7 @@ class OpMachine {
     protected Game $game;
 
     public function __construct(protected DbMachine $db = new DbMachine()) {
-        $this->game = Game::$instance;
+        $this->game = Game::$game;
     }
 
     function createTopOperationFromDb($player_id): ?Operation {

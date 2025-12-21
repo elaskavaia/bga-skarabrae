@@ -50,7 +50,7 @@ abstract class Operation {
     protected $queueRank = 1;
 
     public function __construct(private string $type, private ?string $owner = null, mixed $data = null, private int $id = 0) {
-        $this->game = Game::$instance;
+        $this->game = Game::$game;
 
         $this->withData($data);
     }
@@ -228,11 +228,68 @@ abstract class Operation {
         $this->game->machine->insert($type, $owner, $data, $this->queueRank);
         //$this->game->debugConsole("queue $type");
     }
+    protected function getCheckedArg(bool $checkMaxCount = false, bool $checkMinCount = false) {
+        if ($this->userArgs === null) {
+            throw new BgaSystemException("No user args set");
+        }
+        $arg = $this->_getCheckedArg();
+        $ttype = $this->getArgType();
+        if ($ttype == Operation::TTYPE_TOKEN_ARRAY) {
+            if (!is_array($arg)) {
+                $arg = [$arg];
+            }
+        } elseif ($ttype == Operation::TTYPE_TOKEN_COUNT) {
+            if (!is_array($arg)) {
+                $arg = [$arg => 1];
+            }
+        }
+        $total = $this->getUserArgCount($arg);
 
-    protected function getCheckedArg() {
+        if ($checkMaxCount) {
+            $args = $this->getArgs();
+            $max = $args["count"] ?? $this->getDataField("count", 1);
+
+            $this->game->userAssert(
+                clienttranslate("Cannot use this action because superfluous amount of elements is selected"),
+                $total <= $max
+            );
+        }
+        if ($checkMinCount) {
+            $args = $this->getArgs();
+            $min = $args["mcount"] ?? $this->getDataField("mcount", 1);
+
+            $this->game->userAssert(
+                clienttranslate("Cannot use this action because insuffient amount of elements is selected"),
+                $total >= $min
+            );
+        }
+
+        return $arg;
+    }
+    protected function getUserArgCount($arg) {
+        $ttype = $this->getArgType();
+        $total = 1;
+        if ($ttype == Operation::TTYPE_TOKEN_ARRAY) {
+            if (!is_array($arg)) {
+                $arg = [$arg];
+            }
+            $total = count($arg);
+        } elseif ($ttype == Operation::TTYPE_TOKEN_COUNT) {
+            if (!is_array($arg)) {
+                $arg = [$arg => 1];
+            }
+            $total = 0;
+            foreach ($arg as $a => $c) {
+                $total += $c;
+            }
+        }
+        return $total;
+    }
+    protected function _getCheckedArg() {
         $args = $this->userArgs;
         $key = Operation::ARG_TARGET;
         $possible_targets = $this->getArgs()[$key];
+        //$this->game->userAssert("args " . toJson($args));
         $this->game->systemAssert("ERR:getCheckedArg:1", is_array($possible_targets));
 
         if (count($possible_targets) == 0) {
@@ -247,9 +304,7 @@ abstract class Operation {
             if ($target === Operation::TTYPE_AUTO) {
                 return $possible_targets[0] ?? [];
             }
-            if (count($possible_targets) == 1) {
-                return $possible_targets[0];
-            }
+
             if (is_array($target)) {
                 $multi = $target;
                 $res = [];
@@ -262,7 +317,7 @@ abstract class Operation {
                     }
                     return $res;
                 }
-                if ($ttype == "token_count") {
+                if ($ttype == Operation::TTYPE_TOKEN_COUNT) {
                     foreach ($multi as $target => $count) {
                         $index = array_search($target, $possible_targets);
                         $this->game->systemAssert("Unauthorized argument $key", $index !== false);
@@ -273,6 +328,9 @@ abstract class Operation {
 
                 $this->game->systemAssert("Array is passed for $ttype, but it is not supported", false);
             } else {
+                if (count($possible_targets) == 1) {
+                    return $possible_targets[0];
+                }
                 $index = array_search($target, $possible_targets);
                 $this->game->systemAssert("ERR:getCheckedArg:4", $index !== false);
                 return $possible_targets[$index];
@@ -445,7 +503,7 @@ abstract class Operation {
     }
     // overridable stuff
     function getArgType() {
-        return "auto";
+        return self::TTYPE_AUTO;
     }
 
     /** If operation require confirmation it will be sent to user and not auto-resolved */

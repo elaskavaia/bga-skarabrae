@@ -31,80 +31,85 @@ class Op_act extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $taskop = null;
+        $taskavail = $this->isTaskAvailable();
 
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
-        if (count($workers) == 0) {
+        if (count($workers) == 0 && !$taskavail) {
             return ["err" => clienttranslate("No available workers")];
         }
-        $largeWorker = null;
-        $anyWorker = null;
-        foreach ($workers as $worker => $info) {
-            if (str_starts_with($worker, "worker_1")) {
-                $largeWorker = $worker;
-            } else {
-                $anyWorker = $worker;
-            }
-        }
-        if ($anyWorker == null) {
-            $anyWorker = $largeWorker;
-        }
-        $workersf = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
-        $workersPerAction = 2;
-        if ($this->game->hasSpecial(3, $owner)) {
-            // recruit
-            $workers_extra = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
-            $workersf = array_merge($workersf, $workers_extra);
-            if ($this->game->getActionTileSide("action_special_3")) {
-                $workersPerAction = 3;
-            }
-        }
-        $locs = $this->game->tokens->getReverseLocationTokensMapping($workersf);
-        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
         $res = [];
-        foreach ($keys as $act) {
-            $res[$act] = [
-                "name" => $this->game->tokens->getTokenName($act),
-                "q" => 0,
-            ];
-            $occupied = $locs[$act] ?? [];
-            $countw = count($occupied);
-            if ($countw >= $workersPerAction) {
-                $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
-                continue;
+        if (count($workers) > 0) {
+            $largeWorker = null;
+            $anyWorker = null;
+            foreach ($workers as $worker => $info) {
+                if (str_starts_with($worker, "worker_1")) {
+                    $largeWorker = $worker;
+                } else {
+                    $anyWorker = $worker;
+                }
             }
+            if ($anyWorker == null) {
+                $anyWorker = $largeWorker;
+            }
+            $workersf = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
+            $workersPerAction = 2;
+            if ($this->game->hasSpecial(3, $owner)) {
+                // recruit
+                $workers_extra = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
+                $workersf = array_merge($workersf, $workers_extra);
+                if ($this->game->getActionTileSide("action_special_3")) {
+                    $workersPerAction = 3;
+                }
+            }
+            $locs = $this->game->tokens->getReverseLocationTokensMapping($workersf);
+            $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
 
-            if ($countw >= $workersPerAction - 1) {
-                if (!$largeWorker) {
+            foreach ($keys as $act) {
+                $res[$act] = [
+                    "name" => $this->game->tokens->getTokenName($act),
+                    "q" => 0,
+                ];
+                $occupied = $locs[$act] ?? [];
+                $countw = count($occupied);
+                if ($countw >= $workersPerAction) {
                     $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
                     continue;
                 }
-                $res[$act]["worker"] = $largeWorker;
-            } else {
-                $res[$act]["worker"] = $anyWorker;
-            }
-            $rules = $this->game->getActionRules($act);
 
-            $op = $this->game->machine->instanciateOperation($rules, $owner, ["reason" => $act]);
+                if ($countw >= $workersPerAction - 1) {
+                    if (!$largeWorker) {
+                        $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
+                        continue;
+                    }
+                    $res[$act]["worker"] = $largeWorker;
+                } else {
+                    $res[$act]["worker"] = $anyWorker;
+                }
+                $rules = $this->game->getActionRules($act);
 
-            if ($op->isVoid()) {
-                $res[$act]["err"] = $op->getError();
-                $res[$act]["q"] = 1;
-                $res[$act]["r"] = $rules;
+                $op = $this->game->machine->instanciateOperation($rules, $owner, ["reason" => $act]);
+
+                if ($op->isVoid()) {
+                    $res[$act]["err"] = $op->getError();
+                    $res[$act]["q"] = 1;
+                    $res[$act]["r"] = $rules;
+                }
             }
         }
-        if ($this->game->isSolo()) {
-            $taskop = $this->game->machine->instanciateOperation("task", $owner);
-            if (!$taskop->noValidTargets()) {
-                return $res + [
-                    "task" => [
-                        "name" => clienttranslate("Task Card"),
-                        "q" => 0,
-                    ],
-                ];
-            }
+
+        if ($taskavail) {
+            return $res + $this->game->machine->instanciateOperation("task", $owner)->getPossibleMoves();
         }
+
         return $res;
+    }
+    function isTaskAvailable() {
+        $owner = $this->getOwner();
+        if (!$this->game->isSolo()) {
+            return false;
+        }
+        $taskop = $this->game->machine->instanciateOperation("task", $owner);
+        return !$taskop->noValidTargets();
     }
     function getUiArgs() {
         return ["buttons" => false];
@@ -119,8 +124,8 @@ class Op_act extends Operation {
         $owner = $this->getOwner();
         $args = $this->getArgs();
         $action_tile = $this->getCheckedArg();
-        if ($action_tile == "task") {
-            $this->queue("task", $owner);
+        if (str_starts_with($action_tile, "card_task")) {
+            $this->queue("task", $owner, ["card" => $action_tile]);
             $this->queue($this->getType(), $owner);
             return;
         }
@@ -136,6 +141,9 @@ class Op_act extends Operation {
     }
 
     public function getPrompt() {
+        if ($this->isTaskAvailable()) {
+            return clienttranslate("Select an action or task");
+        }
         return clienttranslate("Select an action for worker");
     }
     public function getSubTitle() {

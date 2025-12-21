@@ -26,16 +26,13 @@ class PlayerTurnConfirm extends GameState {
         return [];
     }
 
-    public function onEnteringState(int $active_player_id) {
+    #[PossibleAction]
+    function action_resolve(#[JsonParam] array $data) {
+        $this->game->notify->all("message", ""); // empty message
         if ($this->game->isEndOfGame()) {
             return StateConstants::STATE_END_GAME;
         }
 
-        return;
-    }
-    #[PossibleAction]
-    function action_resolve(#[JsonParam] array $data) {
-        $this->game->notify->all("message", ""); // empty message
         return GameDispatch::class;
     }
 

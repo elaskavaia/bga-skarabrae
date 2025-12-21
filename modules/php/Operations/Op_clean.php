@@ -26,35 +26,26 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use function Bga\Games\skarabrae\getPart;
 
 class Op_clean extends Operation {
-    private $r1 = "hide,barley,seaweed,wood,food";
-
     function resolve() {
-        $res = $this->getCheckedArg();
+        $res = $this->getCheckedArg(true, true);
         $args = $this->getArgs();
-        $mcount = $args["mcount"];
+
         $maxcount = $args["count"];
         $userCount = count($res);
-        $this->game->userAssert(
-            clienttranslate("Cannot use this action because insuffient amount of elements selected"),
-            $userCount >= $mcount
-        );
 
-        $this->game->userAssert(
-            clienttranslate("Cannot use this action because superfluous amount of elements selected"),
-            $userCount <= $maxcount
-        );
         foreach ($res as $item) {
             $name = getPart($item, 1);
             $this->game->effect_incCount($this->getOwner(), $name, -1, $this->getReason());
         }
 
-        $mc = [1, 3, 0];
+        $mc = [0, 0, 1, 3, 0];
         if ($maxcount == 4) {
-            $mc = [2, 4, 6];
+            // flipped
+            $mc = [0, 0, 2, 4, 6];
         }
-        $midden = $mc[$userCount - 2];
-        $this->queue("{$midden}n_midden");
+        $midden = $mc[$userCount];
         $this->queue("roof");
+        $this->queue("{$midden}n_midden");
     }
 
     function isFlipped() {
@@ -66,7 +57,8 @@ class Op_clean extends Operation {
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $state = $this->isFlipped();
-        $items = explode(",", $this->r1);
+        $r = "hide,barley,seaweed,wood,food";
+        $items = explode(",", $r);
         if (!$state) {
             unset($items[4]); // remove food
         }

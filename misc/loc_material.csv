@@ -2,8 +2,11 @@ id|name|location|scope|counter|content|php
 #set type=location
 #set showtooltip=0
 #set create=0
-deck_village|Village Deck|supply|global|public|hidden|
-discard_village|Village Discard|supply|global|public|hidden|
+deck|Deck|mainarea|global|public|hidden|
+discard|Deck|mainarea|global|public|public|
+deck_village|Village Deck|mainarea|global|public|hidden|
+discard_village|Village Discard|mainarea|global|public|public|
 limbo|Limbo||global|hidden|hidden|
 tableau|Player Area|players_panels|player|hidden|public|
+hand|Player Hand|players_panels|player|hidden|private|
 

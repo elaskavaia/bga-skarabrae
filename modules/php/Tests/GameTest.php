@@ -18,6 +18,7 @@ use Bga\Games\skarabrae\Operations\Op_pay;
 use Bga\Games\skarabrae\OpCommon\OpMachine;
 use Bga\Games\skarabrae\Operations\Op_furnish;
 use Bga\Games\skarabrae\Operations\Op_furnishPay;
+use Bga\Games\skarabrae\Operations\Op_task;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
 use Bga\Games\skarabrae\States\PlayerTurn;
@@ -410,5 +411,23 @@ final class GameTest extends TestCase {
         $this->assertEquals("2(wood)/(n_wood:deer)", $op->getTypeFullExpr(true));
         $this->assertEquals("2(wood)", $op->delegates[0]->getTypeFullExpr());
         $this->assertEquals("n_wood:deer", $op->delegates[1]->getTypeFullExpr());
+    }
+
+    public function testTask() {
+        $this->game->tokens->createTokens();
+        $this->game->effect_incCount(PCOLOR, "wood", 1, "");
+
+        $action_tile = "card_task_4";
+        $this->game->machine->push("task", PCOLOR, ["card" => $action_tile]);
+        /** @var Op_task */
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertFalse($op->requireConfirmation());
+        $this->assertTrue($op instanceof Op_task);
+        $this->assertEquals($action_tile, $op->getCard());
+        $this->assertEquals([$action_tile], $op->getPossibleMoves());
+
+        /** @var Op_task */
+        $op = $this->dispatchOneStep();
+        $this->assertTrue($op instanceof Op_paygain);
     }
 }

@@ -25,23 +25,12 @@ use Bga\Games\skarabrae\Material;
 
 class Op_cook extends Operation {
     function getArgType() {
-        $owner = $this->getOwner();
-        $hearth_limit = $this->game->getHearthLimit($owner);
-        if ($hearth_limit == 1) {
-            Operation::TTYPE_TOKEN;
-        }
         return Operation::TTYPE_TOKEN_COUNT;
     }
 
     function resolve() {
         $owner = $this->getOwner();
-
-        $recipe_token = $this->getCheckedArg();
-        if (is_array($recipe_token)) {
-            $res = $recipe_token;
-        } else {
-            $res = [$recipe_token => 1];
-        }
+        $res = $this->getCheckedArg();
         $prevWeight = $this->getWeight();
         $hearth_limit = $this->game->getHearthLimit($owner);
         foreach ($res as $recipe_token => $c) {

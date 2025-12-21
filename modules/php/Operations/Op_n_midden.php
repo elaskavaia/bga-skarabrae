@@ -31,21 +31,20 @@ class Op_n_midden extends CountableOperation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
+        [$midden, $midden_count] = $this->game->getTrackerIdAndValue($owner, $this->getResType());
         /**
          * @var Operation_n_slider
          */
         $sliderOp = $this->game->machine->instanciateOperation("n_slider", $owner);
         $canSlider = !$sliderOp->noValidTargets();
-        $midden = $this->game->tokens->getTrackerId($owner, "midden");
         $slider = $this->game->tokens->getTrackerId($owner, "slider");
         $count = $this->getCount();
         return [
             $midden => [
-                "q" => $current > 0 ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH,
+                "q" => $midden_count > 0 ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH,
                 "name" => '${token_div}',
                 "args" => ["token_div" => $midden],
-                "max" => min($current, $count),
+                "max" => min($midden_count, $count),
             ],
             $slider => [
                 "q" => $canSlider ? Material::MA_OK : Material::MA_ERR_NOT_ENOUGH,
@@ -61,19 +60,12 @@ class Op_n_midden extends CountableOperation {
     }
 
     function getArgType() {
-        $count = $this->getCount();
-        if ($count > 1) {
-            return Operation::TTYPE_TOKEN_COUNT;
-        }
-        return Operation::TTYPE_TOKEN;
+        return Operation::TTYPE_TOKEN_COUNT;
     }
 
     function resolve() {
         $owner = $this->getOwner();
-        $res = $this->getCheckedArg();
-        if (!is_array($res)) {
-            $res = [$res => 1];
-        }
+        $res = $this->getCheckedArg(true);
         $count = 0;
         foreach ($res as $elem => $c) {
             if ($c == 0) {
@@ -92,8 +84,6 @@ class Op_n_midden extends CountableOperation {
         $rem = $this->getCount() - $count;
         if ($rem > 0) {
             $this->queue("{$rem}n_midden", $owner, null, $this->getReason());
-        } elseif ($rem < 0) {
-            $this->game->userAssert(clienttranslate("Cannot use this action because superfluous amount of elements selected"));
         }
         return;
     }
@@ -102,12 +92,8 @@ class Op_n_midden extends CountableOperation {
         return ["name" => '${token_div}'];
     }
 
-    public function getExtraArgs() {
-        return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getResType())];
-    }
-
     public function getPrompt() {
-        return clienttranslate('Select to clean midden or shift the slider back (${count} left)');
+        return clienttranslate('Select to clean midden or shift the slider back (count: ${count})');
     }
 
     public function requireConfirmation() {

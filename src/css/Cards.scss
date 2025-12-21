@@ -1,13 +1,16 @@
 @use "variables" as v;
 
 .card,
-.action {
+.action,
+.deck,
+.discard {
   height: 200px;
   aspect-ratio: 640 / 1000;
   box-shadow: v.$boxShadowBlack;
-}
-.card {
   border-radius: 5%;
+}
+.action {
+  border-radius: 0;
 }
 
 .action.main {
@@ -106,6 +109,12 @@
     }
   }
 }
+.deck.village,
+.discard.village {
+  background-image: url(img/nset_cards.jpg);
+  background-position: calc(5 * 100% / 7) 0;
+  background-size: 800% auto;
+}
 
 .card.roof {
   background-image: url(img/nset_cards.jpg);
@@ -113,12 +122,14 @@
   background-size: 800% auto;
 }
 
-.card.roofi {
+.card.roofi,
+.deck.roof {
   background-image: url(img/nset_cards.jpg);
   background-position: calc(2 * 100% / 7) 0;
   background-size: 800% auto;
 }
-.card.spin {
+.card.spin,
+.deck.spin {
   background-image: url(img/nset_cards.jpg);
   background-position: calc(6 * 100% / 7) 0;
   background-size: 800% auto;
@@ -132,4 +143,12 @@
   background-image: url(img/nset_cards.jpg);
   background-size: 800% auto;
   background-position: calc(4 * 100% / 7) 0;
+}
+
+.deck > * {
+  display: none;
+}
+.discard > * {
+  display: block;
+  position: absolute;
 }

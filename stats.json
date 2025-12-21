@@ -1,1 +1,65 @@
-{}
+{
+  "table": {},
+  "player": {
+    "game_vp_setl_count": {
+      "id": 11,
+      "name": "VP for settlers cards",
+      "type": "int"
+    },
+    "game_vp_setl_sets": {
+      "id": 12,
+      "name": "VP for settler sets",
+      "type": "int"
+    },
+    "game_vp_trade": {
+      "id": 13,
+      "name": "VP from trade track",
+      "type": "int"
+    },
+    "game_vp_action_tiles": {
+      "id": 14,
+      "name": "VP from action tiles",
+      "type": "int"
+    },
+    "game_vp_cards": {
+      "id": 15,
+      "name": "VP from cards",
+      "type": "int"
+    },
+    "game_vp_food": {
+      "id": 16,
+      "name": "VP from food",
+      "type": "int"
+    },
+    "game_vp_skaill": {
+      "id": 17,
+      "name": "VP from skaill knives",
+      "type": "int"
+    },
+    "game_vp_midden": {
+      "id": 18,
+      "name": "VP penalty from midden",
+      "type": "int"
+    },
+    "game_vp_slider": {
+      "id": 19,
+      "name": "VP penlty from slider",
+      "type": "int"
+    },
+    "game_vp_tasks": {
+      "id": 20,
+      "name": "VP penalty from tasks",
+      "type": "int"
+    },
+    "game_vp_goals": {
+      "id": 21,
+      "name": "VP penalty from goals",
+      "type": "int"
+    },
+    "total_solo": {
+      "id": 22,
+      "name": "VP solo total",
+      "type": "int"
+    }
+  }
+}

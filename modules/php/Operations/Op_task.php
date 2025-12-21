@@ -22,6 +22,9 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Material;
+use BgaUserException;
+
+use function Bga\Games\skarabrae\toJson;
 
 /** Task */
 class Op_task extends Operation {
@@ -31,6 +34,11 @@ class Op_task extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
+        $card = $this->getCard();
+        //throw new BgaUserException($card . " a");
+        if ($card) {
+            return [$card];
+        }
 
         $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("card_task", "tableau_$owner", 0));
         $res = [];
@@ -57,6 +65,10 @@ class Op_task extends Operation {
     function getUiArgs() {
         return ["buttons" => false];
     }
+
+    function getCard() {
+        return $this->getDataField("card", null);
+    }
     function resolve() {
         $owner = $this->getOwner();
         $action_tile = $this->getCheckedArg();
@@ -70,10 +82,16 @@ class Op_task extends Operation {
     }
 
     public function requireConfirmation() {
+        if ($this->getCard()) {
+            return false;
+        }
         return true;
     }
 
     public function canSkip() {
+        if ($this->getCard()) {
+            return false;
+        }
         return true;
     }
 }

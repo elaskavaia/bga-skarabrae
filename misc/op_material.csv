@@ -28,6 +28,7 @@ activate|Activate
 recruit|Recruit
 spin|Spin Wool
 tend|Tend Land
+draft|Select Special Action
 
 #set class=Op_gain
 

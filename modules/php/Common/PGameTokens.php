@@ -478,6 +478,14 @@ class PGameTokens {
         $value = (int) $this->tokens->getTokenState($this->getTrackerId($color, $type));
         return $value;
     }
+    function getTrackerIdAndValue(?string $color, string $type, ?array &$arr = null) {
+        $id = $this->getTrackerId($color, $type);
+        $value = (int) $this->tokens->getTokenState($id);
+        if ($arr) {
+            $arr[$id] = $value;
+        }
+        return [$id, $value];
+    }
 
     function getTrackerId(string $color, string $type) {
         if ($color === "") {

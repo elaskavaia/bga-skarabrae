@@ -1,5 +1,25 @@
-.tasks_area,
 .selection_area {
+  position: sticky;
+  top: 86px;
+  align-self: flex-start;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  z-index: 20;
+  & > * {
+    position: relative;
+    display: inline-block;
+  }
+}
+.selection_area {
+  background-color: white;
+  html[data-theme="dark"] & {
+    background-color: #4d4d4b;
+  }
+}
+.tasks_area {
   position: relative;
   width: 100%;
   display: flex;
@@ -11,7 +31,6 @@
     display: inline-block;
   }
 }
-
 #mainarea {
   width: 100%;
   padding-top: 20px;
@@ -20,6 +39,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
+  z-index: 0;
   & > .cardset {
     order: 1;
   }

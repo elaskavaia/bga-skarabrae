@@ -1549,7 +1549,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n</div>\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1638,6 +1638,11 @@ var GameXBody = /** @class */ (function (_super) {
             result.location = "action_area_".concat(color);
             result.onClick = function (x) { return _this.onToken(x); };
         }
+        else if (tokenId.startsWith("action") && location.startsWith("hand")) {
+            var color = getPart(location, 1);
+            result.location = "selection_area";
+            result.onClick = function (x) { return _this.onToken(x); };
+        }
         else if (tokenId.startsWith("card")) {
             result.onClick = function (x) { return _this.onToken(x); };
             if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {
@@ -1652,7 +1657,7 @@ var GameXBody = /** @class */ (function (_super) {
             }
             else if (location.startsWith("hand")) {
                 var color = getPart(location, 1);
-                result.location = "tasks_area";
+                result.location = "selection_area";
                 result.onClick = function (x) { return _this.onToken(x); };
             }
             else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
@@ -1661,12 +1666,15 @@ var GameXBody = /** @class */ (function (_super) {
             }
         }
         else if (location.startsWith("discard")) {
-            result.onEnd = function (node) { return _this.hideCard(node); };
+            //result.onEnd = (node) => this.hideCard(node);
         }
         else if (location.startsWith("deck")) {
             result.onEnd = function (node) { return _this.hideCard(node); };
         }
         else if (tokenId.startsWith("tableau")) {
+            result.nop = true;
+        }
+        else if (tokenId.startsWith("hand")) {
             result.nop = true;
         }
         else if (tokenId.startsWith("slot")) {

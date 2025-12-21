@@ -1,13 +1,16 @@
 @charset "UTF-8";
 .card,
-.action {
+.action,
+.deck,
+.discard {
   height: 200px;
   aspect-ratio: 640/1000;
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5019607843);
+  border-radius: 5%;
 }
 
-.card {
-  border-radius: 5%;
+.action {
+  border-radius: 0;
 }
 
 .action.main {
@@ -335,19 +338,28 @@
   background-position: 100% 100%;
 }
 
+.deck.village,
+.discard.village {
+  background-image: url(img/nset_cards.jpg);
+  background-position: 71.4285714286% 0;
+  background-size: 800% auto;
+}
+
 .card.roof {
   background-image: url(img/nset_cards.jpg);
   background-position: 42.8571428571% 0;
   background-size: 800% auto;
 }
 
-.card.roofi {
+.card.roofi,
+.deck.roof {
   background-image: url(img/nset_cards.jpg);
   background-position: 28.5714285714% 0;
   background-size: 800% auto;
 }
 
-.card.spin {
+.card.spin,
+.deck.spin {
   background-image: url(img/nset_cards.jpg);
   background-position: 85.7142857143% 0;
   background-size: 800% auto;
@@ -364,8 +376,38 @@
   background-position: 57.1428571429% 0;
 }
 
-.tasks_area,
+.deck > * {
+  display: none;
+}
+
+.discard > * {
+  display: block;
+  position: absolute;
+}
+
 .selection_area {
+  position: sticky;
+  top: 86px;
+  align-self: flex-start;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 20;
+}
+.selection_area > * {
+  position: relative;
+  display: inline-block;
+}
+
+.selection_area {
+  background-color: white;
+}
+html[data-theme=dark] .selection_area {
+  background-color: #4d4d4b;
+}
+
+.tasks_area {
   position: relative;
   width: 100%;
   display: flex;
@@ -373,8 +415,7 @@
   gap: 10px;
   padding: 10px;
 }
-.tasks_area > *,
-.selection_area > * {
+.tasks_area > * {
   position: relative;
   display: inline-block;
 }
@@ -387,6 +428,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
+  z-index: 0;
 }
 #mainarea > .cardset {
   order: 1;
@@ -716,7 +758,7 @@
 }
 
 .wooden.midden {
-  background-position: 0% 64%;
+  background-position: 0% 67%;
 }
 
 .worker {
@@ -1002,11 +1044,12 @@ a.bgabutton_white {
   border: 1px solid blue;
 }
 .bgabutton[data-count]::after {
-  content: "x" attr(data-count);
+  content: " x " attr(data-count);
 }
 
-.action-button {
+#page-title .action-button {
   min-width: 4em;
+  line-height: 24px;
 }
 
 #undoredo_wrap {
@@ -1025,12 +1068,16 @@ a.bgabutton_white {
   background-image: none;
 }
 
+#overall-content {
+  overflow: visible;
+}
+
 html {
   background: url(img/stonex.jpg);
 }
 
 .player-board {
-  background-color: #cbdee2;
+  background-color: #f8f8f8;
 }
 
 html[data-theme=dark],
@@ -1045,12 +1092,7 @@ html[data-theme=dark] body {
   display: block;
   top: 0;
   left: 0;
-  background-color: white;
-  /* border: 30px solid transparent; */
-  /* Shorthand property: source | slice | width | outset | repeat */
-  border-image-source: url(img/bg10.jpg);
-  border-image-slice: 100 fill;
-  border-image-width: 100px;
-  border-image-outset: 0;
-  border-image-repeat: stretch;
+  z-index: -1;
+  background-image: url(img/bg11.jpg);
+  background-size: auto 100%;
 }

@@ -23,6 +23,7 @@ class GameXBody extends GameMachine {
  <div id="cardset_3" class="cardset cardset_3"></div>
  <div id="discard_village" class="discard village"></div>
  <div id="deck_village" class="deck village"></div>
+ <div id="deck_roof" class="deck roof"></div>
 </div>
 </div>
 
@@ -146,6 +147,10 @@ class GameXBody extends GameMachine {
       const color = getPart(location, 1);
       result.location = `action_area_${color}`;
       result.onClick = (x) => this.onToken(x);
+    } else if (tokenId.startsWith("action") && location.startsWith("hand")) {
+      const color = getPart(location, 1);
+      result.location = `selection_area`;
+      result.onClick = (x) => this.onToken(x);
     } else if (tokenId.startsWith("card")) {
       result.onClick = (x) => this.onToken(x);
       if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {
@@ -158,17 +163,19 @@ class GameXBody extends GameMachine {
         result.onClick = (x) => this.onToken(x);
       } else if (location.startsWith("hand")) {
         const color = getPart(location, 1);
-        result.location = `tasks_area`;
+        result.location = `selection_area`;
         result.onClick = (x) => this.onToken(x);
       } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `cards_area_${color}`;
       }
     } else if (location.startsWith("discard")) {
-      result.onEnd = (node) => this.hideCard(node);
+      //result.onEnd = (node) => this.hideCard(node);
     } else if (location.startsWith("deck")) {
       result.onEnd = (node) => this.hideCard(node);
     } else if (tokenId.startsWith("tableau")) {
+      result.nop = true;
+    } else if (tokenId.startsWith("hand")) {
       result.nop = true;
     } else if (tokenId.startsWith("slot")) {
       result.nop = true; // do not move slots
