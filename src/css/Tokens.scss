@@ -132,6 +132,52 @@
     background-position: 34% 97%;
   }
 }
+.turnmarker {
+  background-position-x: 100%;
+  background-size: auto 453%;
+  width: 30px;
+  aspect-ratio: 1 / 1;
+  &.color_982fff {
+    background-position-y: 5%;
+  }
+  &.color_6cd0f6 {
+    background-position-y: 38%;
+  }
+  &.color_ffcc02 {
+    background-position-y: 64%;
+  }
+
+  &.color_ff0000 {
+    background-position-y: 95%;
+  }
+
+  position: absolute;
+
+  @for $num from 0 through 3 {
+    &[data-state="#{$num}"] {
+      $rev: $num;
+      left: 15%;
+      bottom: calc(12% + 8% * $rev);
+      z-index: calc($rev);
+    }
+  }
+  @for $num from 10 through 13 {
+    &[data-state="#{$num}"] {
+      $rev: $num - 10;
+      left: 37%;
+      bottom: calc(52% + 8% * $rev);
+      z-index: calc($rev);
+    }
+  }
+  @for $num from 20 through 23 {
+    &[data-state="#{$num}"] {
+      $rev: $num - 20;
+      right: 15%;
+      bottom: calc(12% + 8% * $rev);
+      z-index: calc($rev);
+    }
+  }
+}
 .worker.large {
   width: 30px;
 }
@@ -155,4 +201,11 @@
       left: calc(2% + 8.7% * $num);
     }
   }
+}
+.turndisk {
+  background-image: url(img/turnTokenS.png);
+  background-size: cover;
+  aspect-ratio: 109 / 104;
+  height: 104px;
+  position: relative;
 }

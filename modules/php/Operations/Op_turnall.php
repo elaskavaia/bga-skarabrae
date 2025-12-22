@@ -25,13 +25,22 @@ use Bga\Games\skarabrae\Game;
 
 class Op_turnall extends Operation {
     function resolve() {
-        $curturn = $this->game->globals->inc(Game::TURNS_NUMBER_GLOBAL, 1);
+        $curturn = $this->game->tokens->dbResourceInc(Game::TURNS_NUMBER_GLOBAL, 1, "");
+
+        $others = $this->game->tokens->getTokensOfTypeInLocation("turnmarker");
+        foreach ($others as $key => $info) {
+            $state = $info["state"];
+            if ($state >= 20) {
+                $this->game->tokens->dbSetTokenState($key, $state - 20, "");
+            }
+        }
+
         $players_basic = $this->game->loadPlayersBasicInfos();
-        // schedle player in order of disk TODO
+
         $this->notifyMessage(clienttranslate('-- Turn ${turn} --'), ["turn" => $curturn]);
         foreach ($players_basic as $player_info) {
             $color = $player_info["player_color"];
-            $this->queue("turn", $color);
+            $this->queue("turnpick", $color);
         }
         if ($curturn > 1) {
             $n = $curturn - 1;

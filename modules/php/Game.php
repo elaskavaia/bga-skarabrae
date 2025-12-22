@@ -28,8 +28,8 @@ use Bga\Games\skarabrae\OpCommon\OpMachine;
 use Bga\Games\skarabrae\States\GameDispatch;
 
 class Game extends Base {
-    const TURNS_NUMBER_GLOBAL = "nturns";
-    const ROUNDS_NUMBER_GLOBAL = "nrounds";
+    const TURNS_NUMBER_GLOBAL = "tracker_nturns";
+    const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
     public static Game $game;
     public OpMachine $machine;
     public Material $material;
@@ -89,9 +89,7 @@ class Game extends Base {
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
         $startingPlayer = $this->getFirstPlayer(); ///
-        if (!$this->gamestate->isPlayerActive($startingPlayer)) {
-            $this->gamestate->changeActivePlayer($startingPlayer);
-        }
+        $this->switchActivatePlayer($startingPlayer);
 
         //2-Players: Include 1 more Turn Marker of an unused colour.
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
@@ -124,22 +122,34 @@ class Game extends Base {
         }
 
         $p = $this->getPlayerIdsInOrder($startingPlayer);
-        $order = 0;
+        $order = $pnum - 1;
         foreach ($p as $player_id) {
             $color = $this->getPlayerColorById($player_id);
             $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
             $this->machine->queue("draft", $color);
-            $this->effect_incCount($color, "turnmarker", $order, "", [
-                "message" => clienttranslate('${player_name} initial turn order ${order}'),
-                "order" => $order + 1,
-            ]);
-            $order++;
+            $this->tokens->dbSetTokenState(
+                "turnmarker_$color",
+                $order,
+                clienttranslate('${player_name} initial turn order ${order}'),
+                [
+                    "order" => $pnum - $order,
+                ],
+                $player_id
+            );
+            $order--;
         }
 
-        $this->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
-        $this->globals->set(Game::ROUNDS_NUMBER_GLOBAL, 0);
         $this->machine->queue("round", $this->getPlayerColorById($startingPlayer));
         return GameDispatch::class;
+    }
+
+    function switchActivatePlayer(int $playerId, bool $moreTime = true) {
+        if (!$this->gamestate->isPlayerActive($playerId)) {
+            $this->gamestate->changeActivePlayer($playerId);
+            if ($moreTime) {
+                $this->giveExtraTime($playerId);
+            }
+        }
     }
 
     /*
@@ -169,8 +179,8 @@ class Game extends Base {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $round = (int) $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL, 0);
-        $turn = (int) $this->globals->get(Game::TURNS_NUMBER_GLOBAL, 0);
+        $round = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
+        $turn = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         if ($round == 0) {
             return 0;
         }
@@ -181,7 +191,7 @@ class Game extends Base {
     }
 
     function isEndOfGame() {
-        $num = (int) $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL, 0);
+        $num = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $num >= 5;
     }
 
@@ -340,20 +350,12 @@ class Game extends Base {
     }
 
     function getRoundNumber() {
-        if (!$this->globals) {
-            $n = 1; // for testing
-        } else {
-            $n = $this->globals->get(Game::ROUNDS_NUMBER_GLOBAL);
-        }
+        $n = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $n;
     }
 
     function getTurnNumber() {
-        if (!$this->globals) {
-            $n = 1; // for testing
-        } else {
-            $n = $this->globals->get(Game::TURNS_NUMBER_GLOBAL);
-        }
+        $n = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         return $n;
     }
 
@@ -363,6 +365,26 @@ class Game extends Base {
 
     function getVariantSoloDif() {
         return (int) $this->getGameStateValue("variant_solo_dif");
+    }
+
+    function getTurnMarkerPosition(string $owner) {
+        return $this->tokens->tokens->getTokenState("turnmarker_$owner", 0);
+    }
+    function setTurnMarkerPosition(string $owner, int $pos) {
+        return $this->tokens->dbSetTokenState("turnmarker_$owner", $pos, "");
+    }
+
+    function getMaxTurnMarkerPosition(int $level = 1, ?string &$token = null) {
+        $maxpass = $level * 10 - 1;
+        $others = $this->tokens->getTokensOfTypeInLocation("turnmarker");
+        foreach ($others as $key => $info) {
+            $state = $info["state"];
+            if ($state > $maxpass && $state < ($level + 1) * 10) {
+                $maxpass = $state;
+                $token = $key;
+            }
+        }
+        return $maxpass;
     }
 
     function getRulesFor($token_id, $field = "r", $default = "") {
@@ -629,11 +651,9 @@ class Game extends Base {
     }
 
     function debug_q() {
-        $rules = "(2n_bone/2n_food):boar";
-        $color = $this->getCurrentPlayerColor();
-        /** @var ComplexOperation */
-        $op = $this->machine->instanciateOperation($rules, $color);
-        $this->debugLog("$rules", $op->delegates[0]->getArgs());
+        $token = null;
+        $pos = $this->getMaxTurnMarkerPosition(0, $token);
+        $this->debugConsole("marker $pos token $token.");
     }
     /**
      * Example of debug function.
@@ -672,10 +692,10 @@ class Game extends Base {
     }
 
     function debug_setupGameTables() {
-        $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
         $this->DbQuery("DELETE FROM token");
         $this->DbQuery("DELETE FROM machine");
         $this->DbQuery("DELETE FROM multiundo");
+        $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
         $this->setupGameTables();
         //$newGameDatas = $this->getAllTableDatas(); // this is framework function
         //$this->notify->player($this->getActivePlayerId(), "resetInterfaceWithAllDatas", "", $newGameDatas); // this is notification to reset all data

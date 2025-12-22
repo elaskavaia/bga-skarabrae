@@ -238,6 +238,10 @@ class Material {
         "type" => "draft",
         "name" => clienttranslate("Select Special Action"),
 ],
+    "Op_turnpick" => [ 
+        "type" => "turnpick",
+        "name" => clienttranslate("Turn"),
+],
     "Op_shell" => [ 
         "class" => "Op_gain",
         "type" => "shell",
@@ -529,7 +533,7 @@ class Material {
         "count" => 1,
         "type" => "wooden",
         "create" => 4,
-        "location" => "limbo",
+        "location" => "turndisk",
 ],
 // #4 Furnish Markers
 // #4 Trade Markers
@@ -560,6 +564,20 @@ class Material {
         "type" => "wooden tracker hearth",
         "create" => 0,
         "location" => "miniboard_{COLOR}",
+],
+    "tracker_nturns" => [ 
+        "name" => clienttranslate("Turn"),
+        "count" => 1,
+        "create" => 1,
+        "location" => "mainarea",
+        'state'=>0,
+],
+    "tracker_nrounds" => [ 
+        "name" => clienttranslate("Round"),
+        "count" => 1,
+        "create" => 1,
+        "location" => "mainarea",
+        'state'=>0,
 ],
 // #cards
 // #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards

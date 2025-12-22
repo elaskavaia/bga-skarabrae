@@ -20,13 +20,14 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
-
-use function Bga\Games\skarabrae\getPart;
 
 class Op_village extends Operation {
     public function getPossibleMoves() {
+        $card = $this->getCard();
+        if ($card) {
+            return [$card];
+        }
         $n = $this->game->getTurnNumber();
         $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
         return array_keys($cards);
@@ -34,6 +35,11 @@ class Op_village extends Operation {
 
     public function getArgType() {
         return Operation::TTYPE_TOKEN;
+    }
+
+    public function getCard() {
+        $card = $this->getDataField("card", null);
+        return $card;
     }
 
     public function getUiArgs() {
@@ -48,9 +54,21 @@ class Op_village extends Operation {
         return clienttranslate('${actplayer} chooses one of the village cards');
     }
 
-    public function getExtraArgs() {
-        $n = $this->game->getTurnNumber();
-        return parent::getExtraArgs() + ["nturn" => $n];
+    public function getSubTitle() {
+        return [
+            "log" => clienttranslate('Round ${round} of 4 - Turn ${turn} of 3'),
+            "args" => [
+                "round" => $this->game->getRoundNumber(),
+                "turn" => $this->game->getTurnNumber(),
+            ],
+        ];
+    }
+
+    function getExtraArgs() {
+        return [
+            "round" => $this->game->getRoundNumber(),
+            "turn" => $this->game->getTurnNumber(),
+        ];
     }
     function resolve() {
         $owner = $this->getOwner();
@@ -61,6 +79,9 @@ class Op_village extends Operation {
             $n = $this->game->getTurnNumber();
             $this->game->effect_cleanCards($n);
         }
+
+        $maxpass = $this->game->getMaxTurnMarkerPosition(2);
+        $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
         return;
     }
 }

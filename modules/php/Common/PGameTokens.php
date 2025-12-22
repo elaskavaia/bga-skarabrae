@@ -458,6 +458,7 @@ class PGameTokens {
         ]);
 
         $this->notifyCounterDirect($token_id, $value, $message, $args, $player_id);
+        return $value;
     }
 
     function notifyCounterChanged($location, $notifyArgs = null) {

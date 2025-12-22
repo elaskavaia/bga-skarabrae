@@ -106,7 +106,7 @@ class Op_or extends ComplexOperation {
         if ($this->getCount() > 1) {
             return Operation::TTYPE_TOKEN_COUNT;
         }
-        return Operation::TTYPE_AUTO;
+        return Operation::TTYPE_TOKEN;
     }
 
     function getPrompt() {

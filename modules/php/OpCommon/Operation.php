@@ -38,7 +38,6 @@ abstract class Operation {
     const TTYPE_TOKEN = "token";
     const TTYPE_TOKEN_ARRAY = "token_array";
     const TTYPE_TOKEN_COUNT = "token_count";
-    const TTYPE_AUTO = "auto";
     const TARGET_AUTO = "auto";
     const TARGET_CONFIRM = "confirm";
     protected Game $game;
@@ -301,9 +300,6 @@ abstract class Operation {
             if ($target === $possible_targets) {
                 return $possible_targets;
             }
-            if ($target === Operation::TTYPE_AUTO) {
-                return $possible_targets[0] ?? [];
-            }
 
             if (is_array($target)) {
                 $multi = $target;
@@ -503,7 +499,7 @@ abstract class Operation {
     }
     // overridable stuff
     function getArgType() {
-        return self::TTYPE_AUTO;
+        return Operation::TTYPE_TOKEN;
     }
 
     /** If operation require confirmation it will be sent to user and not auto-resolved */

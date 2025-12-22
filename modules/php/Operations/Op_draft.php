@@ -34,6 +34,10 @@ class Op_draft extends Operation {
         return "Select an action to keep, rest will be discarded";
     }
 
+    public function getDescription() {
+        return clienttranslate('${actplayer} selects an action to keep');
+    }
+
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "hand_$owner"));
@@ -54,6 +58,11 @@ class Op_draft extends Operation {
     }
     public function getUiArgs() {
         return ["buttons" => false];
+    }
+
+    public function auto(): bool {
+        $this->game->switchActivatePlayer($this->getPlayerId());
+        return parent::auto();
     }
     function resolve() {
         $owner = $this->getOwner();

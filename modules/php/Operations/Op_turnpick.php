@@ -22,13 +22,25 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 
-class Op_pass extends Operation {
-    function resolve() {
-        //  set Turn Marker to Position Pass
-        $owner = $this->getOwner();
-        $maxpass = $this->game->getMaxTurnMarkerPosition(1);
-        $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
-        $this->notifyMessage('${player_name} yelds');
-        $this->queue("turnpick", $owner);
+use function Bga\Games\skarabrae\getPart;
+
+class Op_turnpick extends Operation {
+    function auto(): bool {
+        // schedle player in order of disk
+
+        $token = null;
+        $this->game->getMaxTurnMarkerPosition(0, $token);
+        if (!$token) {
+            // second pile
+            $this->game->getMaxTurnMarkerPosition(1, $token);
+        }
+        if ($token) {
+            $color = getPart($token, 1);
+            $this->queue("turn", $color);
+        } else {
+            throw new \BgaSystemException("No players to take turn in turnall");
+        }
+
+        return true;
     }
 }

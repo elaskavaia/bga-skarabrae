@@ -18,6 +18,7 @@ class GameXBody extends GameMachine {
 <div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
 <div id="mainarea">
+ <div id="turndisk" class="turndisk"></div>
  <div id="cardset_1" class="cardset cardset_1"></div>
  <div id="cardset_2" class="cardset cardset_2"></div>
  <div id="cardset_3" class="cardset cardset_3"></div>
@@ -97,8 +98,9 @@ class GameXBody extends GameMachine {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
       case "village":
+      case "turn":
         // move cards up
-        const divId = `cardset_${(opInfo as any).nturn}`;
+        const divId = `cardset_${(opInfo as any).turn}`;
         console.log("village", opInfo);
         this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
         break;
@@ -110,11 +112,12 @@ class GameXBody extends GameMachine {
 
   onLeavingState_PlayerTurn() {
     const opInfo = this.opInfo;
-    switch (opInfo.type) {
+    switch (opInfo?.type) {
       case "village":
+      case "turn":
         // move cards up
         console.log("leave village", opInfo);
-        const divId = `cardset_${(opInfo as any).nturn}`;
+        const divId = `cardset_${(opInfo as any).turn}`;
 
         this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
         break;

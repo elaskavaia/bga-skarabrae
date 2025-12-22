@@ -1549,7 +1549,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turndisk\" class=\"turndisk\"></div>\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1587,8 +1587,9 @@ var GameXBody = /** @class */ (function (_super) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
         switch (opInfo.type) {
             case "village":
+            case "turn":
                 // move cards up
-                var divId = "cardset_".concat(opInfo.nturn);
+                var divId = "cardset_".concat(opInfo.turn);
                 console.log("village", opInfo);
                 this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
                 break;
@@ -1599,11 +1600,12 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.onLeavingState_PlayerTurn = function () {
         var opInfo = this.opInfo;
-        switch (opInfo.type) {
+        switch (opInfo === null || opInfo === void 0 ? void 0 : opInfo.type) {
             case "village":
+            case "turn":
                 // move cards up
                 console.log("leave village", opInfo);
-                var divId = "cardset_".concat(opInfo.nturn);
+                var divId = "cardset_".concat(opInfo.turn);
                 this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
                 break;
         }

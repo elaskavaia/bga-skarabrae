@@ -21,14 +21,8 @@ class GameDispatch extends GameState {
         }
         $state = $game->machine->dispatchAll();
         if ($state === StateConstants::STATE_MACHINE_HALTED) {
-            // schedule another turn
-            // Standard case just active the next player and schedule there turn
-            $player_id = $game->getPlayerAfter((int) $this->game->getActivePlayerId());
-            $game->giveExtraTime($player_id);
-            $game->gamestate->changeActivePlayer($player_id);
-            $game->machine->push("turn", $game->getPlayerColorById($player_id));
-
-            return StateConstants::STATE_GAME_DISPATCH;
+            // should never happen
+            return StateConstants::STATE_PLAYER_TURN_CONF;
         }
         return $state;
     }

@@ -40,10 +40,15 @@
   gap: 10px;
   padding: 10px;
   z-index: 0;
-  & > .cardset {
+  & > * {
+    order: 10;
+  }
+  & > .turndisk {
+    order: 0;
+  }
+  & > .cardset_1 {
     order: 1;
   }
-
   & > .cardset_2 {
     order: 2;
   }

@@ -103,6 +103,15 @@ class Op_act extends Operation {
 
         return $res;
     }
+    function getSkipName() {
+        $owner = $this->getOwner();
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
+
+        if (count($workers) > 0) {
+            return clienttranslate("Skip placing workers");
+        }
+        return clienttranslate("Skip");
+    }
     function isTaskAvailable() {
         $owner = $this->getOwner();
         if (!$this->game->isSolo()) {

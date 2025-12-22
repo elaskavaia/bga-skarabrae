@@ -28,7 +28,8 @@ use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 class Op_round extends Operation {
     function resolve() {
         // start the round
-        $roundNum = $this->game->globals->inc(Game::ROUNDS_NUMBER_GLOBAL, 1);
+
+        $roundNum = $this->game->tokens->dbResourceInc(Game::ROUNDS_NUMBER_GLOBAL, 1, "");
 
         if ($this->game->isEndOfGame()) {
             $this->notifyMessage(clienttranslate("--- End of game ---"));
@@ -39,7 +40,7 @@ class Op_round extends Operation {
 
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
 
-        $this->game->globals->set(Game::TURNS_NUMBER_GLOBAL, 0);
+        $this->game->tokens->dbSetTokenState(Game::TURNS_NUMBER_GLOBAL, 0);
 
         $players_basic = $this->game->loadPlayersBasicInfos();
         foreach ($players_basic as $player_info) {
