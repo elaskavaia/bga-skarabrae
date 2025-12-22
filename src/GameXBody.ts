@@ -97,7 +97,7 @@ class GameXBody extends GameMachine {
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
-      case "village":
+      // case "village":
       case "turn":
         // move cards up
         const divId = `cardset_${(opInfo as any).turn}`;
@@ -113,7 +113,7 @@ class GameXBody extends GameMachine {
   onLeavingState_PlayerTurn() {
     const opInfo = this.opInfo;
     switch (opInfo?.type) {
-      case "village":
+      //case "village":
       case "turn":
         // move cards up
         console.log("leave village", opInfo);

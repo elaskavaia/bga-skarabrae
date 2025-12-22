@@ -1189,15 +1189,18 @@ var GameMachine = /** @class */ (function (_super) {
                 (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
                 div.dataset.targetOpType = opInfo.type;
             }
-            if (opInfo.ui.buttons == false && div) {
-                return "continue";
-            }
             var handler = void 0;
             if (multiselect) {
                 handler = function () { return _this.onMultiCount(target, opInfo); };
             }
             else {
                 handler = function () { return _this.resolveAction({ target: target }); };
+            }
+            if (opInfo.ui.replicate == true && div) {
+                // /this.replicateTokenOnToolbar(opInfo, target, handler);
+            }
+            if (opInfo.ui.buttons == false && div) {
+                return "continue";
             }
             var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
             var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), handler, {
@@ -1214,11 +1217,11 @@ var GameMachine = /** @class */ (function (_super) {
                 button.dataset.max = "1";
             }
             if (!active) {
-                button.title = this_1.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo.args);
+                button.title = this_1.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo);
             }
             else {
-                if (paramInfo.args.tooltip)
-                    button.title = this_1.getTr(paramInfo.args.tooltip, paramInfo.args);
+                if (paramInfo.tooltip)
+                    button.title = this_1.getTr(paramInfo.tooltip, paramInfo);
             }
         };
         var this_1 = this;
@@ -1261,16 +1264,12 @@ var GameMachine = /** @class */ (function (_super) {
     GameMachine.prototype.getParamPresentation = function (target, paramInfo) {
         var _a;
         var div = $(target);
-        var q = paramInfo.q;
         var name = paramInfo.name;
         if (!name && div) {
             name = div.dataset.name;
         }
         if (!name)
             name = target;
-        if (!paramInfo.args) {
-            paramInfo.args = {};
-        }
         return this.getTr(name, (_a = paramInfo.args) !== null && _a !== void 0 ? _a : paramInfo);
     };
     GameMachine.prototype.isMultiSelectArgs = function (args) {
@@ -1586,7 +1585,7 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
         switch (opInfo.type) {
-            case "village":
+            // case "village":
             case "turn":
                 // move cards up
                 var divId = "cardset_".concat(opInfo.turn);
@@ -1601,7 +1600,7 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.onLeavingState_PlayerTurn = function () {
         var opInfo = this.opInfo;
         switch (opInfo === null || opInfo === void 0 ? void 0 : opInfo.type) {
-            case "village":
+            //case "village":
             case "turn":
                 // move cards up
                 console.log("leave village", opInfo);

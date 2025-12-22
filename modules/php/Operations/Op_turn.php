@@ -26,6 +26,7 @@ class Op_turn extends Operation {
     function auto(): bool {
         $player_id = $this->getPlayerId();
         $this->game->switchActivatePlayer($player_id);
+        $this->game->undoSavepoint();
         return parent::auto();
     }
 
@@ -43,7 +44,6 @@ class Op_turn extends Operation {
         if ($curturn == 3) {
             $this->queue("night", $this->getOwner());
         }
-        $this->game->undoSavepoint();
     }
     public function getUiArgs() {
         return ["buttons" => false];
@@ -72,8 +72,7 @@ class Op_turn extends Operation {
         $op = $this->game->machine->instanciateOperation("village", $this->getOwner());
         $res = $op->getPossibleMoves();
         $tmarker = $this->game->getTurnMarkerPosition($this->getOwner());
-        $passpos = $this->game->getMaxTurnMarkerPosition(1);
-        if ($tmarker < 10 && $passpos + 2 < 10 + $this->game->getPlayersNumber()) {
+        if ($tmarker < 10 && $tmarker != 0) {
             return $res + [
                 "yield" => [
                     "name" => clienttranslate("Pass"),
@@ -85,6 +84,6 @@ class Op_turn extends Operation {
                 ],
             ];
         }
-        return parent::getPossibleMoves();
+        return $res;
     }
 }

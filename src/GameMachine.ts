@@ -18,6 +18,7 @@ interface BasicParamInfo {
   sec?: boolean; // this is secondary target
   o?: number; //  priority order
   color?: string; // button color
+  tooltip?: string;
   args?: any;
 }
 
@@ -49,6 +50,7 @@ interface OpInfo {
   mcount?: number;
   ui: {
     buttons?: boolean;
+    replicate?: boolean;
   };
 }
 
@@ -90,9 +92,6 @@ class GameMachine extends Game1Tokens {
         div.classList?.add(this.classActiveSlot);
         div.dataset.targetOpType = opInfo.type;
       }
-      if (opInfo.ui.buttons == false && div) {
-        continue;
-      }
 
       let handler: any;
       if (multiselect) {
@@ -100,6 +99,15 @@ class GameMachine extends Game1Tokens {
       } else {
         handler = () => this.resolveAction({ target });
       }
+
+      if (opInfo.ui.replicate == true && div) {
+        // /this.replicateTokenOnToolbar(opInfo, target, handler);
+      }
+
+      if (opInfo.ui.buttons == false && div) {
+        continue;
+      }
+
       const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
       const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), handler, {
         color: color,
@@ -115,9 +123,9 @@ class GameMachine extends Game1Tokens {
         button.dataset.max = "1";
       }
       if (!active) {
-        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo.args);
+        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo);
       } else {
-        if (paramInfo.args.tooltip) button.title = this.getTr(paramInfo.args.tooltip, paramInfo.args);
+        if (paramInfo.tooltip) button.title = this.getTr(paramInfo.tooltip, paramInfo);
       }
     }
 
@@ -155,15 +163,13 @@ class GameMachine extends Game1Tokens {
 
   getParamPresentation(target: string, paramInfo: ParamInfo) {
     const div = $(target);
-    const q = paramInfo.q;
+
     let name = paramInfo.name;
     if (!name && div) {
       name = div.dataset.name;
     }
     if (!name) name = target;
-    if (!paramInfo.args) {
-      paramInfo.args = {};
-    }
+
     return this.getTr(name, paramInfo.args ?? paramInfo);
   }
 
