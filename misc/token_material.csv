@@ -14,7 +14,7 @@ worker_1|Large Worker|1|worker wooden large|4|tableau_{COLOR}|
 worker_2|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
 worker_3|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
 worker_4|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
-worker_{INDEX}_000000|Small Black Worker|3|worker wooden small color_000000|6|supply|'start'=>2
+worker_{INDEX}_000000|Small Black Worker|3|worker wooden small color_000000|6|supply|"start" => 2
 #4 Turn Markers (1 per player colour)
 turnmarker|Turn Marker|1|wooden|4|turndisk
 #4 Furnish Markers 
