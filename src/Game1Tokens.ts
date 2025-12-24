@@ -250,6 +250,7 @@ class Game1Tokens extends Game0Basics {
     if (id == "thething") {
       let node = this.findActiveParent(target);
       id = node?.id;
+      target = node;
     }
 
     console.log("on slot " + id, target?.id || target);
@@ -262,6 +263,7 @@ class Game1Tokens extends Game0Basics {
     if (checkActivePlayer && !this.checkActivePlayer()) {
       return null;
     }
+    if (target.dataset.targetId) return target.dataset.targetId;
     id = id.replace("tmp_", "");
     id = id.replace("button_", "");
     return id;
@@ -278,8 +280,8 @@ class Game1Tokens extends Game0Basics {
   }
 
   checkActivePlayer(): boolean {
-    if (!this.game.isCurrentPlayerActive()) {
-      this.game.showMessage(_("This is not your turn"), "error");
+    if (!this.bga.players.isCurrentPlayerActive()) {
+      this.bga.dialogs.showMessage(_("This is not your turn"), "error");
       return false;
     }
     return true;
@@ -289,7 +291,7 @@ class Game1Tokens extends Game0Basics {
     if (node.classList.contains(this.classActiveSlot)) {
       return true;
     }
-    if (node.classList.contains("hidden_" + this.classActiveSlot)) {
+    if (node.classList.contains(this.classActiveSlotHidden)) {
       return true;
     }
 
@@ -299,7 +301,7 @@ class Game1Tokens extends Game0Basics {
     if (!this.isActiveSlot(id)) {
       if (showError) {
         console.error(new Error("unauth"), id);
-        this.game.showMoveUnauthorized();
+        this.bga.dialogs.showMoveUnauthorized();
       }
       return false;
     }
@@ -378,7 +380,7 @@ class Game1Tokens extends Game0Basics {
       }
 
       if (placeInfo.onStart) await placeInfo.onStart(tokenNode);
-      if (!placeInfo.nop) await this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd);
+      if (!placeInfo.nop) await this.slideAndPlace(tokenNode, placeInfo.location, animTime, 0, undefined, placeInfo.onEnd);
       //if (animTime == 0) $(location).appendChild(tokenNode);
       //else void this.animationManager.slideAndAttach(tokenNode, $(location));
     } catch (e) {
@@ -648,6 +650,7 @@ class Game1Tokens extends Game0Basics {
     token: ElementOrId,
     finalPlace: ElementOrId,
     duration?: number,
+    delay: number = 0,
     mobileStyle?: StringProperties,
     onEnd?: (node?: HTMLElement) => void
   ) {
@@ -655,8 +658,9 @@ class Game1Tokens extends Game0Basics {
     if ($(token)?.parentNode == $(finalPlace)) return;
     if (this.game.bgaAnimationsActive() == false) {
       duration = 0;
+      delay = 0;
     }
-
+    if (delay) await this.wait(delay);
     this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
     return this.wait(duration);
   }

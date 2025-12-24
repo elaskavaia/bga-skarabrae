@@ -75,6 +75,7 @@ class GameMachine extends Game1Tokens {
       });
     }
     const multiselect = this.isMultiSelectArgs(opInfo);
+    const multiCount = this.isMultiCountArgs(opInfo);
 
     const sortedTargets = Object.keys(opInfo.info);
     sortedTargets.sort((a, b) => opInfo.info[a].o - opInfo.info[b].o);
@@ -88,45 +89,50 @@ class GameMachine extends Game1Tokens {
       const q = paramInfo.q;
       const active = q == 0;
 
-      if (div && active) {
+      if (div && active && !multiCount) {
         div.classList?.add(this.classActiveSlot);
         div.dataset.targetOpType = opInfo.type;
       }
 
-      let handler: any;
-      if (multiselect) {
-        handler = () => this.onMultiCount(target, opInfo);
-      } else {
-        handler = () => this.resolveAction({ target });
-      }
-
+      let altNode: HTMLElement;
       if (opInfo.ui.replicate == true && div) {
-        // /this.replicateTokenOnToolbar(opInfo, target, handler);
+        const clone = div.cloneNode(true) as HTMLElement;
+        clone.id = div.id + "_temp";
+        $("selection_area").appendChild(clone);
+        clone.addEventListener("click", (event: Event) => this.onToken(event));
+        clone.classList.remove(this.classActiveSlot);
+        clone.classList.add(this.classActiveSlotHidden);
+        altNode = clone;
+      } else if (opInfo.ui.buttons || !div) {
+        const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
+        const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), (event: Event) => this.onToken(event), {
+          color: color,
+          disabled: !active,
+          id: "button_" + target
+        });
+        if (!active) {
+          button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo);
+        } else {
+          if (paramInfo.tooltip) button.title = this.getTr(paramInfo.tooltip, paramInfo);
+        }
+        altNode = button;
       }
 
-      if (opInfo.ui.buttons == false && div) {
-        continue;
-      }
+      if (!altNode) continue;
+      altNode.dataset.targetId = target;
+      altNode.dataset.targetOpType = opInfo.type;
 
-      const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
-      const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), handler, {
-        color: color,
-        disabled: !active,
-        id: "button_" + target
-      });
-      button.dataset.targetId = target;
-      button.dataset.targetOpType = opInfo.type;
+      if (multiselect) {
+        if (paramInfo.max !== undefined) {
+          altNode.dataset.max = String(paramInfo.max);
+        } else {
+          altNode.dataset.max = "1";
+        }
+      }
+    }
 
-      if (paramInfo.max !== undefined) {
-        button.dataset.max = String(paramInfo.max);
-      } else {
-        button.dataset.max = "1";
-      }
-      if (!active) {
-        button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo);
-      } else {
-        if (paramInfo.tooltip) button.title = this.getTr(paramInfo.tooltip, paramInfo);
-      }
+    if (opInfo.ui.buttons == false || opInfo.ui.replicate) {
+      this.addShowMeButton(true);
     }
 
     // secondary buttons
@@ -150,9 +156,7 @@ class GameMachine extends Game1Tokens {
         button.dataset.targetId = target;
       }
     }
-    if (opInfo.ui.buttons == false) {
-      this.addShowMeButton(true);
-    }
+
     if (multiselect) {
       this.activateMultiSelectPrompt(opInfo);
     }
@@ -175,6 +179,9 @@ class GameMachine extends Game1Tokens {
 
   isMultiSelectArgs(args: OpInfo) {
     return args.ttype == "token_count" || args.ttype == "token_array";
+  }
+  isMultiCountArgs(args: OpInfo) {
+    return args.ttype == "token_array";
   }
 
   onLeavingState(stateName: string): void {
@@ -199,24 +206,31 @@ class GameMachine extends Game1Tokens {
   onToken_PlayerTurn(tid: string) {
     //debugger;
     if (!tid) return false;
-    if ($(tid).classList.contains(this.classActiveSlot)) {
-      const ttype = this.opInfo?.ttype;
-      if (ttype) {
-        var methodName = "onToken_" + ttype;
-        let ret = this.callfn(methodName, tid);
-        if (ret === undefined) return false;
-        return true;
-      }
-      return false;
-    } else {
-      // propagate to parent
-      return this.onToken_PlayerTurn(($(tid).parentNode as HTMLElement)?.id);
+
+    const ttype = this.opInfo?.ttype;
+    if (ttype) {
+      var methodName = "onToken_" + ttype;
+      let ret = this.callfn(methodName, tid);
+      if (ret === undefined) return false;
+      return true;
     }
+    console.error("no handler for ", ttype);
+    return false;
   }
 
-  onToken_token(tid: string) {
-    if (!tid) return false;
-    this.resolveAction({ target: tid });
+  onToken_token(target: string) {
+    if (!target) return false;
+    this.resolveAction({ target });
+  }
+
+  onToken_token_array(target: string) {
+    if (!target) return false;
+    this.onMultiCount(target, this.opInfo);
+  }
+
+  onToken_token_count(target: string) {
+    if (!target) return false;
+    this.onMultiCount(target, this.opInfo);
   }
 
   activateMultiSelectPrompt(opInfo: OpInfo) {
@@ -382,7 +396,8 @@ class GameMachine extends Game1Tokens {
 
   setSubPrompt(text: string, args: any) {
     if (!text) text = "";
-    const message = this.format_string_recursive(this.getTr(text), args);
+    const message = this.format_string_recursive(this.getTr(text, args), args);
+
     // have to set after otherwise status update wipes it
     setTimeout(() => {
       $("gameaction_status").innerHTML = `<div class="subtitle">${message}</div>`;
@@ -400,6 +415,7 @@ class GameMachine extends Game1Tokens {
 
       if (!opInfo.info) opInfo.info = {};
       if (!opInfo.target) opInfo.target = [];
+      if (!opInfo.ui) opInfo.ui = {};
 
       const infokeys = Object.keys(opInfo.info);
       if (infokeys.length == 0 && opInfo.target.length > 0) {
@@ -425,6 +441,10 @@ class GameMachine extends Game1Tokens {
       }
       if (opInfo.info.skip && !opInfo.info.skip.name) {
         opInfo.info.skip.name = _("Skip");
+      }
+
+      if (opInfo.ui.buttons === undefined) {
+        opInfo.ui.buttons = true;
       }
     } catch (e) {
       console.error(e);

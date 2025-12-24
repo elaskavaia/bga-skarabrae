@@ -103,8 +103,9 @@
     $i: $num - 1;
     $col: $i % $cols;
     $row: calc(($i - $col) / $cols);
+    $t: $row + 1;
 
-    &.card_setl_#{$num} {
+    &.card_setl_#{$t}_#{$num} {
       background-position: calc($col * 100% / ($cols - 1)) calc($row * 100% / ($rows - 1));
     }
   }

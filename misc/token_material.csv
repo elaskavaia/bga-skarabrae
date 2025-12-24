@@ -23,8 +23,8 @@ tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
 tracker_trade|Trade Marker|1|wooden tracker trade|4|slot_trade_0_{COLOR}
 tracker_slider|Slider|1|tracker slider|4|tableau_{COLOR}
 tracker_hearth|Hearth Limit|0|wooden tracker hearth|0|miniboard_{COLOR}
-tracker_nturns|Turn|1||1|mainarea|'state'=>0
-tracker_nrounds|Round|1||1|mainarea|'state'=>0
+tracker_nturns|Turn|1|turninfo|1|turnover|
+tracker_nrounds|Round|1|turninfo|1|turnover|
 
 
 #cards

@@ -279,6 +279,7 @@ abstract class Operation {
             }
             $total = 0;
             foreach ($arg as $a => $c) {
+                $this->game->systemAssert("ERR:getUserArgCount:1" . toJson($arg), is_numeric($c));
                 $total += $c;
             }
         }
@@ -288,36 +289,28 @@ abstract class Operation {
         $args = $this->userArgs;
         $key = Operation::ARG_TARGET;
         $possible_targets = $this->getArgs()[$key];
+        $info = $this->getArgs()["info"];
         //$this->game->userAssert("args " . toJson($args));
         $this->game->systemAssert("ERR:getCheckedArg:1", is_array($possible_targets));
+        $this->game->systemAssert("ERR:getCheckedArg:1", is_array($info));
 
-        if (count($possible_targets) == 0) {
-            return false; // XXX type match
-        }
         $ttype = $this->getArgType();
         $target = $args[$key] ?? null;
         if ($target !== null) {
-            if ($target === $possible_targets) {
-                return $possible_targets;
-            }
-
             if (is_array($target)) {
                 $multi = $target;
                 $res = [];
 
                 if ($ttype == Operation::TTYPE_TOKEN_ARRAY) {
                     foreach ($multi as $target) {
-                        $index = array_search($target, $possible_targets);
-                        $this->game->systemAssert("ERR:getCheckedArg:2", $index !== false);
-                        $res[] = $possible_targets[$index];
+                        $this->checkUserTargetSelection($target, $info[$target] ?? false);
+                        $res[] = $target;
                     }
                     return $res;
-                }
-                if ($ttype == Operation::TTYPE_TOKEN_COUNT) {
+                } elseif ($ttype == Operation::TTYPE_TOKEN_COUNT) {
                     foreach ($multi as $target => $count) {
-                        $index = array_search($target, $possible_targets);
-                        $this->game->systemAssert("Unauthorized argument $key", $index !== false);
-                        $res[$target] = (int) $count;
+                        $this->checkUserTargetSelection($target, $info[$target] ?? false);
+                        $res[(string) $target] = (int) $count;
                     }
                     return $res;
                 }
@@ -327,9 +320,9 @@ abstract class Operation {
                 if (count($possible_targets) == 1) {
                     return $possible_targets[0];
                 }
-                $index = array_search($target, $possible_targets);
-                $this->game->systemAssert("ERR:getCheckedArg:4", $index !== false);
-                return $possible_targets[$index];
+
+                $this->checkUserTargetSelection($target, $info[$target] ?? false);
+                return $target;
             }
         } else {
             if (count($possible_targets) == 1) {
@@ -339,6 +332,17 @@ abstract class Operation {
 
         $this->game->userAssert(clienttranslate("Operation is not allowed by the rules"));
         return null;
+    }
+    private function checkUserTargetSelection($target, $info) {
+        $this->game->systemAssert("checkUserTargetSelection:01", $info);
+        $this->game->systemAssert("checkUserTargetSelection:02", is_array($info));
+        $q = $info["q"] ?? null;
+        $this->game->systemAssert("checkUserTargetSelection:03", $q !== null);
+        if ($q === 0) {
+            return $target;
+        }
+        $err = $info["err"] ?? $this->game->getRulesFor("err_$q", "name", "code $q");
+        $this->game->userAssert($err);
     }
 
     protected function getUncheckedArg($args, $key = Operation::ARG_TARGET, $def = null) {
@@ -363,7 +367,7 @@ abstract class Operation {
 
         $movesInfo = $this->getPossibleMoves();
         $this->extractPossibleMoves($res, $movesInfo);
-
+        $res = array_merge($res, $this->getExtraArgs());
         $res["descriptionOnMyTurn"] = $this->getPrompt();
         $res["description"] = $this->getDescription();
         $res["subtitle"] = $this->getSubTitle();
@@ -378,7 +382,6 @@ abstract class Operation {
             ];
         }
 
-        $res = array_merge($res, $this->getExtraArgs());
         $res["ui"] = $this->getUiArgs();
 
         // cleanup nulls to optimize of data transfer

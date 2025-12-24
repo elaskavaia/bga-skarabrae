@@ -63,6 +63,7 @@ class Op_clean extends Operation {
             unset($items[4]); // remove food
         }
         $res = [];
+        $count = 0;
         foreach ($items as $item) {
             $id = $this->game->tokens->getTrackerId($owner, $item);
             $v = $this->game->tokens->getTrackerValue($owner, $item);
@@ -72,6 +73,12 @@ class Op_clean extends Operation {
                 "name" => '${token_div}',
                 "args" => ["token_div" => $id],
             ];
+            if ($v) {
+                $count++;
+            }
+        }
+        if ($count < 2) {
+            return ["err" => clienttranslate("Not enough different resources to clean")];
         }
         return $res;
     }

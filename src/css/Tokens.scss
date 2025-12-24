@@ -132,6 +132,38 @@
     background-position: 34% 97%;
   }
 }
+
+.worker.large {
+  width: 30px;
+}
+.storage .wooden {
+  filter: v.$dropShadow2;
+}
+
+.tracker.slider {
+  background-image: url(img/SliderBGA.png);
+  background-size: cover;
+  aspect-ratio: 209 / 634;
+  filter: v.$dropShadow2;
+}
+.pboard .tracker.slider {
+  position: absolute;
+  height: 32%;
+  top: 51%;
+
+  @for $num from 0 through 10 {
+    &[data-state="#{$num}"] {
+      left: calc(2% + 8.7% * $num);
+    }
+  }
+}
+.turndisk {
+  background-image: url(img/turnTokenS.png);
+  background-size: cover;
+  aspect-ratio: 109 / 104;
+  height: 104px;
+  position: relative;
+}
 .turnmarker {
   background-position-x: 100%;
   background-size: auto 453%;
@@ -178,34 +210,20 @@
     }
   }
 }
-.worker.large {
-  width: 30px;
-}
-.storage .wooden {
-  filter: v.$dropShadow2;
-}
-
-.tracker.slider {
-  background-image: url(img/SliderBGA.png);
-  background-size: cover;
-  aspect-ratio: 209 / 634;
-  filter: v.$dropShadow2;
-}
-.pboard .tracker.slider {
-  position: absolute;
-  height: 32%;
-  top: 51%;
-
-  @for $num from 0 through 10 {
-    &[data-state="#{$num}"] {
-      left: calc(2% + 8.7% * $num);
-    }
-  }
-}
-.turndisk {
-  background-image: url(img/turnTokenS.png);
-  background-size: cover;
-  aspect-ratio: 109 / 104;
-  height: 104px;
+.turninfo {
   position: relative;
+  height: 32px;
+  aspect-ratio: unset;
+  width: 100%;
+  color: #999;
+  &:after {
+    content: attr(data-name);
+    position: absolute;
+    left: 0;
+  }
+  &:before {
+    content: attr(data-state);
+    position: absolute;
+    right: 0%;
+  }
 }

@@ -33,10 +33,6 @@ class Op_village extends Operation {
         return array_keys($cards);
     }
 
-    public function getArgType() {
-        return Operation::TTYPE_TOKEN;
-    }
-
     public function getCard() {
         $card = $this->getDataField("card", null);
         return $card;
@@ -50,20 +46,6 @@ class Op_village extends Operation {
         return clienttranslate('${You} must select a village card');
     }
 
-    public function getDescription() {
-        return clienttranslate('${actplayer} chooses one of the village cards');
-    }
-
-    public function getSubTitle() {
-        return [
-            "log" => clienttranslate('Round ${round} of 4 - Turn ${turn} of 3'),
-            "args" => [
-                "round" => $this->game->getRoundNumber(),
-                "turn" => $this->game->getTurnNumber(),
-            ],
-        ];
-    }
-
     function getExtraArgs() {
         return [
             "round" => $this->game->getRoundNumber(),
@@ -75,13 +57,14 @@ class Op_village extends Operation {
         $card = $this->getCheckedArg();
 
         $this->game->effect_gainCard($owner, $card, $this->getOpId());
-        if ($this->game->isSolo()) {
-            $n = $this->game->getTurnNumber();
-            $this->game->effect_cleanCards($n);
-        }
 
         $maxpass = $this->game->getMaxTurnMarkerPosition(2);
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
+
+        if ($this->game->isSolo() || $maxpass + 2 - 20 >= $this->game->getPlayersNumber()) {
+            $n = $this->game->getTurnNumber();
+            $this->game->effect_cleanCards($n);
+        }
         return;
     }
 }

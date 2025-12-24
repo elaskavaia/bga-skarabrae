@@ -302,6 +302,7 @@ class Game extends Base {
         unset($args["message"]);
 
         $location = "tableau_{$color}";
+
         $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
 
         $type = getPart($card, 1);
@@ -309,6 +310,9 @@ class Game extends Base {
         $data = ["reason" => $card];
         switch ($type) {
             case "setl":
+                $t = getPart($card, 2);
+                $c = count($this->tokens->getTokensOfTypeInLocation("card_setl_$t", $location));
+                $this->tokens->dbSetTokenState($card, $c, "");
                 $this->effect_settlerCard($owner, $card, $args["flags"] ?? 3);
                 break;
             case "ball":

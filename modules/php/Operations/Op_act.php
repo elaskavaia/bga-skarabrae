@@ -104,10 +104,8 @@ class Op_act extends Operation {
         return $res;
     }
     function getSkipName() {
-        $owner = $this->getOwner();
-        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
-
-        if (count($workers) > 0) {
+        $count = $this->getArgs()["count_workers"] ?? "?";
+        if ($count) {
             return clienttranslate("Skip placing workers");
         }
         return clienttranslate("Skip");
@@ -151,24 +149,22 @@ class Op_act extends Operation {
 
     public function getPrompt() {
         if ($this->isTaskAvailable()) {
-            return clienttranslate("Select an action or task");
+            return clienttranslate("Select an action for worker or task");
         }
+
         return clienttranslate("Select an action for worker");
     }
+
     public function getSubTitle() {
-        return [
-            "log" => clienttranslate('Round ${round} of 4 - Turn ${turn} of 3'),
-            "args" => [
-                "round" => $this->game->getRoundNumber(),
-                "turn" => $this->game->getTurnNumber(),
-            ],
-        ];
+        return clienttranslate('workers left: ${count_workers}');
     }
 
-    function getExtraArgs() {
-        return [
-            "round" => $this->game->getRoundNumber(),
-            "turn" => $this->game->getTurnNumber(),
+    public function getExtraArgs() {
+        $owner = $this->getOwner();
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
+        $count = count($workers);
+        return parent::getExtraArgs() + [
+            "count_workers" => $count,
         ];
     }
     public function canSkip() {

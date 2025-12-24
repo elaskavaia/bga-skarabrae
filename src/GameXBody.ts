@@ -18,7 +18,12 @@ class GameXBody extends GameMachine {
 <div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
 <div id="mainarea">
- <div id="turndisk" class="turndisk"></div>
+ <div id="turnover" class="turnover">
+    <div id="turndisk" class="turndisk"></div>
+    <div id="tracker_nrounds"></div>
+    <div id="tracker_nturns"></div>
+ </div>
+
  <div id="cardset_1" class="cardset cardset_1"></div>
  <div id="cardset_2" class="cardset cardset_2"></div>
  <div id="cardset_3" class="cardset cardset_3"></div>
@@ -97,12 +102,12 @@ class GameXBody extends GameMachine {
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
-      // case "village":
       case "turn":
-        // move cards up
-        const divId = `cardset_${(opInfo as any).turn}`;
-        console.log("village", opInfo);
-        this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+        const div = $("turnover");
+        const clone = div.cloneNode(true) as HTMLElement;
+        clone.querySelectorAll("*").forEach((x) => (x.id = x.id + "_temp"));
+        clone.id = clone.id + "_temp";
+        $("selection_area").appendChild(clone);
         break;
       case "act":
         //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
@@ -112,15 +117,12 @@ class GameXBody extends GameMachine {
 
   onLeavingState_PlayerTurn() {
     const opInfo = this.opInfo;
-    switch (opInfo?.type) {
-      //case "village":
-      case "turn":
-        // move cards up
-        console.log("leave village", opInfo);
-        const divId = `cardset_${(opInfo as any).turn}`;
-
-        this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
-        break;
+    if (opInfo?.ui?.replicate) {
+      $("selection_area")
+        .querySelectorAll("& > *")
+        .forEach((element) => {
+          element.remove();
+        });
     }
   }
 
@@ -191,6 +193,9 @@ class GameXBody extends GameMachine {
           return this.syncStorage(result);
         };
       }
+      if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
+        result.location = `turnover`;
+      }
     } else if (location.startsWith("miniboard") && $(tokenId)) {
       result.nop = true; // do not move
     } else if (tokenId.startsWith("worker") && location.startsWith("tableau")) {
@@ -206,6 +211,7 @@ class GameXBody extends GameMachine {
     let count = result.state;
     const type = getPart(tokenId, 1);
     const color = getPart(tokenId, 2);
+    const promisses = [];
     for (let i = 0; i < count; i++) {
       const item = `item_${tokenId}_${i}`;
       const itemNode = $(item);
@@ -225,7 +231,7 @@ class GameXBody extends GameMachine {
         div.title = this.getTokenName(tokenId);
         if (this.bgaAnimationsActive() && !this.inSetup) {
           $(location).appendChild(div);
-          await this.slideAndPlace(item, targetLoc, result.animtime === undefined ? this.defaultAnimationDuration : result.animtime);
+          promisses.push(this.slideAndPlace(item, targetLoc, 500, i * 100));
         } else {
           $(targetLoc).appendChild(div);
         }
@@ -240,6 +246,7 @@ class GameXBody extends GameMachine {
       }
       i++;
     }
+    await Promise.allSettled(promisses);
   }
 
   updateTokenDisplayInfo(tokenInfo: TokenDisplayInfo) {
@@ -290,6 +297,9 @@ class GameXBody extends GameMachine {
             );
           }
         }
+        return;
+      case "cardset":
+        tokenInfo.showtooltip = false;
         return;
     }
   }

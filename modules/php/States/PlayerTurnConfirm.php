@@ -17,7 +17,7 @@ class PlayerTurnConfirm extends GameState {
             $game,
             id: StateConstants::STATE_PLAYER_TURN_CONF,
             type: StateType::ACTIVE_PLAYER, // This state type means that one player is active and can do actions
-            descriptionMyTurn: clienttranslate('${you} mus confirm'), // We tell the ACTIVE player what they must do
+            descriptionMyTurn: clienttranslate('${you} must confirm'), // We tell the ACTIVE player what they must do
             description: clienttranslate('${actplayer} performs an action') // We tell OTHER players what they are waiting for
         );
     }

@@ -30,12 +30,19 @@ class Op_discard extends CountableOperation {
     }
 
     public function getPrompt() {
-        return "Select a settler to discard";
+        return clienttranslate("Select a settler to discard");
     }
 
+    public function getSubTitle() {
+        if ($this->getCount() > 1) {
+            return clienttranslate("When discarding multiple, select one at a time");
+        }
+        return "";
+    }
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner"));
+        $tokens = $this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner", null, "token_state");
+        $keys = array_map(fn($x) => $x["key"], $tokens);
 
         $res = [];
         $set = [];

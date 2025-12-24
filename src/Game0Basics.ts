@@ -104,7 +104,6 @@ class Game0Basics extends GameGui<any> {
     console.log("updatePageTitle", state);
     if ((this as any).prevent_error_rentry === undefined) (this as any).prevent_error_rentry = 11; // XXX hack to prevent popin up formatter error
     try {
-      if (state?.private_state) return this.inherited(state.private_state);
       return this.inherited(arguments);
     } catch (e) {
       console.error("updatePageTitle", e);

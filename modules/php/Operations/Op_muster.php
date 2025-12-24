@@ -34,12 +34,14 @@ class Op_muster extends CountableOperation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner"));
+        $tokens = $this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner", null, "token_state");
 
         $res = [];
         $set = [];
-        foreach ($keys as $card) {
+        foreach ($tokens as $info) {
+            $card = $info["key"];
             $t = $this->game->getRulesFor($card, "t");
+
             $set[$t] = $card;
         }
         foreach ($set as $card) {

@@ -46,20 +46,24 @@ class Op_turn extends Operation {
         }
     }
     public function getUiArgs() {
-        return ["buttons" => false];
+        return ["replicate" => true];
     }
-
+    public function getDescription() {
+        return clienttranslate('${actplayer} chooses one of the village cards');
+    }
     public function getPrompt() {
-        return clienttranslate('${You} must select a village card or Pass to take turn later');
+        $args = $this->getArgs();
+        if ($args["target"]["yield"] ?? false) {
+            return clienttranslate('${You} must select a village card or Pass to take turn later');
+        }
+        return clienttranslate('${You} must select a village card');
     }
     public function getSubTitle() {
-        return [
-            "log" => clienttranslate('Round ${round} of 4 - Turn ${turn} of 3'),
-            "args" => [
-                "round" => $this->game->getRoundNumber(),
-                "turn" => $this->game->getTurnNumber(),
-            ],
-        ];
+        $turn = $this->game->getTurnNumber();
+        if ($turn == 3) {
+            return clienttranslate("This is last turn before you have to feed the settlers");
+        }
+        return;
     }
 
     function getExtraArgs() {

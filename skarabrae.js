@@ -122,8 +122,6 @@ var Game0Basics = /** @class */ (function (_super) {
         if (this.prevent_error_rentry === undefined)
             this.prevent_error_rentry = 11; // XXX hack to prevent popin up formatter error
         try {
-            if (state === null || state === void 0 ? void 0 : state.private_state)
-                return this.inherited(state.private_state);
             return this.inherited(arguments);
         }
         catch (e) {
@@ -635,6 +633,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (id == "thething") {
             var node = this.findActiveParent(target);
             id = node === null || node === void 0 ? void 0 : node.id;
+            target = node;
         }
         console.log("on slot " + id, (target === null || target === void 0 ? void 0 : target.id) || target);
         if (!id)
@@ -647,6 +646,8 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (checkActivePlayer && !this.checkActivePlayer()) {
             return null;
         }
+        if (target.dataset.targetId)
+            return target.dataset.targetId;
         id = id.replace("tmp_", "");
         id = id.replace("button_", "");
         return id;
@@ -661,8 +662,8 @@ var Game1Tokens = /** @class */ (function (_super) {
         return tokenInfo;
     };
     Game1Tokens.prototype.checkActivePlayer = function () {
-        if (!this.game.isCurrentPlayerActive()) {
-            this.game.showMessage(_("This is not your turn"), "error");
+        if (!this.bga.players.isCurrentPlayerActive()) {
+            this.bga.dialogs.showMessage(_("This is not your turn"), "error");
             return false;
         }
         return true;
@@ -672,7 +673,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (node.classList.contains(this.classActiveSlot)) {
             return true;
         }
-        if (node.classList.contains("hidden_" + this.classActiveSlot)) {
+        if (node.classList.contains(this.classActiveSlotHidden)) {
             return true;
         }
         return false;
@@ -682,7 +683,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (!this.isActiveSlot(id)) {
             if (showError) {
                 console.error(new Error("unauth"), id);
-                this.game.showMoveUnauthorized();
+                this.bga.dialogs.showMoveUnauthorized();
             }
             return false;
         }
@@ -780,7 +781,7 @@ var Game1Tokens = /** @class */ (function (_super) {
                         _b.label = 2;
                     case 2:
                         if (!!placeInfo.nop) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.slideAndPlace(tokenNode, placeInfo.location, animTime, undefined, placeInfo.onEnd)];
+                        return [4 /*yield*/, this.slideAndPlace(tokenNode, placeInfo.location, animTime, 0, undefined, placeInfo.onEnd)];
                     case 3:
                         _b.sent();
                         _b.label = 4;
@@ -1034,19 +1035,30 @@ var Game1Tokens = /** @class */ (function (_super) {
         }
         return _super.prototype.bgaFormatText.call(this, log, args);
     };
-    Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, duration, mobileStyle, onEnd) {
+    Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, duration, delay, mobileStyle, onEnd) {
         var _a;
+        if (delay === void 0) { delay = 0; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_b) {
-                if (!$(token))
-                    console.error("token not found for ".concat(token));
-                if (((_a = $(token)) === null || _a === void 0 ? void 0 : _a.parentNode) == $(finalPlace))
-                    return [2 /*return*/];
-                if (this.game.bgaAnimationsActive() == false) {
-                    duration = 0;
+                switch (_b.label) {
+                    case 0:
+                        if (!$(token))
+                            console.error("token not found for ".concat(token));
+                        if (((_a = $(token)) === null || _a === void 0 ? void 0 : _a.parentNode) == $(finalPlace))
+                            return [2 /*return*/];
+                        if (this.game.bgaAnimationsActive() == false) {
+                            duration = 0;
+                            delay = 0;
+                        }
+                        if (!delay) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.wait(delay)];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2:
+                        this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
+                        return [2 /*return*/, this.wait(duration)];
                 }
-                this.animationLa.phantomMove(token, finalPlace, duration, mobileStyle, onEnd);
-                return [2 /*return*/, this.wait(duration)];
             });
         });
     };
@@ -1175,67 +1187,71 @@ var GameMachine = /** @class */ (function (_super) {
             });
         }
         var multiselect = this.isMultiSelectArgs(opInfo);
+        var multiCount = this.isMultiCountArgs(opInfo);
         var sortedTargets = Object.keys(opInfo.info);
         sortedTargets.sort(function (a, b) { return opInfo.info[a].o - opInfo.info[b].o; });
-        var _loop_1 = function (target) {
+        for (var _i = 0, sortedTargets_1 = sortedTargets; _i < sortedTargets_1.length; _i++) {
+            var target = sortedTargets_1[_i];
             var paramInfo = opInfo.info[target];
             if (paramInfo.sec) {
-                return "continue";
+                continue; // secondary buttons
             }
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
-            if (div && active) {
-                (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this_1.classActiveSlot);
+            if (div && active && !multiCount) {
+                (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this.classActiveSlot);
                 div.dataset.targetOpType = opInfo.type;
             }
-            var handler = void 0;
-            if (multiselect) {
-                handler = function () { return _this.onMultiCount(target, opInfo); };
-            }
-            else {
-                handler = function () { return _this.resolveAction({ target: target }); };
-            }
+            var altNode = void 0;
             if (opInfo.ui.replicate == true && div) {
-                // /this.replicateTokenOnToolbar(opInfo, target, handler);
+                var clone = div.cloneNode(true);
+                clone.id = div.id + "_temp";
+                $("selection_area").appendChild(clone);
+                clone.addEventListener("click", function (event) { return _this.onToken(event); });
+                clone.classList.remove(this.classActiveSlot);
+                clone.classList.add(this.classActiveSlotHidden);
+                altNode = clone;
             }
-            if (opInfo.ui.buttons == false && div) {
-                return "continue";
+            else if (opInfo.ui.buttons || !div) {
+                var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
+                var button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), function (event) { return _this.onToken(event); }, {
+                    color: color,
+                    disabled: !active,
+                    id: "button_" + target
+                });
+                if (!active) {
+                    button.title = this.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo);
+                }
+                else {
+                    if (paramInfo.tooltip)
+                        button.title = this.getTr(paramInfo.tooltip, paramInfo);
+                }
+                altNode = button;
             }
-            var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
-            var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), handler, {
-                color: color,
-                disabled: !active,
-                id: "button_" + target
-            });
-            button.dataset.targetId = target;
-            button.dataset.targetOpType = opInfo.type;
-            if (paramInfo.max !== undefined) {
-                button.dataset.max = String(paramInfo.max);
+            if (!altNode)
+                continue;
+            altNode.dataset.targetId = target;
+            altNode.dataset.targetOpType = opInfo.type;
+            if (multiselect) {
+                if (paramInfo.max !== undefined) {
+                    altNode.dataset.max = String(paramInfo.max);
+                }
+                else {
+                    altNode.dataset.max = "1";
+                }
             }
-            else {
-                button.dataset.max = "1";
-            }
-            if (!active) {
-                button.title = this_1.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo);
-            }
-            else {
-                if (paramInfo.tooltip)
-                    button.title = this_1.getTr(paramInfo.tooltip, paramInfo);
-            }
-        };
-        var this_1 = this;
-        for (var _i = 0, sortedTargets_1 = sortedTargets; _i < sortedTargets_1.length; _i++) {
-            var target = sortedTargets_1[_i];
-            _loop_1(target);
         }
-        var _loop_2 = function (target) {
+        if (opInfo.ui.buttons == false || opInfo.ui.replicate) {
+            this.addShowMeButton(true);
+        }
+        var _loop_1 = function (target) {
             var paramInfo = opInfo.info[target];
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
                 var color = (_d = paramInfo.color) !== null && _d !== void 0 ? _d : "secondary";
                 var call_1 = (_e = paramInfo.call) !== null && _e !== void 0 ? _e : target;
-                var button = this_2.statusBar.addActionButton(this_2.getParamPresentation(target, paramInfo), function () {
+                var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), function () {
                     return _this.bga.actions.performAction("action_".concat(call_1), {
                         data: JSON.stringify({ target: target })
                     });
@@ -1246,14 +1262,11 @@ var GameMachine = /** @class */ (function (_super) {
                 button.dataset.targetId = target;
             }
         };
-        var this_2 = this;
+        var this_1 = this;
         // secondary buttons
         for (var _f = 0, sortedTargets_2 = sortedTargets; _f < sortedTargets_2.length; _f++) {
             var target = sortedTargets_2[_f];
-            _loop_2(target);
-        }
-        if (opInfo.ui.buttons == false) {
-            this.addShowMeButton(true);
+            _loop_1(target);
         }
         if (multiselect) {
             this.activateMultiSelectPrompt(opInfo);
@@ -1274,6 +1287,9 @@ var GameMachine = /** @class */ (function (_super) {
     };
     GameMachine.prototype.isMultiSelectArgs = function (args) {
         return args.ttype == "token_count" || args.ttype == "token_array";
+    };
+    GameMachine.prototype.isMultiCountArgs = function (args) {
+        return args.ttype == "token_array";
     };
     GameMachine.prototype.onLeavingState = function (stateName) {
         var _a;
@@ -1297,30 +1313,35 @@ var GameMachine = /** @class */ (function (_super) {
         return true;
     };
     GameMachine.prototype.onToken_PlayerTurn = function (tid) {
-        var _a, _b;
+        var _a;
         //debugger;
         if (!tid)
             return false;
-        if ($(tid).classList.contains(this.classActiveSlot)) {
-            var ttype = (_a = this.opInfo) === null || _a === void 0 ? void 0 : _a.ttype;
-            if (ttype) {
-                var methodName = "onToken_" + ttype;
-                var ret = this.callfn(methodName, tid);
-                if (ret === undefined)
-                    return false;
-                return true;
-            }
-            return false;
+        var ttype = (_a = this.opInfo) === null || _a === void 0 ? void 0 : _a.ttype;
+        if (ttype) {
+            var methodName = "onToken_" + ttype;
+            var ret = this.callfn(methodName, tid);
+            if (ret === undefined)
+                return false;
+            return true;
         }
-        else {
-            // propagate to parent
-            return this.onToken_PlayerTurn((_b = $(tid).parentNode) === null || _b === void 0 ? void 0 : _b.id);
-        }
+        console.error("no handler for ", ttype);
+        return false;
     };
-    GameMachine.prototype.onToken_token = function (tid) {
-        if (!tid)
+    GameMachine.prototype.onToken_token = function (target) {
+        if (!target)
             return false;
-        this.resolveAction({ target: tid });
+        this.resolveAction({ target: target });
+    };
+    GameMachine.prototype.onToken_token_array = function (target) {
+        if (!target)
+            return false;
+        this.onMultiCount(target, this.opInfo);
+    };
+    GameMachine.prototype.onToken_token_count = function (target) {
+        if (!target)
+            return false;
+        this.onMultiCount(target, this.opInfo);
     };
     GameMachine.prototype.activateMultiSelectPrompt = function (opInfo) {
         var _this = this;
@@ -1477,7 +1498,7 @@ var GameMachine = /** @class */ (function (_super) {
     GameMachine.prototype.setSubPrompt = function (text, args) {
         if (!text)
             text = "";
-        var message = this.format_string_recursive(this.getTr(text), args);
+        var message = this.format_string_recursive(this.getTr(text, args), args);
         // have to set after otherwise status update wipes it
         setTimeout(function () {
             $("gameaction_status").innerHTML = "<div class=\"subtitle\">".concat(message, "</div>");
@@ -1498,6 +1519,8 @@ var GameMachine = /** @class */ (function (_super) {
                 opInfo.info = {};
             if (!opInfo.target)
                 opInfo.target = [];
+            if (!opInfo.ui)
+                opInfo.ui = {};
             var infokeys = Object.keys(opInfo.info);
             if (infokeys.length == 0 && opInfo.target.length > 0) {
                 opInfo.target.forEach(function (element) {
@@ -1525,6 +1548,9 @@ var GameMachine = /** @class */ (function (_super) {
             if (opInfo.info.skip && !opInfo.info.skip.name) {
                 opInfo.info.skip.name = _("Skip");
             }
+            if (opInfo.ui.buttons === undefined) {
+                opInfo.ui.buttons = true;
+            }
         }
         catch (e) {
             console.error(e);
@@ -1548,7 +1574,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turndisk\" class=\"turndisk\"></div>\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n    <div id=\"tracker_nrounds\"></div>\n    <div id=\"tracker_nturns\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1585,12 +1611,12 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
         switch (opInfo.type) {
-            // case "village":
             case "turn":
-                // move cards up
-                var divId = "cardset_".concat(opInfo.turn);
-                console.log("village", opInfo);
-                this.slideAndPlace(divId, "selection_area", this.defaultAnimationDuration);
+                var div = $("turnover");
+                var clone = div.cloneNode(true);
+                clone.querySelectorAll("*").forEach(function (x) { return (x.id = x.id + "_temp"); });
+                clone.id = clone.id + "_temp";
+                $("selection_area").appendChild(clone);
                 break;
             case "act":
                 //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
@@ -1598,15 +1624,14 @@ var GameXBody = /** @class */ (function (_super) {
         }
     };
     GameXBody.prototype.onLeavingState_PlayerTurn = function () {
+        var _a;
         var opInfo = this.opInfo;
-        switch (opInfo === null || opInfo === void 0 ? void 0 : opInfo.type) {
-            //case "village":
-            case "turn":
-                // move cards up
-                console.log("leave village", opInfo);
-                var divId = "cardset_".concat(opInfo.turn);
-                this.slideAndPlace(divId, "mainarea", this.defaultAnimationDuration);
-                break;
+        if ((_a = opInfo === null || opInfo === void 0 ? void 0 : opInfo.ui) === null || _a === void 0 ? void 0 : _a.replicate) {
+            $("selection_area")
+                .querySelectorAll("& > *")
+                .forEach(function (element) {
+                element.remove();
+            });
         }
     };
     GameXBody.prototype.showHelp = function (id) {
@@ -1693,6 +1718,9 @@ var GameXBody = /** @class */ (function (_super) {
                     });
                 }); };
             }
+            if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
+                result.location = "turnover";
+            }
         }
         else if (location.startsWith("miniboard") && $(tokenId)) {
             result.nop = true; // do not move
@@ -1705,7 +1733,7 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.syncStorage = function (result) {
         return __awaiter(this, void 0, void 0, function () {
-            var tokenId, tokenNode, count, type, color, i_1, item, itemNode, location_2, targetLoc, div, i, itemNode;
+            var tokenId, tokenNode, count, type, color, promisses, i_1, item, itemNode, location_2, targetLoc, div, i, itemNode;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1714,40 +1742,34 @@ var GameXBody = /** @class */ (function (_super) {
                         count = result.state;
                         type = getPart(tokenId, 1);
                         color = getPart(tokenId, 2);
-                        i_1 = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(i_1 < count)) return [3 /*break*/, 5];
-                        item = "item_".concat(tokenId, "_").concat(i_1);
-                        itemNode = $(item);
-                        if (!!itemNode) return [3 /*break*/, 4];
-                        location_2 = tokenId;
-                        if (result.place_from) {
-                            if (!$(result.place_from)) {
-                                console.error("missing location " + location_2);
-                            }
-                            else {
-                                location_2 = result.place_from;
+                        promisses = [];
+                        for (i_1 = 0; i_1 < count; i_1++) {
+                            item = "item_".concat(tokenId, "_").concat(i_1);
+                            itemNode = $(item);
+                            if (!itemNode) {
+                                location_2 = tokenId;
+                                if (result.place_from) {
+                                    if (!$(result.place_from)) {
+                                        console.error("missing location " + location_2);
+                                    }
+                                    else {
+                                        location_2 = result.place_from;
+                                    }
+                                }
+                                targetLoc = "storage_".concat(color);
+                                div = document.createElement("div");
+                                div.id = item;
+                                this.updateToken(div, { key: tokenId, location: location_2, state: 0 });
+                                div.title = this.getTokenName(tokenId);
+                                if (this.bgaAnimationsActive() && !this.inSetup) {
+                                    $(location_2).appendChild(div);
+                                    promisses.push(this.slideAndPlace(item, targetLoc, 500, i_1 * 100));
+                                }
+                                else {
+                                    $(targetLoc).appendChild(div);
+                                }
                             }
                         }
-                        targetLoc = "storage_".concat(color);
-                        div = document.createElement("div");
-                        div.id = item;
-                        this.updateToken(div, { key: tokenId, location: location_2, state: 0 });
-                        div.title = this.getTokenName(tokenId);
-                        if (!(this.bgaAnimationsActive() && !this.inSetup)) return [3 /*break*/, 3];
-                        $(location_2).appendChild(div);
-                        return [4 /*yield*/, this.slideAndPlace(item, targetLoc, result.animtime === undefined ? this.defaultAnimationDuration : result.animtime)];
-                    case 2:
-                        _a.sent();
-                        return [3 /*break*/, 4];
-                    case 3:
-                        $(targetLoc).appendChild(div);
-                        _a.label = 4;
-                    case 4:
-                        i_1++;
-                        return [3 /*break*/, 1];
-                    case 5:
                         i = count;
                         while (i < 100) {
                             itemNode = $("item_".concat(tokenId, "_").concat(i));
@@ -1757,6 +1779,9 @@ var GameXBody = /** @class */ (function (_super) {
                             }
                             i++;
                         }
+                        return [4 /*yield*/, Promise.allSettled(promisses)];
+                    case 1:
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -1808,6 +1833,9 @@ var GameXBody = /** @class */ (function (_super) {
                         tokenInfo.tooltip += this.ttSection(undefined, _("If you have NOT met the condition shown on the Focus Card at the end of the game, you lose 5VP."));
                     }
                 }
+                return;
+            case "cardset":
+                tokenInfo.showtooltip = false;
                 return;
         }
     };
