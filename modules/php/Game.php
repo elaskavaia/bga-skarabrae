@@ -165,6 +165,9 @@ class Game extends Base {
         $result = parent::getAllDatas();
 
         $result = array_merge($result, $this->tokens->getAllDatas());
+
+        $isEndScore = $this->isEndOfGame();
+        $result["endScores"] = $isEndScore ? $this->getEndScores() : null;
         return $result;
     }
 
@@ -261,7 +264,7 @@ class Game extends Base {
                 "reason" => $stat,
             ])
         );
-        // XXX: inc stat
+
         $this->playerStats->set($stat, $inc, $player_id);
 
         $this->notifyWithName(
@@ -569,6 +572,36 @@ class Game extends Base {
                 }
             }
         }
+        $this->notify->all("endScores", "", ["endScores" => $this->getEndScores()]);
+    }
+
+    function getEndScores(): array {
+        // this would be filled dynamically on your game, but should have the shape of this static example
+        $endScores = [];
+        $players = $this->loadPlayersBasicInfos();
+        $vp_stats = [
+            "game_vp_setl_count",
+            "game_vp_setl_sets",
+            "game_vp_trade",
+            "game_vp_action_tiles",
+            "game_vp_cards",
+            "game_vp_food",
+            "game_vp_skaill",
+            "game_vp_midden",
+            "game_vp_slider",
+        ];
+        if ($this->isSolo()) {
+            $vp_stats[] = "game_vp_tasks";
+            $vp_stats[] = "game_vp_goals";
+        }
+
+        foreach ($players as $player_id => $player) {
+            foreach ($vp_stats as $stat) {
+                $endScores[$player_id][$stat] = $this->playerStats->get($stat, $player_id);
+            }
+        }
+        $endScores[$player_id]["total"] = $this->playerScore->get($player_id);
+        return $endScores;
     }
 
     function isGoalAchieved(string $card, string $color) {

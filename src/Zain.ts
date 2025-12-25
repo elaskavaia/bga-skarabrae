@@ -8,9 +8,12 @@ define([
   "ebg/core/gamegui",
   // libs
   getLibUrl("bga-animations", "1.x"),
-  getLibUrl("bga-cards", "1.x")
-], function (dojo, declare, gamegui, BgaAnimations, BgaCards) {
+  getLibUrl("bga-cards", "1.x"),
+  getLibUrl("bga-score-sheet", "1.x")
+], function (dojo, declare, gamegui, BgaAnimations, BgaCards, BgaScoreSheet) {
   (window as any).BgaAnimations = BgaAnimations; //trick
   (window as any).BgaCards = BgaCards;
+  (window as any).BgaScoreSheet = BgaScoreSheet;
+
   declare("bgagame.skarabrae", ebg.core.gamegui, new GameXBody());
 });

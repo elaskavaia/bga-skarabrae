@@ -11,9 +11,11 @@
 
 /** Game class. Its Call XBody to be last in alphabetical order */
 class GameXBody extends GameMachine {
+  private scoreSheet: any;
   private inSetup = true;
   readonly gameTemplate = `
 <div id="thething">
+<div id="game-score-sheet"></div>
 <div id='selection_area' class='selection_area'></div>
 <div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
@@ -31,6 +33,7 @@ class GameXBody extends GameMachine {
  <div id="deck_village" class="deck village"></div>
  <div id="deck_roof" class="deck roof"></div>
 </div>
+
 </div>
 
 `;
@@ -51,6 +54,7 @@ class GameXBody extends GameMachine {
     super.setupGame(gamedatas);
 
     this.setupNotifications();
+    this.setupScoreSheet();
     console.log("Ending game setup");
     this.inSetup = false;
   }
@@ -97,6 +101,54 @@ class GameXBody extends GameMachine {
         `track_trade_${playerInfo.color}`
       );
     }
+  }
+
+  setupScoreSheet() {
+    // this.gamedatas.endScores = {};
+    // this.gamedatas.endScores[this.player_id] = {
+    //   game_vp_setl_count: 5,
+    //   game_vp_setl_sets: 8,
+    //   game_vp_trade: 3,
+    //   game_vp_action_tiles: 4,
+    //   game_vp_cards: 6,
+    //   game_vp_food: 2,
+    //   game_vp_skaill: 3,
+    //   game_vp_midden: -2,
+    //   game_vp_slider: -1,
+    //   game_vp_tasks: -3,
+    //   game_vp_goals: -1,
+    //   total: 24
+    // };
+
+    this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById(`game-score-sheet`), {
+      animationsActive: () => gameui.bgaAnimationsActive(),
+      playerNameWidth: 80,
+      playerNameHeight: 30,
+      entryLabelWidth: 180,
+      entryLabelHeight: 20,
+      classes: "score-sheet",
+      players: this.gamedatas.players,
+      entries: [
+        { property: "game_vp_setl_count", label: _("VP for settlers cards") },
+        { property: "game_vp_setl_sets", label: _("VP for settler sets") },
+        { property: "game_vp_trade", label: _("VP from trade track") },
+        { property: "game_vp_action_tiles", label: _("VP from action tiles") },
+        { property: "game_vp_cards", label: _("VP from cards") },
+        { property: "game_vp_food", label: _("VP from food") },
+        { property: "game_vp_skaill", label: _("VP from skaill knives") },
+        { property: "game_vp_midden", label: _("VP penalty from midden") },
+        { property: "game_vp_slider", label: _("VP penlty from slider") },
+        { property: "game_vp_tasks", label: _("VP penalty from tasks") },
+        { property: "game_vp_goals", label: _("VP penalty from goals") },
+        { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
+      ],
+      scores: this.gamedatas.endScores,
+      onScoreDisplayed: (property, playerId, score) => {
+        if (property === "total") {
+          gameui.scoreCtrl[playerId].setValue(score);
+        }
+      }
+    });
   }
 
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
@@ -341,6 +393,13 @@ class GameXBody extends GameMachine {
   async notif_message(args: any) {
     //console.log("notif", args);
     return this.wait(10);
+  }
+
+  async notif_endScores(args: any) {
+    // setting scores will make the score sheet visible if it isn't already
+    await this.scoreSheet.setScores(args.endScores, {
+      startBy: this.bga.players.getCurrentPlayerId()
+    });
   }
   /** @Override */
   bgaFormatText(log: string, args: any) {

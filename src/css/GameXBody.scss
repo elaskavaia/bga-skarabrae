@@ -230,3 +230,20 @@ html[data-theme="dark"] body {
   background-image: url(img/bg11.jpg);
   background-size: auto 100%;
 }
+
+.score-sheet {
+  background-image: url(img/stonex.jpg);
+  background-size: cover;
+
+  table,
+  td,
+  th {
+    border: 1px solid darkgray;
+    border-collapse: collapse;
+    padding: 8px;
+    color: white;
+  }
+  .bga-score-sheet_player-name {
+    color: var(--player-color);
+  }
+}

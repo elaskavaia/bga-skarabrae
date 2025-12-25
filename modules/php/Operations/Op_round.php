@@ -40,7 +40,7 @@ class Op_round extends Operation {
 
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
 
-        $this->game->tokens->dbSetTokenState(Game::TURNS_NUMBER_GLOBAL, 0);
+        $this->game->tokens->dbSetTokenState(Game::TURNS_NUMBER_GLOBAL, 0, "");
 
         $players_basic = $this->game->loadPlayersBasicInfos();
         foreach ($players_basic as $player_info) {

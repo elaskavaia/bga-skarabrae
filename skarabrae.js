@@ -1574,7 +1574,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n    <div id=\"tracker_nrounds\"></div>\n    <div id=\"tracker_nturns\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id=\"game-score-sheet\"></div>\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n    <div id=\"tracker_nrounds\"></div>\n    <div id=\"tracker_nturns\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1592,6 +1592,7 @@ var GameXBody = /** @class */ (function (_super) {
         // }
         _super.prototype.setupGame.call(this, gamedatas);
         this.setupNotifications();
+        this.setupScoreSheet();
         console.log("Ending game setup");
         this.inSetup = false;
     };
@@ -1607,6 +1608,52 @@ var GameXBody = /** @class */ (function (_super) {
         for (var i = 0; i <= 7; i++) {
             placeHtml("<div id='slot_trade_".concat(i, "_").concat(playerInfo.color, "' class='slot_trade slot_trade_").concat(i, "'></div>"), "track_trade_".concat(playerInfo.color));
         }
+    };
+    GameXBody.prototype.setupScoreSheet = function () {
+        // this.gamedatas.endScores = {};
+        // this.gamedatas.endScores[this.player_id] = {
+        //   game_vp_setl_count: 5,
+        //   game_vp_setl_sets: 8,
+        //   game_vp_trade: 3,
+        //   game_vp_action_tiles: 4,
+        //   game_vp_cards: 6,
+        //   game_vp_food: 2,
+        //   game_vp_skaill: 3,
+        //   game_vp_midden: -2,
+        //   game_vp_slider: -1,
+        //   game_vp_tasks: -3,
+        //   game_vp_goals: -1,
+        //   total: 24
+        // };
+        this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById("game-score-sheet"), {
+            animationsActive: function () { return gameui.bgaAnimationsActive(); },
+            playerNameWidth: 80,
+            playerNameHeight: 30,
+            entryLabelWidth: 180,
+            entryLabelHeight: 20,
+            classes: "score-sheet",
+            players: this.gamedatas.players,
+            entries: [
+                { property: "game_vp_setl_count", label: _("VP for settlers cards") },
+                { property: "game_vp_setl_sets", label: _("VP for settler sets") },
+                { property: "game_vp_trade", label: _("VP from trade track") },
+                { property: "game_vp_action_tiles", label: _("VP from action tiles") },
+                { property: "game_vp_cards", label: _("VP from cards") },
+                { property: "game_vp_food", label: _("VP from food") },
+                { property: "game_vp_skaill", label: _("VP from skaill knives") },
+                { property: "game_vp_midden", label: _("VP penalty from midden") },
+                { property: "game_vp_slider", label: _("VP penlty from slider") },
+                { property: "game_vp_tasks", label: _("VP penalty from tasks") },
+                { property: "game_vp_goals", label: _("VP penalty from goals") },
+                { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
+            ],
+            scores: this.gamedatas.endScores,
+            onScoreDisplayed: function (property, playerId, score) {
+                if (property === "total") {
+                    gameui.scoreCtrl[playerId].setValue(score);
+                }
+            }
+        });
     };
     GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
@@ -1880,6 +1927,23 @@ var GameXBody = /** @class */ (function (_super) {
             });
         });
     };
+    GameXBody.prototype.notif_endScores = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    // setting scores will make the score sheet visible if it isn't already
+                    return [4 /*yield*/, this.scoreSheet.setScores(args.endScores, {
+                            startBy: this.bga.players.getCurrentPlayerId()
+                        })];
+                    case 1:
+                        // setting scores will make the score sheet visible if it isn't already
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     /** @Override */
     GameXBody.prototype.bgaFormatText = function (log, args) {
         try {
@@ -2061,9 +2125,11 @@ define([
     "ebg/core/gamegui",
     // libs
     getLibUrl("bga-animations", "1.x"),
-    getLibUrl("bga-cards", "1.x")
-], function (dojo, declare, gamegui, BgaAnimations, BgaCards) {
+    getLibUrl("bga-cards", "1.x"),
+    getLibUrl("bga-score-sheet", "1.x")
+], function (dojo, declare, gamegui, BgaAnimations, BgaCards, BgaScoreSheet) {
     window.BgaAnimations = BgaAnimations; //trick
     window.BgaCards = BgaCards;
+    window.BgaScoreSheet = BgaScoreSheet;
     declare("bgagame.skarabrae", ebg.core.gamegui, new GameXBody());
 });
