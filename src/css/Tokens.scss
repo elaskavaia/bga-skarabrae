@@ -214,16 +214,13 @@
   position: relative;
   height: 32px;
   aspect-ratio: unset;
-  width: 100%;
   color: #999;
   &:after {
-    content: attr(data-name);
-    position: absolute;
-    left: 0;
+    content: attr(data-state);
+    position: relative;
   }
   &:before {
-    content: attr(data-state);
-    position: absolute;
-    right: 0%;
+    content: attr(data-name);
+    position: relative;
   }
 }

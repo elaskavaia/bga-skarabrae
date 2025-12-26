@@ -23,17 +23,17 @@ tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
 tracker_trade|Trade Marker|1|wooden tracker trade|4|slot_trade_0_{COLOR}
 tracker_slider|Slider|1|tracker slider|4|tableau_{COLOR}
 tracker_hearth|Hearth Limit|0|wooden tracker hearth|0|miniboard_{COLOR}
-tracker_nturns|Turn|1|turninfo|1|turnover|
-tracker_nrounds|Round|1|turninfo|1|turnover|
+tracker_nturns|Turn|1|turninfo|1|round_banner|
+tracker_nrounds|Round|1|turninfo|1|round_banner|
 
 
 #cards
 #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
 
-card_roof|Village Roof Card|8|card village roof|2|deck_village|'vp'=>2
-card_ball|Village Stone Ball Card|8|card village ball|2|deck_village|'vp'=>2,'r'=>'skaill'
-card_util|Village Utencil Card|4|card village util|2|deck_village|'vp'=>1,'r'=>'hide'
-card_roofi|Roof Card|40|card roofi|2|deck_roof|'vp'=>1
+card_roof|Roof Card|8|card village roof|2|deck_village|'vp'=>2
+card_ball|Stone Ball Card|8|card village ball|2|deck_village|'vp'=>2,'r'=>'skaill'
+card_util|Utencil Card|4|card village util|2|deck_village|'vp'=>1,'r'=>'hide'
+card_roofi|Small Roof Card|40|card roofi|2|deck_roof|'vp'=>1
 card_spin|Spindle Card|10|card spin|2|deck_spin|'vp'=>1,'r'=>'wool'
 #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
 #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5

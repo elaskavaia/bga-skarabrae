@@ -230,11 +230,32 @@ html[data-theme="dark"] body {
   background-image: url(img/bg11.jpg);
   background-size: auto 100%;
 }
+#round_banner {
+  height: 24px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  font-family: "Caesar Dressing";
+  font-size: large;
+}
+#round_banner:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 5%;
+  z-index: -1;
+  background-image: url("img/topBanner.png");
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+}
 
 .score-sheet {
   background-image: url(img/stonex.jpg);
   background-size: cover;
-
+  font-family: "Caesar Dressing";
+  font-size: large;
   table,
   td,
   th {

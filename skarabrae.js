@@ -1212,6 +1212,7 @@ var GameMachine = /** @class */ (function (_super) {
                 clone.classList.remove(this.classActiveSlot);
                 clone.classList.add(this.classActiveSlotHidden);
                 altNode = clone;
+                this.updateTooltip(div.id, clone);
             }
             else if (opInfo.ui.buttons || !div) {
                 var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
@@ -1574,22 +1575,18 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id=\"game-score-sheet\"></div>\n<div id='selection_area' class='selection_area'></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n    <div id=\"tracker_nrounds\"></div>\n    <div id=\"tracker_nturns\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
+        _this.gameTemplate = "\n<link href='https://fonts.googleapis.com/css?family=Caesar Dressing' rel='stylesheet'>\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n</div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
         _super.prototype.setup.call(this, gamedatas);
-        placeHtml(this.gameTemplate, this.getGameAreaElement());
+        placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
         // Setting up player boards
         for (var _i = 0, _a = gamedatas.playerorder; _i < _a.length; _i++) {
             var playerId = _a[_i];
             var playerInfo = gamedatas.players[playerId];
             this.setupPlayer(playerInfo);
         }
-        // if (this.isSolo()) {
-        //   const playerInfo = gamedatas.players[1];
-        //   this.setupPlayer(playerInfo);
-        // }
         _super.prototype.setupGame.call(this, gamedatas);
         this.setupNotifications();
         this.setupScoreSheet();
@@ -1766,7 +1763,7 @@ var GameXBody = /** @class */ (function (_super) {
                 }); };
             }
             if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
-                result.location = "turnover";
+                result.nop = true;
             }
         }
         else if (location.startsWith("miniboard") && $(tokenId)) {
@@ -1871,13 +1868,26 @@ var GameXBody = /** @class */ (function (_super) {
                 {
                     var tokenId = tokenInfo.key;
                     var name_4 = tokenInfo.name;
+                    var tooltip = tokenInfo.tooltip;
                     if (tokenId.startsWith("card_setl")) {
                         tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
                         tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName("env_".concat(tokenInfo.t)));
-                        tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+                        tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tooltip);
+                    }
+                    else if (tokenId.startsWith("card_ball")) {
+                        tokenInfo.tooltip = _("Gain skaill knife for each Stone Ball you have");
+                    }
+                    else if (tokenId.startsWith("card_spin")) {
+                        tokenInfo.tooltip = _("Gain wool for each Spindle you have");
+                    }
+                    else if (tokenId.startsWith("card_roof")) {
+                        tokenInfo.tooltip = _("No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay buy one");
+                    }
+                    else if (tokenId.startsWith("card_util")) {
+                        tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
                     }
                     else if (tokenId.startsWith("card_goal")) {
-                        tokenInfo.tooltip += this.ttSection(undefined, _("If you have NOT met the condition shown on the Focus Card at the end of the game, you lose 5VP."));
+                        tokenInfo.tooltip += this.ttSection(undefined, _("If you have NOT met the condition shown on the Focus Card, you lose 5VP. Condition evaluated at the end of the game"));
                     }
                 }
                 return;

@@ -14,16 +14,19 @@ class GameXBody extends GameMachine {
   private scoreSheet: any;
   private inSetup = true;
   readonly gameTemplate = `
+<link href='https://fonts.googleapis.com/css?family=Caesar Dressing' rel='stylesheet'>
 <div id="thething">
-<div id="game-score-sheet"></div>
 <div id='selection_area' class='selection_area'></div>
+<div id="round_banner">
+  <span id='tracker_nrounds'> </span>
+  <span id='tracker_nturns'> </span>
+</div>
+<div id="game-score-sheet"></div>
 <div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
 <div id="mainarea">
  <div id="turnover" class="turnover">
     <div id="turndisk" class="turndisk"></div>
-    <div id="tracker_nrounds"></div>
-    <div id="tracker_nturns"></div>
  </div>
 
  <div id="cardset_1" class="cardset cardset_1"></div>
@@ -40,17 +43,13 @@ class GameXBody extends GameMachine {
   setup(gamedatas) {
     super.setup(gamedatas);
 
-    placeHtml(this.gameTemplate, this.getGameAreaElement());
+    placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
     // Setting up player boards
     for (const playerId of gamedatas.playerorder) {
       const playerInfo = gamedatas.players[playerId];
       this.setupPlayer(playerInfo);
     }
 
-    // if (this.isSolo()) {
-    //   const playerInfo = gamedatas.players[1];
-    //   this.setupPlayer(playerInfo);
-    // }
     super.setupGame(gamedatas);
 
     this.setupNotifications();
@@ -246,7 +245,7 @@ class GameXBody extends GameMachine {
         };
       }
       if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
-        result.location = `turnover`;
+        result.nop = true;
       }
     } else if (location.startsWith("miniboard") && $(tokenId)) {
       result.nop = true; // do not move
@@ -338,14 +337,25 @@ class GameXBody extends GameMachine {
         {
           const tokenId = tokenInfo.key;
           const name = tokenInfo.name;
+          const tooltip = tokenInfo.tooltip;
           if (tokenId.startsWith("card_setl")) {
             tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
             tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName(`env_${tokenInfo.t}`));
-            tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tokenInfo.r);
+            tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tooltip as string);
+          } else if (tokenId.startsWith("card_ball")) {
+            tokenInfo.tooltip = _("Gain skaill knife for each Stone Ball you have");
+          } else if (tokenId.startsWith("card_spin")) {
+            tokenInfo.tooltip = _("Gain wool for each Spindle you have");
+          } else if (tokenId.startsWith("card_roof")) {
+            tokenInfo.tooltip = _(
+              "No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay buy one"
+            );
+          } else if (tokenId.startsWith("card_util")) {
+            tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
           } else if (tokenId.startsWith("card_goal")) {
             tokenInfo.tooltip += this.ttSection(
               undefined,
-              _("If you have NOT met the condition shown on the Focus Card at the end of the game, you lose 5VP.")
+              _("If you have NOT met the condition shown on the Focus Card, you lose 5VP. Condition evaluated at the end of the game")
             );
           }
         }

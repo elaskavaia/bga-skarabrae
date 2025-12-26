@@ -103,6 +103,7 @@ class GameMachine extends Game1Tokens {
         clone.classList.remove(this.classActiveSlot);
         clone.classList.add(this.classActiveSlotHidden);
         altNode = clone;
+        this.updateTooltip(div.id, clone);
       } else if (opInfo.ui.buttons || !div) {
         const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
         const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), (event: Event) => this.onToken(event), {
