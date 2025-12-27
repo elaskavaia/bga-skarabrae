@@ -157,6 +157,9 @@
     }
   }
 }
+.solo_game .turndisk {
+  display: none;
+}
 .turndisk {
   background-image: url(img/turnTokenS.png);
   background-size: cover;

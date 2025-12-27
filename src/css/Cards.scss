@@ -111,6 +111,7 @@
   }
 }
 .deck.village,
+.deck_village,
 .discard.village {
   background-image: url(img/nset_cards.jpg);
   background-position: calc(5 * 100% / 7) 0;
@@ -124,7 +125,8 @@
 }
 
 .card.roofi,
-.deck.roof {
+.deck.roof,
+.deck_roof {
   background-image: url(img/nset_cards.jpg);
   background-position: calc(2 * 100% / 7) 0;
   background-size: 800% auto;

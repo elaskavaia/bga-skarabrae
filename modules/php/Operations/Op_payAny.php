@@ -64,7 +64,7 @@ class Op_payAny extends CountableOperation {
     function resolve() {
         $res = $this->getCheckedArg();
         $n = $this->getCount();
-        $this->queue("{$n}n_{$res}", $this->getOwner(), [], $this->getOpId());
+        $this->queue("{$n}n_{$res}", $this->getOwner(), [], $this->getReason());
     }
 
     public function getPrompt() {

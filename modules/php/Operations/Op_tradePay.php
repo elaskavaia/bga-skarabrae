@@ -66,6 +66,7 @@ class Op_tradePay extends Operation {
     }
 
     function resolve() {
-        $this->queue($this->getCostOp(), $this->getOwner(), [], "trade");
+        $owner = $this->getOwner();
+        $this->queue($this->getCostOp(), $this->getOwner(), [], "action_main_5_{$owner}");
     }
 }

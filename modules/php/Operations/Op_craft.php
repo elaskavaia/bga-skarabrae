@@ -113,7 +113,8 @@ class Op_craft extends Operation {
         } else {
             $card = $this->getCheckedArg();
             $cost = $this->game->getRulesFor($card, "craft", "");
-            $this->queue($cost, $this->getOwner(), [], $this->getOpId());
+            $owner = $this->getOwner();
+            $this->queue($cost, $this->getOwner(), [], "action_main_3_$owner");
             $this->queue($this->getType(), $this->getOwner(), ["paid" => true, "card" => $card]);
         }
         return;

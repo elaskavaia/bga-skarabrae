@@ -55,7 +55,7 @@
       "name": "VP penalty from goals",
       "type": "int"
     },
-    "total_solo": {
+    "game_vp_total": {
       "id": 22,
       "name": "VP solo total",
       "type": "int"

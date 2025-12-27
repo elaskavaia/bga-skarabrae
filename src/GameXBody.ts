@@ -14,12 +14,12 @@ class GameXBody extends GameMachine {
   private scoreSheet: any;
   private inSetup = true;
   readonly gameTemplate = `
-<link href='https://fonts.googleapis.com/css?family=Caesar Dressing' rel='stylesheet'>
 <div id="thething">
 <div id='selection_area' class='selection_area'></div>
 <div id="round_banner">
   <span id='tracker_nrounds'> </span>
   <span id='tracker_nturns'> </span>
+  <span id='round_banner_text'></span>
 </div>
 <div id="game-score-sheet"></div>
 <div id='tasks_area' class='tasks_area'></div>
@@ -54,6 +54,16 @@ class GameXBody extends GameMachine {
 
     this.setupNotifications();
     this.setupScoreSheet();
+    //this.updateTooltip("deck_village");
+    if (gamedatas.gameEnded) {
+      $("round_banner").innerHTML = _("Game Over");
+      //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+    } else {
+      if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
+        $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+      }
+    }
+
     console.log("Ending game setup");
     this.inSetup = false;
   }
@@ -120,7 +130,7 @@ class GameXBody extends GameMachine {
     // };
 
     this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById(`game-score-sheet`), {
-      animationsActive: () => gameui.bgaAnimationsActive(),
+      animationsActive: () => this.gameAnimationsActive(),
       playerNameWidth: 80,
       playerNameHeight: 30,
       entryLabelWidth: 180,
@@ -143,9 +153,9 @@ class GameXBody extends GameMachine {
       ],
       scores: this.gamedatas.endScores,
       onScoreDisplayed: (property, playerId, score) => {
-        if (property === "total") {
-          gameui.scoreCtrl[playerId].setValue(score);
-        }
+        // if (property === "total") {
+        //   gameui.scoreCtrl[playerId].setValue(score);
+        // }
       }
     });
   }
@@ -195,7 +205,7 @@ class GameXBody extends GameMachine {
     };
     if (args.place_from) result.place_from = args.place_from;
     if (args.inc) result.inc = args.inc;
-    if (this.bgaAnimationsActive() === false || this.inSetup) {
+    if (!this.gameAnimationsActive()) {
       result.animtime = 0;
     }
 
@@ -260,28 +270,28 @@ class GameXBody extends GameMachine {
     const tokenId = result.key;
     const tokenNode = $(result.key);
     let count = result.state;
-    const type = getPart(tokenId, 1);
+
     const color = getPart(tokenId, 2);
     const promisses = [];
+    let placeFrom: string = tokenId;
+    if (result.place_from) {
+      if (!$(result.place_from)) {
+        console.error("missing location " + placeFrom);
+      } else {
+        placeFrom = result.place_from;
+      }
+    }
     for (let i = 0; i < count; i++) {
       const item = `item_${tokenId}_${i}`;
       const itemNode = $(item);
       if (!itemNode) {
-        let location: string = tokenId;
-        if (result.place_from) {
-          if (!$(result.place_from)) {
-            console.error("missing location " + location);
-          } else {
-            location = result.place_from;
-          }
-        }
         let targetLoc = `storage_${color}`;
         const div = document.createElement("div");
         div.id = item;
-        this.updateToken(div, { key: tokenId, location: location, state: 0 });
+        this.updateToken(div, { key: tokenId, location: placeFrom, state: 0 });
         div.title = this.getTokenName(tokenId);
-        if (this.bgaAnimationsActive() && !this.inSetup) {
-          $(location).appendChild(div);
+        if (this.gameAnimationsActive()) {
+          $(placeFrom).appendChild(div);
           promisses.push(this.slideAndPlace(item, targetLoc, 500, i * 100));
         } else {
           $(targetLoc).appendChild(div);
@@ -293,11 +303,20 @@ class GameXBody extends GameMachine {
       const itemNode = $(`item_${tokenId}_${i}`);
       if (itemNode) {
         // remove
-        itemNode.remove();
+
+        if (this.gameAnimationsActive()) {
+          promisses.push(this.slideAndPlace(itemNode, placeFrom, 500, i * 100, undefined, () => itemNode.remove()));
+        } else {
+          itemNode.remove();
+        }
       }
       i++;
     }
     await Promise.allSettled(promisses);
+  }
+
+  gameAnimationsActive() {
+    return gameui.bgaAnimationsActive() && !this.inSetup;
   }
 
   updateTokenDisplayInfo(tokenInfo: TokenDisplayInfo) {
@@ -348,7 +367,7 @@ class GameXBody extends GameMachine {
             tokenInfo.tooltip = _("Gain wool for each Spindle you have");
           } else if (tokenId.startsWith("card_roof")) {
             tokenInfo.tooltip = _(
-              "No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay buy one"
+              "No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one"
             );
           } else if (tokenId.startsWith("card_util")) {
             tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
@@ -362,6 +381,12 @@ class GameXBody extends GameMachine {
         return;
       case "cardset":
         tokenInfo.showtooltip = false;
+        return;
+
+      case "deck":
+        tokenInfo.showtooltip = true;
+        tokenInfo.tooltip = _("Village Deck contains village cards");
+        //tokenInfo.name = "XXX";
         return;
     }
   }
@@ -396,8 +421,8 @@ class GameXBody extends GameMachine {
 
       logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
       //handlers: [this, this.tokens],
-      onStart: (notifName, msg, args) => this.setSubPrompt(msg, args),
-      onEnd: (notifName, msg, args) => this.setSubPrompt("", args)
+      onStart: (notifName, msg, args) => this.setSubPrompt(msg, args)
+      // onEnd: (notifName, msg, args) => this.setSubPrompt("", args)
     });
   }
   async notif_message(args: any) {
@@ -407,6 +432,9 @@ class GameXBody extends GameMachine {
 
   async notif_endScores(args: any) {
     // setting scores will make the score sheet visible if it isn't already
+    if (args.final) {
+      $("round_banner").innerHTML = _("Game Over");
+    }
     await this.scoreSheet.setScores(args.endScores, {
       startBy: this.bga.players.getCurrentPlayerId()
     });

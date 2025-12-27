@@ -1575,7 +1575,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<link href='https://fonts.googleapis.com/css?family=Caesar Dressing' rel='stylesheet'>\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n</div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1590,6 +1590,16 @@ var GameXBody = /** @class */ (function (_super) {
         _super.prototype.setupGame.call(this, gamedatas);
         this.setupNotifications();
         this.setupScoreSheet();
+        //this.updateTooltip("deck_village");
+        if (gamedatas.gameEnded) {
+            $("round_banner").innerHTML = _("Game Over");
+            //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+        }
+        else {
+            if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
+                $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+            }
+        }
         console.log("Ending game setup");
         this.inSetup = false;
     };
@@ -1622,8 +1632,9 @@ var GameXBody = /** @class */ (function (_super) {
         //   game_vp_goals: -1,
         //   total: 24
         // };
+        var _this = this;
         this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById("game-score-sheet"), {
-            animationsActive: function () { return gameui.bgaAnimationsActive(); },
+            animationsActive: function () { return _this.gameAnimationsActive(); },
             playerNameWidth: 80,
             playerNameHeight: 30,
             entryLabelWidth: 180,
@@ -1646,9 +1657,9 @@ var GameXBody = /** @class */ (function (_super) {
             ],
             scores: this.gamedatas.endScores,
             onScoreDisplayed: function (property, playerId, score) {
-                if (property === "total") {
-                    gameui.scoreCtrl[playerId].setValue(score);
-                }
+                // if (property === "total") {
+                //   gameui.scoreCtrl[playerId].setValue(score);
+                // }
             }
         });
     };
@@ -1700,7 +1711,7 @@ var GameXBody = /** @class */ (function (_super) {
             result.place_from = args.place_from;
         if (args.inc)
             result.inc = args.inc;
-        if (this.bgaAnimationsActive() === false || this.inSetup) {
+        if (!this.gameAnimationsActive()) {
             result.animtime = 0;
         }
         if (tokenId.startsWith("action") && location.startsWith("tableau")) {
@@ -1777,36 +1788,35 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.syncStorage = function (result) {
         return __awaiter(this, void 0, void 0, function () {
-            var tokenId, tokenNode, count, type, color, promisses, i_1, item, itemNode, location_2, targetLoc, div, i, itemNode;
+            var tokenId, tokenNode, count, color, promisses, placeFrom, i_1, item, itemNode, targetLoc, div, i, _loop_2, this_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         tokenId = result.key;
                         tokenNode = $(result.key);
                         count = result.state;
-                        type = getPart(tokenId, 1);
                         color = getPart(tokenId, 2);
                         promisses = [];
+                        placeFrom = tokenId;
+                        if (result.place_from) {
+                            if (!$(result.place_from)) {
+                                console.error("missing location " + placeFrom);
+                            }
+                            else {
+                                placeFrom = result.place_from;
+                            }
+                        }
                         for (i_1 = 0; i_1 < count; i_1++) {
                             item = "item_".concat(tokenId, "_").concat(i_1);
                             itemNode = $(item);
                             if (!itemNode) {
-                                location_2 = tokenId;
-                                if (result.place_from) {
-                                    if (!$(result.place_from)) {
-                                        console.error("missing location " + location_2);
-                                    }
-                                    else {
-                                        location_2 = result.place_from;
-                                    }
-                                }
                                 targetLoc = "storage_".concat(color);
                                 div = document.createElement("div");
                                 div.id = item;
-                                this.updateToken(div, { key: tokenId, location: location_2, state: 0 });
+                                this.updateToken(div, { key: tokenId, location: placeFrom, state: 0 });
                                 div.title = this.getTokenName(tokenId);
-                                if (this.bgaAnimationsActive() && !this.inSetup) {
-                                    $(location_2).appendChild(div);
+                                if (this.gameAnimationsActive()) {
+                                    $(placeFrom).appendChild(div);
                                     promisses.push(this.slideAndPlace(item, targetLoc, 500, i_1 * 100));
                                 }
                                 else {
@@ -1815,13 +1825,22 @@ var GameXBody = /** @class */ (function (_super) {
                             }
                         }
                         i = count;
-                        while (i < 100) {
-                            itemNode = $("item_".concat(tokenId, "_").concat(i));
+                        _loop_2 = function () {
+                            var itemNode = $("item_".concat(tokenId, "_").concat(i));
                             if (itemNode) {
                                 // remove
-                                itemNode.remove();
+                                if (this_2.gameAnimationsActive()) {
+                                    promisses.push(this_2.slideAndPlace(itemNode, placeFrom, 500, i * 100, undefined, function () { return itemNode.remove(); }));
+                                }
+                                else {
+                                    itemNode.remove();
+                                }
                             }
                             i++;
+                        };
+                        this_2 = this;
+                        while (i < 100) {
+                            _loop_2();
                         }
                         return [4 /*yield*/, Promise.allSettled(promisses)];
                     case 1:
@@ -1830,6 +1849,9 @@ var GameXBody = /** @class */ (function (_super) {
                 }
             });
         });
+    };
+    GameXBody.prototype.gameAnimationsActive = function () {
+        return gameui.bgaAnimationsActive() && !this.inSetup;
     };
     GameXBody.prototype.updateTokenDisplayInfo = function (tokenInfo) {
         var _a, _b;
@@ -1881,7 +1903,7 @@ var GameXBody = /** @class */ (function (_super) {
                         tokenInfo.tooltip = _("Gain wool for each Spindle you have");
                     }
                     else if (tokenId.startsWith("card_roof")) {
-                        tokenInfo.tooltip = _("No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay buy one");
+                        tokenInfo.tooltip = _("No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one");
                     }
                     else if (tokenId.startsWith("card_util")) {
                         tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
@@ -1893,6 +1915,11 @@ var GameXBody = /** @class */ (function (_super) {
                 return;
             case "cardset":
                 tokenInfo.showtooltip = false;
+                return;
+            case "deck":
+                tokenInfo.showtooltip = true;
+                tokenInfo.tooltip = _("Village Deck contains village cards");
+                //tokenInfo.name = "XXX";
                 return;
         }
     };
@@ -1925,8 +1952,8 @@ var GameXBody = /** @class */ (function (_super) {
             minDurationNoText: 1,
             logger: console.log,
             //handlers: [this, this.tokens],
-            onStart: function (notifName, msg, args) { return _this.setSubPrompt(msg, args); },
-            onEnd: function (notifName, msg, args) { return _this.setSubPrompt("", args); }
+            onStart: function (notifName, msg, args) { return _this.setSubPrompt(msg, args); }
+            // onEnd: (notifName, msg, args) => this.setSubPrompt("", args)
         });
     };
     GameXBody.prototype.notif_message = function (args) {
@@ -1941,13 +1968,15 @@ var GameXBody = /** @class */ (function (_super) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: 
-                    // setting scores will make the score sheet visible if it isn't already
-                    return [4 /*yield*/, this.scoreSheet.setScores(args.endScores, {
-                            startBy: this.bga.players.getCurrentPlayerId()
-                        })];
-                    case 1:
+                    case 0:
                         // setting scores will make the score sheet visible if it isn't already
+                        if (args.final) {
+                            $("round_banner").innerHTML = _("Game Over");
+                        }
+                        return [4 /*yield*/, this.scoreSheet.setScores(args.endScores, {
+                                startBy: this.bga.players.getCurrentPlayerId()
+                            })];
+                    case 1:
                         _a.sent();
                         return [2 /*return*/];
                 }

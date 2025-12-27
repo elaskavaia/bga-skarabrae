@@ -339,6 +339,7 @@
 }
 
 .deck.village,
+.deck_village,
 .discard.village {
   background-image: url(img/nset_cards.jpg);
   background-position: 71.4285714286% 0;
@@ -352,7 +353,8 @@
 }
 
 .card.roofi,
-.deck.roof {
+.deck.roof,
+.deck_roof {
   background-image: url(img/nset_cards.jpg);
   background-position: 28.5714285714% 0;
   background-size: 800% auto;
@@ -529,11 +531,56 @@ html[data-theme=dark] .selection_area {
   display: grid;
   grid-auto-flow: column;
   /* Defines 10 columns, each with a fixed width of 100px. */
-  grid-template-columns: repeat(11, 9%);
+  grid-template-columns: repeat(11, 8.7%);
   /* Defines 3 rows, each with a fixed height of 50px. */
   grid-template-rows: repeat(3, 33%);
   /* Optional: Add a gap between grid items */
   gap: 2px;
+}
+.tableau .storage > *:nth-child(31) {
+  position: absolute;
+  bottom: -17%;
+  left: 0%;
+}
+.tableau .storage > *:nth-child(32) {
+  position: absolute;
+  bottom: -17%;
+  left: 4%;
+}
+.tableau .storage > *:nth-child(33) {
+  position: absolute;
+  bottom: -17%;
+  left: 8%;
+}
+.tableau .storage > *:nth-child(34) {
+  position: absolute;
+  bottom: -17%;
+  left: 12%;
+}
+.tableau .storage > *:nth-child(35) {
+  position: absolute;
+  bottom: -17%;
+  left: 16%;
+}
+.tableau .storage > *:nth-child(36) {
+  position: absolute;
+  bottom: -17%;
+  left: 20%;
+}
+.tableau .storage > *:nth-child(37) {
+  position: absolute;
+  bottom: -17%;
+  left: 24%;
+}
+.tableau .storage > *:nth-child(38) {
+  position: absolute;
+  bottom: -17%;
+  left: 28%;
+}
+.tableau .storage > *:nth-child(39) {
+  position: absolute;
+  bottom: -17%;
+  left: 32%;
 }
 .tableau .village_area > *,
 .tableau .pboard_area > * {
@@ -860,6 +907,10 @@ html[data-theme=dark] .selection_area {
   left: 89%;
 }
 
+.solo_game .turndisk {
+  display: none;
+}
+
 .turndisk {
   background-image: url(img/turnTokenS.png);
   background-size: cover;
@@ -1034,6 +1085,17 @@ html[data-theme=dark] .selection_area {
  * skarabrae.scss
  *
  */
+/* 
+latin
+<link href='https://fonts.googleapis.com/css?family=Caesar Dressing' rel='stylesheet'> 
+*/
+@font-face {
+  font-family: "Caesar Dressing";
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/caesardressing/v22/yYLx0hLa3vawqtwdswbotmK4vrRHdrz7.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 @keyframes active-pulse {
   0% {
     transform: scale(1);
@@ -1229,6 +1291,7 @@ html[data-theme=dark] body {
   gap: 20px;
   font-family: "Caesar Dressing";
   font-size: large;
+  color: #999;
 }
 
 #round_banner:before {

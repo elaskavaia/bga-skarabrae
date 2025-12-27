@@ -166,8 +166,9 @@ class Game extends Base {
 
         $result = array_merge($result, $this->tokens->getAllDatas());
 
-        $isEndScore = $this->isEndOfGame();
-        $result["endScores"] = $isEndScore ? $this->getEndScores() : null;
+        $isGameEnded = $this->isEndOfGame();
+        $result["gameEnded"] = $isGameEnded;
+        $result["endScores"] = $isGameEnded ? $this->getEndScores() : null;
         return $result;
     }
 
@@ -210,11 +211,17 @@ class Game extends Base {
 
         if ($this->getRulesFor($token_id, "s") == 1) {
             $x = $this->getTotalResCount($color) + $inc;
-            $cap = $this->tokens->getTrackerValue($color, "slider") * 3;
+            $curLevel = $this->tokens->getTrackerValue($color, "slider");
+            $cap = $curLevel * 3;
             if ($x > $cap) {
+                $linc = ceil(($x - $cap) / 3);
+                if ($curLevel + $linc > 10) {
+                    $linc = 10 - $curLevel;
+                }
+                // does not go above 10
                 $this->tokens->dbResourceInc(
                     "tracker_slider_$color",
-                    ceil(($x - $cap) / 3),
+                    $linc,
                     clienttranslate('${player_name}\'s slider shifts ${inc} spaces to the right'),
                     $options,
                     $this->getPlayerIdByColor($color)
@@ -265,7 +272,7 @@ class Game extends Base {
             ])
         );
 
-        $this->playerStats->set($stat, $inc, $player_id);
+        $this->playerStats->inc($stat, $inc, $player_id);
 
         $this->notifyWithName(
             "score",
@@ -313,7 +320,7 @@ class Game extends Base {
         $data = ["reason" => $card];
         switch ($type) {
             case "setl":
-                $t = getPart($card, 2);
+                $t = $this->getTerrainNum($card);
                 $c = count($this->tokens->getTokensOfTypeInLocation("card_setl_$t", $location));
                 $this->tokens->dbSetTokenState($card, $c, "");
                 $this->effect_settlerCard($owner, $card, $args["flags"] ?? 3);
@@ -409,9 +416,8 @@ class Game extends Base {
     }
 
     function getTerrainNum(string $card) {
-        $num = getPart($card, 2);
-        $tnum = floor(($num - 1) / 15) + 1;
-        return $tnum;
+        $terr = (int) $this->getRulesFor($card, "t");
+        return $terr;
     }
 
     function getActionTileSide(string $action_tile) {
@@ -556,9 +562,9 @@ class Game extends Base {
 
             $score = $this->playerScore->get($player_id);
             $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
+            $this->playerStats->set("game_vp_total", $score, $player_id);
             if ($this->isSolo()) {
-                $this->playerStats->set("total_solo", $score, $player_id);
-                $var = $this->game->getVariantSoloDif();
+                $var = $this->getVariantSoloDif();
                 if ($var <= 1) {
                     $goal = 45;
                 } else {
@@ -572,7 +578,7 @@ class Game extends Base {
                 }
             }
         }
-        $this->notify->all("endScores", "", ["endScores" => $this->getEndScores()]);
+        $this->notify->all("endScores", "", ["endScores" => $this->getEndScores(), "final" => true]);
     }
 
     function getEndScores(): array {
@@ -600,7 +606,7 @@ class Game extends Base {
                 $endScores[$player_id][$stat] = $this->playerStats->get($stat, $player_id);
             }
         }
-        $endScores[$player_id]["total"] = $this->playerScore->get($player_id);
+        $endScores[$player_id]["total"] = $this->playerStats->get("game_vp_total", $player_id);
         return $endScores;
     }
 

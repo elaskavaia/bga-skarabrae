@@ -140,12 +140,22 @@
     display: grid;
     grid-auto-flow: column;
     /* Defines 10 columns, each with a fixed width of 100px. */
-    grid-template-columns: repeat(11, 9%);
+    grid-template-columns: repeat(11, 8.7%);
     /* Defines 3 rows, each with a fixed height of 50px. */
     grid-template-rows: repeat(3, 33%);
     /* Optional: Add a gap between grid items */
     gap: 2px;
   }
+
+  @for $num from 1 through 9 {
+    $pos: calc(30 + $num);
+    .storage > *:nth-child(#{$pos}) {
+      position: absolute;
+      bottom: -17%;
+      left: calc(($num - 1) * 4%);
+    }
+  }
+
   .village_area,
   .pboard_area {
     & > * {
