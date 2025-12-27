@@ -183,12 +183,12 @@ class Game extends Base {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $round = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
+        $round = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         $turn = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         if ($round == 0) {
             return 0;
         }
-        if ($round == 5) {
+        if ($round >= 5) {
             return 100;
         }
         return ($round - 1) * 25 + ($turn - 1) * 8;
