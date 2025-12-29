@@ -22,6 +22,8 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 
+use function Bga\Games\skarabrae\getPart;
+
 /**
  * Keep an action tile, discard the rest
  */
@@ -67,6 +69,7 @@ class Op_draft extends Operation {
     function resolve() {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
+        $this->game->playerStats->set("game_special_action", (int) getPart($card, 2), $this->getPlayerId());
         $this->game->tokens->dbSetTokenLocation($card, "tableau_{$owner}", 0, "*", [], $this->getPlayerId());
         $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "hand_$owner");
         $this->game->tokens->dbSetTokensLocation($cards, "limbo", 0, "");

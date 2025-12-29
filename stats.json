@@ -2,12 +2,12 @@
   "player": {
     "game_vp_setl_count": {
       "id": 11,
-      "name": "VP for settlers cards",
+      "name": "VP for settlers card (Furnish)",
       "type": "int"
     },
     "game_vp_setl_sets": {
       "id": 12,
-      "name": "VP for settler sets",
+      "name": "VP for settler sets (Furnish)",
       "type": "int"
     },
     "game_vp_trade": {
@@ -17,7 +17,7 @@
     },
     "game_vp_action_tiles": {
       "id": 14,
-      "name": "VP from action tiles",
+      "name": "VP from action tiles (Craft)",
       "type": "int"
     },
     "game_vp_cards": {
@@ -56,9 +56,17 @@
       "type": "int"
     },
     "game_vp_total": {
-      "id": 22,
-      "name": "VP solo total",
+      "id": 29,
+      "name": "VP total",
+      "type": "int"
+    },
+    "game_special_action": {
+      "id": 30,
+      "name": "Special Action",
       "type": "int"
     }
+  },
+  "value_labels": {
+    "30": ["", "Spin Wool", "Innovate", "Recruit", "Tend Land", "Muster", "Explore", "Hunt Boar", "Build"]
   }
 }
