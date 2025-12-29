@@ -1577,38 +1577,44 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n <div id=\"supply\">\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
+        var _a;
         try {
             _super.prototype.setup.call(this, gamedatas);
             placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
             // Setting up player boards
-            for (var _i = 0, _a = gamedatas.playerorder; _i < _a.length; _i++) {
-                var playerId = _a[_i];
+            for (var _i = 0, _b = gamedatas.playerorder; _i < _b.length; _i++) {
+                var playerId = _b[_i];
                 var playerInfo = gamedatas.players[playerId];
                 this.setupPlayer(playerInfo);
             }
             _super.prototype.setupGame.call(this, gamedatas);
             this.setupNotifications();
             this.setupScoreSheet();
-            //this.updateTooltip("deck_village");
-            if (gamedatas.gameEnded) {
-                $("round_banner").innerHTML = _("Game Over");
-                //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
-            }
-            else {
-                if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
-                    $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
-                }
-            }
+            this.updateBanner();
+            (_a = document.rootElement) === null || _a === void 0 ? void 0 : _a.classList.add("bgaext_cust_back");
         }
         catch (e) {
             console.error("Exception during game setup", e.stack);
         }
         console.log("Ending game setup");
         this.inSetup = false;
+    };
+    GameXBody.prototype.updateBanner = function () {
+        $("round_banner_text").innerHTML = "";
+        if (this.gamedatas.gameEnded) {
+            $("round_banner_text").innerHTML = _("Game Over");
+            //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+        }
+        else if (this.gamedatas.tokens.tracker_nrounds.state == 4 && this.gamedatas.tokens.tracker_nturns.state == 3) {
+            $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+        }
+        else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
+            $("round_banner_text").innerHTML = _("This is Last Turn before End of Round");
+        }
     };
     GameXBody.prototype.setupPlayer = function (playerInfo) {
         console.log("player info " + playerInfo.id, playerInfo);
@@ -1678,11 +1684,7 @@ var GameXBody = /** @class */ (function (_super) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
         switch (opInfo.type) {
             case "turn":
-                var div = $("turnover");
-                var clone = div.cloneNode(true);
-                clone.querySelectorAll("*").forEach(function (x) { return (x.id = x.id + "_temp"); });
-                clone.id = clone.id + "_temp";
-                $("selection_area").appendChild(clone);
+                $("selection_area").appendChild($("mainarea"));
                 break;
             case "act":
                 //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
@@ -1692,6 +1694,8 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.onLeavingState_PlayerTurn = function () {
         var _a;
         var opInfo = this.opInfo;
+        if ((opInfo === null || opInfo === void 0 ? void 0 : opInfo.type) == "turn")
+            $("thething").appendChild($("mainarea"));
         if ((_a = opInfo === null || opInfo === void 0 ? void 0 : opInfo.ui) === null || _a === void 0 ? void 0 : _a.replicate) {
             $("selection_area")
                 .querySelectorAll("& > *")
@@ -1786,6 +1790,7 @@ var GameXBody = /** @class */ (function (_super) {
             }
             if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
                 result.nop = true;
+                this.updateBanner();
             }
         }
         else if (location.startsWith("miniboard") && $(tokenId)) {

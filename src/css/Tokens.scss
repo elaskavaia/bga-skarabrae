@@ -172,6 +172,9 @@
   background-size: auto 453%;
   width: 30px;
   aspect-ratio: 1 / 1;
+  .supply & {
+    display: none;
+  }
   &.color_982fff {
     background-position-y: 5%;
   }
@@ -229,5 +232,11 @@
   &:before {
     content: attr(data-name);
     position: relative;
+  }
+  &[data-state="0"] {
+    display: none;
+  }
+  &[data-state="5"] {
+    display: none;
   }
 }

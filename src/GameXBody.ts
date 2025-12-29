@@ -33,12 +33,14 @@ class GameXBody extends GameMachine {
  <div id="cardset_1" class="cardset cardset_1"></div>
  <div id="cardset_2" class="cardset cardset_2"></div>
  <div id="cardset_3" class="cardset cardset_3"></div>
+ </div>
+ <div id="supply">
  <div id="discard_village" class="discard village"></div>
  <div id="deck_village" class="deck village"></div>
  <div id="deck_roof" class="deck roof"></div>
 </div>
 
-</div>
+
 
 `;
   setup(gamedatas) {
@@ -56,21 +58,26 @@ class GameXBody extends GameMachine {
 
       this.setupNotifications();
       this.setupScoreSheet();
-      //this.updateTooltip("deck_village");
-      if (gamedatas.gameEnded) {
-        $("round_banner").innerHTML = _("Game Over");
-        //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
-      } else {
-        if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
-          $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
-        }
-      }
+      this.updateBanner();
+
+      document.rootElement?.classList.add("bgaext_cust_back");
     } catch (e) {
       console.error("Exception during game setup", e.stack);
     }
 
     console.log("Ending game setup");
     this.inSetup = false;
+  }
+  updateBanner() {
+    $("round_banner_text").innerHTML = "";
+    if (this.gamedatas.gameEnded) {
+      $("round_banner_text").innerHTML = _("Game Over");
+      //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+    } else if (this.gamedatas.tokens.tracker_nrounds.state == 4 && this.gamedatas.tokens.tracker_nturns.state == 3) {
+      $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+    } else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
+      $("round_banner_text").innerHTML = _("This is Last Turn before End of Round");
+    }
   }
   setupPlayer(playerInfo: any) {
     console.log("player info " + playerInfo.id, playerInfo);
@@ -172,11 +179,7 @@ class GameXBody extends GameMachine {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
       case "turn":
-        const div = $("turnover");
-        const clone = div.cloneNode(true) as HTMLElement;
-        clone.querySelectorAll("*").forEach((x) => (x.id = x.id + "_temp"));
-        clone.id = clone.id + "_temp";
-        $("selection_area").appendChild(clone);
+        $("selection_area").appendChild($("mainarea"));
         break;
       case "act":
         //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
@@ -186,6 +189,7 @@ class GameXBody extends GameMachine {
 
   onLeavingState_PlayerTurn() {
     const opInfo = this.opInfo;
+    if (opInfo?.type == "turn") $("thething").appendChild($("mainarea"));
     if (opInfo?.ui?.replicate) {
       $("selection_area")
         .querySelectorAll("& > *")
@@ -264,6 +268,7 @@ class GameXBody extends GameMachine {
       }
       if (tokenId == "tracker_nturns" || tokenId == "tracker_nrounds") {
         result.nop = true;
+        this.updateBanner();
       }
     } else if (location.startsWith("miniboard") && $(tokenId)) {
       result.nop = true; // do not move

@@ -46,7 +46,7 @@ class Op_turn extends Operation {
         }
     }
     public function getUiArgs() {
-        return ["replicate" => true];
+        return ["buttons" => false];
     }
     public function getDescription() {
         return clienttranslate('${actplayer} chooses one of the village cards');

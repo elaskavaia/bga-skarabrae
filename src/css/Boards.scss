@@ -90,6 +90,33 @@
   justify-content: center;
   padding: 10px 0;
 }
+
+#supply {
+  width: 100%;
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  z-index: 0;
+  & > * {
+    order: 10;
+  }
+
+  & > .deck_village {
+    order: 1;
+  }
+  & > .discard_village {
+    order: 2;
+  }
+  & > .deck_roof {
+    order: 4;
+  }
+  & > .deck_spin {
+    order: 4;
+  }
+}
 .tableau {
   position: relative;
   display: flex;

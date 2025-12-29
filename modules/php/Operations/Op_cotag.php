@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Material;
+
 /**
  * Tag counter. Count specific tags to change counter of the  operation passed as second arg
  */
@@ -29,7 +29,11 @@ class Op_cotag extends Operation {
     }
 
     function getButtonName() {
-        return '${count} x ${p1}';
+        $args = $this->getArgs();
+        if ($args["count_skaill"] > 0) {
+            return '${other_op} x ${mcount}..${count}';
+        }
+        return '${other_op} x ${mcount}';
     }
 
     public function getExtraArgs() {
@@ -39,8 +43,17 @@ class Op_cotag extends Operation {
         $op = $this->getParam(1, "nop");
         $sub = $this->game->machine->instanciateOperation($op, $owner);
         $args = [];
-        $args["p1"] = ["log" => $sub->getButtonName(), "args" => $sub->getExtraArgs()];
+        $args["other_op"] = ["log" => $sub->getButtonName(), "args" => $sub->getExtraArgs()];
         $args["count"] = $count;
+        $args["mcount"] = $count;
+        $args["count_skaill"] = 0;
+        if ($tnum <= 4) {
+            $skaill = $this->game->tokens->getTrackerValue($owner, "skaill");
+            if ($skaill) {
+                $args["count_skaill"] = $skaill;
+                $args["count"] = $count + $skaill;
+            }
+        }
         return $args;
     }
 }
