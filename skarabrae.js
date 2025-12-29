@@ -1615,6 +1615,13 @@ var GameXBody = /** @class */ (function (_super) {
         else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
             $("round_banner_text").innerHTML = _("This is Last Turn before End of Round");
         }
+        else if (!this.bga.players.isCurrentPlayerSpectator()) {
+            var room = $("breakroom_".concat(this.player_color));
+            if (room) {
+                var count = room.querySelectorAll(".worker[data-state='1']").length;
+                $("round_banner_text").innerHTML = this.getTr(_("Workers ${count}"), { count: count });
+            }
+        }
     };
     GameXBody.prototype.setupPlayer = function (playerInfo) {
         console.log("player info " + playerInfo.id, playerInfo);
@@ -1799,6 +1806,7 @@ var GameXBody = /** @class */ (function (_super) {
         else if (tokenId.startsWith("worker") && location.startsWith("tableau")) {
             var color = getPart(location, 1);
             result.location = "breakroom_".concat(color);
+            this.updateBanner();
         }
         return result;
     };

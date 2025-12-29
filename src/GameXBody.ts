@@ -77,6 +77,12 @@ class GameXBody extends GameMachine {
       $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
     } else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
       $("round_banner_text").innerHTML = _("This is Last Turn before End of Round");
+    } else if (!this.bga.players.isCurrentPlayerSpectator()) {
+      const room = $(`breakroom_${this.player_color}`);
+      if (room) {
+        const count = room.querySelectorAll(".worker[data-state='1']").length;
+        $("round_banner_text").innerHTML = this.getTr(_("Workers ${count}"), { count });
+      }
     }
   }
   setupPlayer(playerInfo: any) {
@@ -275,6 +281,7 @@ class GameXBody extends GameMachine {
     } else if (tokenId.startsWith("worker") && location.startsWith("tableau")) {
       const color = getPart(location, 1);
       result.location = `breakroom_${color}`;
+      this.updateBanner();
     }
     return result;
   }

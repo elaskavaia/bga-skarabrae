@@ -854,6 +854,7 @@
   background-position: 19% 97%;
   background-size: auto 453%;
   width: 26px;
+  height: 39px;
   aspect-ratio: 2/3;
 }
 .worker[data-state="0"] {
@@ -880,6 +881,7 @@
 
 .worker.large {
   width: 30px;
+  height: 50px;
 }
 
 .storage .wooden {

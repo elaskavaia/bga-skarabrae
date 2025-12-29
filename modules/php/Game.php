@@ -600,6 +600,9 @@ class Game extends Base {
                     ]);
                     $score = $this->playerScore->set($player_id, -1);
                 }
+            } else {
+                // tie breaker
+                $this->playerScoreAux->set($player_id, $this->tokens->getTrackerValue($color, "turnmarker"));
             }
         }
         $this->notify->all("endScores", "", ["endScores" => $this->getEndScores(), "final" => true]);

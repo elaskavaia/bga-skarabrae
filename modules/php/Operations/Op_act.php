@@ -155,10 +155,6 @@ class Op_act extends Operation {
         return clienttranslate("Select an action for worker");
     }
 
-    public function getSubTitle() {
-        return clienttranslate('workers left: ${count_workers}');
-    }
-
     public function getExtraArgs() {
         $owner = $this->getOwner();
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
