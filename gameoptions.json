@@ -1,13 +1,17 @@
 {
   "100": {
-    "name": "Number of Special Actions to Draft",
+    "name": "Number of Special Actions to choose from",
     "values": {
       "2": {
         "name": "2 (standard)"
       },
       "3": {
+        "name": "3 (2 players or less)",
+        "description": "3 cards in solo or 2 player game"
+      },
+      "4": {
         "name": "Maximum",
-        "description": "3 cards in 2 player game, all cards in solo"
+        "description": "4 cards in 2 player game, all cards in solo"
       }
     },
     "default": 2,

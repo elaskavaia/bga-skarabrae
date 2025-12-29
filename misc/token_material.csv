@@ -17,6 +17,7 @@ worker_4|Small Worker|1|worker wooden small|4|tableau_{COLOR}|
 worker_{INDEX}_000000|Small Black Worker|3|worker wooden small color_000000|6|supply|"start" => 2
 #4 Turn Markers (1 per player colour)
 turnmarker|Turn Marker|1|wooden|4|turndisk
+turnmarker_000000|Neutral Turn Marker|1|wooden  color_000000|1|supply
 #4 Furnish Markers 
 #4 Trade Markers 
 tracker_furnish|Furnish Marker|1|wooden tracker furnish|4|slot_furnish_0_{COLOR}
@@ -47,6 +48,20 @@ env_4|Fields
 cardset_1|Turn 1 Cards
 cardset_2|Turn 2 Cards
 cardset_3|Turn 3 Cards
+
+#names of the stats
+game_vp_setl_count|VP for settlers card (Furnish)
+game_vp_setl_sets|VP for settler sets (Furnish)
+game_vp_trade|VP from trade track
+game_vp_action_tiles|VP from action tiles (Craft)
+game_vp_cards|VP from cards
+game_vp_food|VP from food
+game_vp_skaill|VP from skaill knives
+game_vp_midden|VP penalty from midden
+game_vp_slider|VP penlty from slider
+game_vp_tasks|VP penalty from tasks
+game_vp_goals|VP penalty from goals
+game_vp_total|VP total
 
 
 

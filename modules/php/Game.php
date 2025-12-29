@@ -72,7 +72,7 @@ class Game extends Base {
         They also place 1 Furnish Marker into the left-most slot of the Furnish Track, and 1 Trade Marker into the left-most slot of the Trade Track. 
         */
         $players = $this->loadPlayersBasicInfos();
-        $pnum = count($players);
+        $pnum = $this->getPlayersNumber();
 
         //2. Each player takes all 9 Standard Action Tiles in their chosen player colour (see the banner in the top-right corner of each Tile).
         //These should be placed in the correct order to the right of their Player Board so that the artwork lines up. Make sure that all Action Tiles are placed on their correct side. Each Action Tile should show 2 Resources on a tan banner along the bottom edge.
@@ -88,8 +88,8 @@ class Game extends Base {
         }
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
-        $startingPlayer = $this->getFirstPlayer(); ///
-        $this->switchActivatePlayer($startingPlayer);
+
+        $startingPlayer = (int) $this->getActivePlayerId();
 
         //2-Players: Include 1 more Turn Marker of an unused colour.
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
@@ -114,8 +114,10 @@ class Game extends Base {
          */
         $tokens->shuffle("deck_action");
         $dnum = $this->getVariantDraftNum();
-        $n = $dnum;
-        if ($dnum == 3) {
+        $n = 2;
+        if ($dnum == 3 && $pnum <= 2) {
+            $n = 3;
+        } elseif ($dnum == 4) {
             //max possible
             $x = 8; //$this->tokens->tokens->countTokensInLocation("deck_action");
             $n = floor($x / $pnum);
@@ -123,6 +125,10 @@ class Game extends Base {
 
         $p = $this->getPlayerIdsInOrder($startingPlayer);
         $order = $pnum - 1;
+        if ($pnum == 2) {
+            $order++;
+        }
+        $maxdisks = $order + 1;
         foreach ($p as $player_id) {
             $color = $this->getPlayerColorById($player_id);
             $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
@@ -132,10 +138,23 @@ class Game extends Base {
                 $order,
                 clienttranslate('${player_name} initial turn order ${order}'),
                 [
-                    "order" => $pnum - $order,
+                    "order" => $maxdisks - $order,
                 ],
                 $player_id
             );
+            if ($order == 2 && $pnum == 2) {
+                $order--;
+                $this->tokens->dbSetTokenLocation(
+                    "turnmarker_000000",
+                    "turndisk",
+                    $order,
+
+                    clienttranslate('neutral token initial turn order ${order}'),
+                    [
+                        "order" => $maxdisks - $order,
+                    ]
+                );
+            }
             $order--;
         }
 
@@ -144,6 +163,9 @@ class Game extends Base {
     }
 
     function switchActivatePlayer(int $playerId, bool $moreTime = true) {
+        if ($playerId <= 2) {
+            return;
+        }
         if (!$this->gamestate->isPlayerActive($playerId)) {
             $this->gamestate->changeActivePlayer($playerId);
             if ($moreTime) {
@@ -348,7 +370,7 @@ class Game extends Base {
         $ac = $terr + 5;
         $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
         if ($flags == 1) {
-            $this->machine->push("cotag($terr,$gain)/$r", $owner, $data);
+            $this->machine->push("cotag($terr,$gain)/($r)", $owner, $data);
         } elseif ($flags == 3) {
             $this->machine->push("?($r)", $owner, $data);
             $this->machine->push("cotag($terr,$gain)", $owner, $data);
@@ -390,7 +412,7 @@ class Game extends Base {
 
     function getMaxTurnMarkerPosition(int $level = 1, ?string &$token = null) {
         $maxpass = $level * 10 - 1;
-        $others = $this->tokens->getTokensOfTypeInLocation("turnmarker");
+        $others = $this->tokens->getTokensOfTypeInLocation("turnmarker", "turndisk");
         foreach ($others as $key => $info) {
             $state = $info["state"];
             if ($state > $maxpass && $state < ($level + 1) * 10) {
@@ -523,12 +545,14 @@ class Game extends Base {
             $this->effect_incVp($color, (int) $ac, "game_vp_action_tiles");
             // Roof, Utensil, and Stone Ball Cards (VP shown on each card).
             $cards = $this->tokens->getTokensOfTypeInLocation("card", "tableau_{$color}");
+            $v = 0;
             foreach ($cards as $card => $info) {
                 $r = $this->getRulesFor($card, "vp", 0);
                 if ($r) {
-                    $this->effect_incVp($color, (int) $r, "game_vp_cards");
+                    $v += (int) $r;
                 }
             }
+            $this->effect_incVp($color, (int) $r, "game_vp_cards");
             // Food and Skaill Knives (1VP per item in Storage Area).
             $v = $this->tokens->getTrackerValue($color, "food");
             $this->effect_incVp($color, (int) $v, "game_vp_food");
@@ -605,8 +629,9 @@ class Game extends Base {
             foreach ($vp_stats as $stat) {
                 $endScores[$player_id][$stat] = $this->playerStats->get($stat, $player_id);
             }
+            $endScores[$player_id]["total"] = $this->playerStats->get("game_vp_total", $player_id);
         }
-        $endScores[$player_id]["total"] = $this->playerStats->get("game_vp_total", $player_id);
+
         return $endScores;
     }
 

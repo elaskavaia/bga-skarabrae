@@ -104,9 +104,9 @@ class Op_cook extends Operation {
     }
 
     function canSkip() {
-        // if ($this->noValidTargets()) {
-        //     return true;
-        // }
+        if ($this->getWeight() == 0) {
+            return false;
+        }
         return true;
     }
 }

@@ -66,12 +66,6 @@ class Op_turn extends Operation {
         return;
     }
 
-    function getExtraArgs() {
-        return [
-            "round" => $this->game->getRoundNumber(),
-            "turn" => $this->game->getTurnNumber(),
-        ];
-    }
     public function getPossibleMoves() {
         $op = $this->game->machine->instanciateOperation("village", $this->getOwner());
         $res = $op->getPossibleMoves();

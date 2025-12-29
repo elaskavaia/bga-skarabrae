@@ -155,3 +155,8 @@
   display: block;
   position: absolute;
 }
+.cardset .card[data-state="1"] {
+  background-image: url(img/nset_cards.jpg);
+  background-position: calc(5 * 100% / 7) 0 !important;
+  background-size: 800% auto;
+}

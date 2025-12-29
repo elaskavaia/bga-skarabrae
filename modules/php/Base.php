@@ -114,7 +114,10 @@ class Base extends Table {
         // TODO: setup the initial game situation here
 
         // Activate first player (which is in general a good idea :) )
-        $this->gamestate->changeActivePlayer($this->getFirstPlayer());
+        $player_ids = array_keys($players);
+        shuffle($player_ids);
+        $startingPlayer = array_shift($player_ids);
+        $this->gamestate->changeActivePlayer($startingPlayer);
 
         $this->initStats();
         // Setup the initial game situation here
@@ -522,6 +525,9 @@ class Base extends Table {
         $this->notifyWithName("message", $message, $args, $player_id);
     }
 
+    function isStudio() {
+        return $this->getBgaEnvironment() == "studio";
+    }
     //////////////////////////////////////////////////////////////////////////////
     //////////// Zombie
     ////////////

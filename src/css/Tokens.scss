@@ -185,6 +185,10 @@
   &.color_ff0000 {
     background-position-y: 95%;
   }
+  &.color_000000 {
+    background-position-y: 64%;
+    filter: grayscale(1);
+  }
 
   position: absolute;
 

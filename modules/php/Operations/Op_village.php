@@ -30,6 +30,10 @@ class Op_village extends Operation {
         }
         $n = $this->game->getTurnNumber();
         $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
+        $owner = $this->getOwner();
+        if ($owner === "000000") {
+            return [array_keys($cards)[0]];
+        }
         return array_keys($cards);
     }
 
@@ -46,25 +50,22 @@ class Op_village extends Operation {
         return clienttranslate('${You} must select a village card');
     }
 
-    function getExtraArgs() {
-        return [
-            "round" => $this->game->getRoundNumber(),
-            "turn" => $this->game->getTurnNumber(),
-        ];
-    }
     function resolve() {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
-
-        $this->game->effect_gainCard($owner, $card, $this->getOpId());
-
         $maxpass = $this->game->getMaxTurnMarkerPosition(2);
+        if ($owner === "000000") {
+            $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('neutral player discards ${token_name}'));
+        } else {
+            $this->game->effect_gainCard($owner, $card, $this->getOpId());
+            if ($this->game->isSolo()) {
+                $n = $this->game->getTurnNumber();
+                $this->game->effect_cleanCards($n);
+            }
+        }
+
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
 
-        if ($this->game->isSolo() || $maxpass + 2 - 20 >= $this->game->getPlayersNumber()) {
-            $n = $this->game->getTurnNumber();
-            $this->game->effect_cleanCards($n);
-        }
         return;
     }
 }

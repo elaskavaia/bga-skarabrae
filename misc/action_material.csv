@@ -8,7 +8,7 @@ num|name|r|rb|craft|tooltip|php
 #general actions
 1|Action Furnish|furnish||n_stone,n_wood|Spend Wool and Hides to move the Furnish Marker 1 space to the right on the Furnish Track. Cost: 1, 2, or 3 portions (each portion = 2 Wool or 1 Hide). Once flipped: Produces either 1 Barley or 1 Skaill Knife.
 2|Action Cook|cook|cook|n_stone,n_seaweed|Cook (spend) specific Resources to gain Food, Bones, Hides, and Wool. Hearth limit: Starts at 4 (can be increased). Once flipped: Hearth limit increases by 2.
-3|Action Craft|craft|craft|n_stone,n_wool|Spend 2 Resources shown on the tan banner of any 1 Action Tile to turn it over. Once flipped: Players may take a Cook Action at the end of each Round.|'n'=>'cook'
+3|Action Craft|craft|craft|n_stone,n_wool|Spend 2 Resources shown on the tan banner of any 1 Action Tile to turn it over. Once flipped: Players may take a Cook Action at the end of each Round.|'n'=>'?cook'
 4|Action Clean|clean|clean|n_stone,n_shell|Spend 2 or more different Resources (Hides, Barley, Seaweed, Wood) to clear Midden and gain Roof Cards. Once flipped: Clean becomes more effective, and Food can be spent as 1 of the Resource types.
 5|Action Trade|trade|trade|n_stone,n_hide|Spend a certain amount of a single Resource type (2-6) to advance the Trade Marker 1 space to the right on the Trade Track. After advancing, players can purchase other Resources for 1 Skaill Knife. Once flipped: Players can make purchases using any 1 Resource instead of a Skaill Knife.
 6|Action Gather on Shore|shell/seaweed|(shell,seaweed)/fish|n_bone,n_wood|Gain Resources by placing Workers on Gather Action Tiles. Shore area provides either 1 Shell or Seaweed. Once flipped: Shore provides 1 Shell and 1 Seaweed or 1 Fish.

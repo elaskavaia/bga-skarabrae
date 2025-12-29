@@ -387,6 +387,12 @@
   position: absolute;
 }
 
+.cardset .card[data-state="1"] {
+  background-image: url(img/nset_cards.jpg);
+  background-position: 71.4285714286% 0 !important;
+  background-size: 800% auto;
+}
+
 .selection_area {
   position: sticky;
   top: 86px;
@@ -400,13 +406,6 @@
 .selection_area > * {
   position: relative;
   display: inline-block;
-}
-
-.selection_area {
-  background-color: white;
-}
-html[data-theme=dark] .selection_area {
-  background-color: #4d4d4b;
 }
 
 .tasks_area {
@@ -937,6 +936,10 @@ html[data-theme=dark] .selection_area {
 }
 .turnmarker.color_ff0000 {
   background-position-y: 95%;
+}
+.turnmarker.color_000000 {
+  background-position-y: 64%;
+  filter: grayscale(1);
 }
 .turnmarker[data-state="0"] {
   left: 15%;

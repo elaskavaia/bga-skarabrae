@@ -1281,7 +1281,7 @@ namespace Bga\GameFramework {
          * 
          * @return string the active player id typed as string
          */
-        final public function getActivePlayerId(): string|int
+        final public function getActivePlayerId():int
         {
             return '0'; 
         }

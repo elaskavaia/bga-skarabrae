@@ -60,6 +60,7 @@ class GameMachine extends Game1Tokens {
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
     if (!this.bga.players.isCurrentPlayerActive()) {
       if (opInfo?.description) this.statusBar.setTitle(opInfo.description, opInfo);
+      this.setSubPrompt("");
       return;
     }
     this.completeOpInfo(opInfo);
@@ -260,10 +261,11 @@ class GameMachine extends Game1Tokens {
     this.statusBar.addActionButton(
       _("Reset"),
       () => {
-        const allSel = document.querySelectorAll(`.${this.classSelectedAlt}`);
+        const allSel = document.querySelectorAll(`.${this.classSelectedAlt},.${this.classSelected}`);
         allSel.forEach((node: HTMLElement) => {
           delete node.dataset.count;
         });
+
         this.removeAllClasses(this.classSelected, this.classSelectedAlt);
         this.onMultiSelectionUpdate(opInfo);
       },
@@ -366,10 +368,10 @@ class GameMachine extends Game1Tokens {
 
     const doneButton = $(doneButtonId);
     if (doneButton) {
-      if ((count == 0 && skippable) || count < opInfo.data.mcount) {
+      if ((count == 0 && skippable) || count < opInfo.mcount) {
         doneButton.classList.add(this.classButtonDisabled);
         doneButton.title = _("Cannot use this action because insuffient amount of elements selected");
-      } else if (count > opInfo.data.count) {
+      } else if (count > opInfo.count) {
         doneButton.classList.add(this.classButtonDisabled);
         doneButton.title = _("Cannot use this action because superfluous amount of elements selected");
       } else {
@@ -395,7 +397,7 @@ class GameMachine extends Game1Tokens {
     }
   }
 
-  setSubPrompt(text: string, args: any) {
+  setSubPrompt(text: string, args: any = {}) {
     if (!text) text = "";
     const message = this.format_string_recursive(this.getTr(text, args), args);
 

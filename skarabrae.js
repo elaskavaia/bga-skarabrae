@@ -1172,6 +1172,7 @@ var GameMachine = /** @class */ (function (_super) {
         if (!this.bga.players.isCurrentPlayerActive()) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
+            this.setSubPrompt("");
             return;
         }
         this.completeOpInfo(opInfo);
@@ -1364,7 +1365,7 @@ var GameMachine = /** @class */ (function (_super) {
             id: doneButtonId
         });
         this.statusBar.addActionButton(_("Reset"), function () {
-            var allSel = document.querySelectorAll(".".concat(_this.classSelectedAlt));
+            var allSel = document.querySelectorAll(".".concat(_this.classSelectedAlt, ",.").concat(_this.classSelected));
             allSel.forEach(function (node) {
                 delete node.dataset.count;
             });
@@ -1467,11 +1468,11 @@ var GameMachine = /** @class */ (function (_super) {
         var count = this.getMultiSelectCountAndSync();
         var doneButton = $(doneButtonId);
         if (doneButton) {
-            if ((count == 0 && skippable) || count < opInfo.data.mcount) {
+            if ((count == 0 && skippable) || count < opInfo.mcount) {
                 doneButton.classList.add(this.classButtonDisabled);
                 doneButton.title = _("Cannot use this action because insuffient amount of elements selected");
             }
-            else if (count > opInfo.data.count) {
+            else if (count > opInfo.count) {
                 doneButton.classList.add(this.classButtonDisabled);
                 doneButton.title = _("Cannot use this action because superfluous amount of elements selected");
             }
@@ -1497,6 +1498,7 @@ var GameMachine = /** @class */ (function (_super) {
         }
     };
     GameMachine.prototype.setSubPrompt = function (text, args) {
+        if (args === void 0) { args = {}; }
         if (!text)
             text = "";
         var message = this.format_string_recursive(this.getTr(text, args), args);
@@ -1575,30 +1577,35 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n<div id='selection_area' class='selection_area'></div>\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"players_panels\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n</div>\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
-        _super.prototype.setup.call(this, gamedatas);
-        placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
-        // Setting up player boards
-        for (var _i = 0, _a = gamedatas.playerorder; _i < _a.length; _i++) {
-            var playerId = _a[_i];
-            var playerInfo = gamedatas.players[playerId];
-            this.setupPlayer(playerInfo);
-        }
-        _super.prototype.setupGame.call(this, gamedatas);
-        this.setupNotifications();
-        this.setupScoreSheet();
-        //this.updateTooltip("deck_village");
-        if (gamedatas.gameEnded) {
-            $("round_banner").innerHTML = _("Game Over");
-            //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
-        }
-        else {
-            if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
-                $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+        try {
+            _super.prototype.setup.call(this, gamedatas);
+            placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
+            // Setting up player boards
+            for (var _i = 0, _a = gamedatas.playerorder; _i < _a.length; _i++) {
+                var playerId = _a[_i];
+                var playerInfo = gamedatas.players[playerId];
+                this.setupPlayer(playerInfo);
             }
+            _super.prototype.setupGame.call(this, gamedatas);
+            this.setupNotifications();
+            this.setupScoreSheet();
+            //this.updateTooltip("deck_village");
+            if (gamedatas.gameEnded) {
+                $("round_banner").innerHTML = _("Game Over");
+                //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+            }
+            else {
+                if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
+                    $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+                }
+            }
+        }
+        catch (e) {
+            console.error("Exception during game setup", e.stack);
         }
         console.log("Ending game setup");
         this.inSetup = false;
@@ -1617,6 +1624,7 @@ var GameXBody = /** @class */ (function (_super) {
         }
     };
     GameXBody.prototype.setupScoreSheet = function () {
+        var _this = this;
         // this.gamedatas.endScores = {};
         // this.gamedatas.endScores[this.player_id] = {
         //   game_vp_setl_count: 5,
@@ -1632,7 +1640,23 @@ var GameXBody = /** @class */ (function (_super) {
         //   game_vp_goals: -1,
         //   total: 24
         // };
-        var _this = this;
+        var entries = [
+            { property: "game_vp_setl_count", label: _("VP for settlers cards") },
+            { property: "game_vp_setl_sets", label: _("VP for settler sets") },
+            { property: "game_vp_trade", label: _("VP from trade track") },
+            { property: "game_vp_action_tiles", label: _("VP from action tiles") },
+            { property: "game_vp_cards", label: _("VP from cards") },
+            { property: "game_vp_food", label: _("VP from food") },
+            { property: "game_vp_skaill", label: _("VP from skaill knives") },
+            { property: "game_vp_midden", label: _("VP penalty from midden") },
+            { property: "game_vp_slider", label: _("VP penlty from slider") },
+            { property: "game_vp_tasks", label: _("VP penalty from tasks") },
+            { property: "game_vp_goals", label: _("VP penalty from goals") },
+            { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
+        ];
+        if (!this.isSolo()) {
+            entries.splice(9, 2);
+        }
         this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById("game-score-sheet"), {
             animationsActive: function () { return _this.gameAnimationsActive(); },
             playerNameWidth: 80,
@@ -1641,20 +1665,7 @@ var GameXBody = /** @class */ (function (_super) {
             entryLabelHeight: 20,
             classes: "score-sheet",
             players: this.gamedatas.players,
-            entries: [
-                { property: "game_vp_setl_count", label: _("VP for settlers cards") },
-                { property: "game_vp_setl_sets", label: _("VP for settler sets") },
-                { property: "game_vp_trade", label: _("VP from trade track") },
-                { property: "game_vp_action_tiles", label: _("VP from action tiles") },
-                { property: "game_vp_cards", label: _("VP from cards") },
-                { property: "game_vp_food", label: _("VP from food") },
-                { property: "game_vp_skaill", label: _("VP from skaill knives") },
-                { property: "game_vp_midden", label: _("VP penalty from midden") },
-                { property: "game_vp_slider", label: _("VP penlty from slider") },
-                { property: "game_vp_tasks", label: _("VP penalty from tasks") },
-                { property: "game_vp_goals", label: _("VP penalty from goals") },
-                { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
-            ],
+            entries: entries,
             scores: this.gamedatas.endScores,
             onScoreDisplayed: function (property, playerId, score) {
                 // if (property === "total") {
@@ -1758,7 +1769,7 @@ var GameXBody = /** @class */ (function (_super) {
         else if (tokenId.startsWith("hand")) {
             result.nop = true;
         }
-        else if (tokenId.startsWith("slot")) {
+        else if (tokenId.startsWith("slot") || tokenId == "round_banner") {
             result.nop = true; // do not move slots
         }
         else if (tokenId.startsWith("tracker_slider")) {

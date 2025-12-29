@@ -35,8 +35,10 @@ class Op_round extends Operation {
         if ($this->game->isEndOfGame()) {
             $this->notifyMessage(clienttranslate("--- End of game ---"));
             $this->game->finalScoring();
-            return PlayerTurnConfirm::class;
-            //return StateConstants::STATE_END_GAME;
+            if ($this->game->isStudio()) {
+                return PlayerTurnConfirm::class;
+            }
+            return StateConstants::STATE_END_GAME;
         }
 
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
@@ -55,7 +57,11 @@ class Op_round extends Operation {
         $cardsNum = $num == 4 ? 5 : 4;
         for ($i = 1; $i <= 3; $i++) {
             $cards = $this->game->tokens->tokens->pickTokensForLocation($num == 1 ? 5 - $i : $cardsNum, "deck_village", "cardset_$i");
-            $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", 0, "", ["place_from" => "deck_village"]);
+            $state = 0;
+            if ($this->game->isSolo() && $i > 1) {
+                $state = 1;
+            }
+            $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", $state, "", ["place_from" => "deck_village"]);
             $this->queue("turnall", null, ["num" => $i]);
         }
 

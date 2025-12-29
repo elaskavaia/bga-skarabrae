@@ -45,6 +45,12 @@ class Op_turnall extends Operation {
         if ($curturn > 1) {
             $n = $curturn - 1;
             $this->game->effect_cleanCards($n);
+
+            if ($this->game->isSolo() && $curturn > 1) {
+                // reveal
+                $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$curturn");
+                $this->game->tokens->dbSetTokensLocation($cards, "cardset_$curturn", 0, "");
+            }
         }
     }
 }

@@ -15,12 +15,13 @@ class GameXBody extends GameMachine {
   private inSetup = true;
   readonly gameTemplate = `
 <div id="thething">
-<div id='selection_area' class='selection_area'></div>
+
 <div id="round_banner">
   <span id='tracker_nrounds'> </span>
   <span id='tracker_nturns'> </span>
   <span id='round_banner_text'></span>
 </div>
+<div id='selection_area' class='selection_area'></div>
 <div id="game-score-sheet"></div>
 <div id='tasks_area' class='tasks_area'></div>
 <div id="players_panels"></div>
@@ -41,27 +42,31 @@ class GameXBody extends GameMachine {
 
 `;
   setup(gamedatas) {
-    super.setup(gamedatas);
+    try {
+      super.setup(gamedatas);
 
-    placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
-    // Setting up player boards
-    for (const playerId of gamedatas.playerorder) {
-      const playerInfo = gamedatas.players[playerId];
-      this.setupPlayer(playerInfo);
-    }
-
-    super.setupGame(gamedatas);
-
-    this.setupNotifications();
-    this.setupScoreSheet();
-    //this.updateTooltip("deck_village");
-    if (gamedatas.gameEnded) {
-      $("round_banner").innerHTML = _("Game Over");
-      //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
-    } else {
-      if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
-        $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+      placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
+      // Setting up player boards
+      for (const playerId of gamedatas.playerorder) {
+        const playerInfo = gamedatas.players[playerId];
+        this.setupPlayer(playerInfo);
       }
+
+      super.setupGame(gamedatas);
+
+      this.setupNotifications();
+      this.setupScoreSheet();
+      //this.updateTooltip("deck_village");
+      if (gamedatas.gameEnded) {
+        $("round_banner").innerHTML = _("Game Over");
+        //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
+      } else {
+        if (gamedatas.tokens.tracker_nrounds.state == 4 && gamedatas.tokens.tracker_nturns.state == 3) {
+          $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+        }
+      }
+    } catch (e) {
+      console.error("Exception during game setup", e.stack);
     }
 
     console.log("Ending game setup");
@@ -128,7 +133,23 @@ class GameXBody extends GameMachine {
     //   game_vp_goals: -1,
     //   total: 24
     // };
-
+    const entries = [
+      { property: "game_vp_setl_count", label: _("VP for settlers cards") },
+      { property: "game_vp_setl_sets", label: _("VP for settler sets") },
+      { property: "game_vp_trade", label: _("VP from trade track") },
+      { property: "game_vp_action_tiles", label: _("VP from action tiles") },
+      { property: "game_vp_cards", label: _("VP from cards") },
+      { property: "game_vp_food", label: _("VP from food") },
+      { property: "game_vp_skaill", label: _("VP from skaill knives") },
+      { property: "game_vp_midden", label: _("VP penalty from midden") },
+      { property: "game_vp_slider", label: _("VP penlty from slider") },
+      { property: "game_vp_tasks", label: _("VP penalty from tasks") },
+      { property: "game_vp_goals", label: _("VP penalty from goals") },
+      { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
+    ];
+    if (!this.isSolo()) {
+      entries.splice(9, 2);
+    }
     this.scoreSheet = new BgaScoreSheet.ScoreSheet(document.getElementById(`game-score-sheet`), {
       animationsActive: () => this.gameAnimationsActive(),
       playerNameWidth: 80,
@@ -137,20 +158,7 @@ class GameXBody extends GameMachine {
       entryLabelHeight: 20,
       classes: "score-sheet",
       players: this.gamedatas.players,
-      entries: [
-        { property: "game_vp_setl_count", label: _("VP for settlers cards") },
-        { property: "game_vp_setl_sets", label: _("VP for settler sets") },
-        { property: "game_vp_trade", label: _("VP from trade track") },
-        { property: "game_vp_action_tiles", label: _("VP from action tiles") },
-        { property: "game_vp_cards", label: _("VP from cards") },
-        { property: "game_vp_food", label: _("VP from food") },
-        { property: "game_vp_skaill", label: _("VP from skaill knives") },
-        { property: "game_vp_midden", label: _("VP penalty from midden") },
-        { property: "game_vp_slider", label: _("VP penlty from slider") },
-        { property: "game_vp_tasks", label: _("VP penalty from tasks") },
-        { property: "game_vp_goals", label: _("VP penalty from goals") },
-        { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
-      ],
+      entries,
       scores: this.gamedatas.endScores,
       onScoreDisplayed: (property, playerId, score) => {
         // if (property === "total") {
@@ -243,7 +251,7 @@ class GameXBody extends GameMachine {
       result.nop = true;
     } else if (tokenId.startsWith("hand")) {
       result.nop = true;
-    } else if (tokenId.startsWith("slot")) {
+    } else if (tokenId.startsWith("slot") || tokenId == "round_banner") {
       result.nop = true; // do not move slots
     } else if (tokenId.startsWith("tracker_slider")) {
       const color = getPart(location, 1);

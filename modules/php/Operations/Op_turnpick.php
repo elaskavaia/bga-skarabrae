@@ -36,7 +36,12 @@ class Op_turnpick extends Operation {
         }
         if ($token) {
             $color = getPart($token, 1);
-            $this->queue("turn", $color);
+            if ($color === "000000") {
+                $this->queue("village", $color);
+                $this->queue("turnpick");
+            } else {
+                $this->queue("turn", $color);
+            }
         } else {
             throw new \BgaSystemException("No players to take turn in turnall");
         }
