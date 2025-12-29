@@ -29,9 +29,15 @@ class Op_spin extends Operation {
         $from = "deck_spin";
         $card = $this->game->tokens->tokens->getTokenOnTop($from);
         $this->game->systemAssert("no more cards", $card);
+        $side = $this->game->getActionTileSide("action_special_1");
+        if ($side) {
+            $this->queue("?(3n_wool:roof)");
+        }
+        // this will push on top
         $this->game->effect_gainCard($color, $card["key"], $this->getReason(), [
             "place_from" => $from,
         ]);
+
         return;
     }
 }
