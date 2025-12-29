@@ -730,6 +730,13 @@
   position: relative;
 }
 
+.players_panels {
+  display: flex;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
 .tracker {
   height: 32px;
   aspect-ratio: 1/1;

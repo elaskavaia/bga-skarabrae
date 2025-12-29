@@ -287,3 +287,10 @@
   top: 13%;
   position: relative;
 }
+
+.players_panels {
+  display: flex;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
