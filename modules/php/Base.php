@@ -131,22 +131,29 @@ class Base extends Table {
         $all_stats = $this->getStatTypes();
         $player_stats = $all_stats["player"];
         // auto-initialize all stats that starts with game_
-        // we need a prefix because there is some other system stuff
+        // we need to filter it because there is some other system stuff
         foreach ($player_stats as $key => $value) {
-            if (startsWith($key, "game_")) {
-                $this->playerStats->init($key, 0);
-            } elseif ($key === "turns_number") {
-                $this->playerStats->init($key, 0);
+            $v = $this->getDefaultStatValue($key, "player");
+            if ($v !== null) {
+                $this->playerStats->init($key, $v);
             }
         }
         $table_stats = $all_stats["table"];
         foreach ($table_stats as $key => $value) {
-            if (startsWith($key, "game_")) {
-                $this->tableStats->init($key, 0);
-            } elseif ($key === "turns_number") {
-                $this->tableStats->init($key, 0);
+            $v = $this->getDefaultStatValue($key, "table");
+            if ($v !== null) {
+                $this->playerStats->init($key, $v);
             }
         }
+    }
+
+    public function getDefaultStatValue(string $key, string $type): ?int {
+        if (startsWith($key, "game_")) {
+            return 0;
+        } elseif ($key === "turns_number") {
+            return 0;
+        }
+        return null;
     }
 
     public function debug_dumpStats() {

@@ -162,6 +162,24 @@ class Game extends Base {
         return GameDispatch::class;
     }
 
+    public function getDefaultStatValue(string $key, string $type): ?int {
+        if (startsWith($key, "game_")) {
+            if (!$this->isSolo()) {
+                // don't init these if not solo
+                if ($key === "game_vp_tasks") {
+                    return null;
+                }
+                if ($key === "game_vp_goals") {
+                    return null;
+                }
+            }
+            return 0;
+        } elseif ($key === "turns_number") {
+            return 0;
+        }
+        return null;
+    }
+
     function switchActivatePlayer(int $playerId, bool $moreTime = true) {
         if ($playerId <= 2) {
             return;
@@ -552,7 +570,7 @@ class Game extends Base {
                     $v += (int) $r;
                 }
             }
-            $this->effect_incVp($color, (int) $r, "game_vp_cards");
+            $this->effect_incVp($color, (int) $v, "game_vp_cards");
             // Food and Skaill Knives (1VP per item in Storage Area).
             $v = $this->tokens->getTrackerValue($color, "food");
             $this->effect_incVp($color, (int) $v, "game_vp_food");
@@ -566,24 +584,24 @@ class Game extends Base {
             $v = $this->tokens->getTrackerValue($color, "slider");
             $vp = $this->getRulesFor("slot_slider_$v", "rb", 0);
             $this->effect_incVp($color, (int) $vp, "game_vp_slider");
-
-            // Tasks (negative vp)
-            $cards = $this->tokens->getTokensOfTypeInLocation("card_task", "tableau_$color", 0);
-            $this->effect_incVp($color, -2 * count($cards), "game_vp_tasks");
-            // Goal (negative vp)
-            $cards = $this->tokens->getTokensOfTypeInLocation("card_goal", "tableau_$color", 0);
-            foreach ($cards as $card => $info) {
-                $r = $this->getRulesFor($card, "vp", 0);
-                if ($this->isGoalAchieved($card, $color)) {
-                    $this->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} achieves goal ${token_name}'));
-                } else {
-                    $this->notifyMessage(clienttranslate('${player_name} does not achieve goal ${token_name}'), [
-                        "token_name" => $this->getTokenName($card),
-                    ]);
-                    $this->effect_incVp($color, -5, "game_vp_goals");
+            if ($this->isSolo()) {
+                // Tasks (negative vp)
+                $cards = $this->tokens->getTokensOfTypeInLocation("card_task", "tableau_$color", 0);
+                $this->effect_incVp($color, -2 * count($cards), "game_vp_tasks");
+                // Goal (negative vp)
+                $cards = $this->tokens->getTokensOfTypeInLocation("card_goal", "tableau_$color", 0);
+                foreach ($cards as $card => $info) {
+                    $r = $this->getRulesFor($card, "vp", 0);
+                    if ($this->isGoalAchieved($card, $color)) {
+                        $this->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} achieves goal ${token_name}'));
+                    } else {
+                        $this->notifyMessage(clienttranslate('${player_name} does not achieve goal ${token_name}'), [
+                            "token_name" => $this->getTokenName($card),
+                        ]);
+                        $this->effect_incVp($color, -5, "game_vp_goals");
+                    }
                 }
             }
-
             $score = $this->playerScore->get($player_id);
             $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
             $this->playerStats->set("game_vp_total", $score, $player_id);
