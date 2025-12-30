@@ -210,9 +210,9 @@ class DbMachine {
         return $this->getOperationsByRank(null, $owner);
     }
 
-    function getOperationsByRank($rank = null, $owner = null, $pool = null) {
+    function getOperationsByRank($rank = null, $owner = null) {
         if ($rank === null) {
-            $rank = $this->getTopRank($owner, $pool);
+            $rank = $this->getTopRank($owner);
         }
         $this->checkInt($rank);
         $andowner = "";
@@ -222,13 +222,17 @@ class DbMachine {
         return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank = $rank $andowner");
     }
 
-    function getOperations($owner = null) {
+    function getOperations($owner = null, $type = null) {
         $andowner = "";
+        $andtype = "";
         if ($owner) {
             $andowner = " AND owner = '$owner'";
         }
+        if ($type) {
+            $andtype = " AND type = '$type'";
+        }
 
-        return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 $andowner ORDER BY rank ASC");
+        return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 $andowner $andtype ORDER BY rank ASC");
     }
 
     function createRow($type, $owner = null, $data = null) {

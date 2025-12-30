@@ -180,12 +180,17 @@ class Game extends Base {
         return null;
     }
 
-    function switchActivatePlayer(int $playerId, bool $moreTime = true) {
+    function switchActivePlayer(int $playerId, bool $moreTime = true) {
         if ($playerId <= 2) {
             return;
         }
+
         if (!$this->gamestate->isPlayerActive($playerId)) {
-            $this->gamestate->changeActivePlayer($playerId);
+            if ($this->gamestate->isMultiactiveState()) {
+                $this->gamestate->setPlayersMultiactive([$playerId], "notpossible", false);
+            } else {
+                $this->gamestate->changeActivePlayer($playerId);
+            }
             if ($moreTime) {
                 $this->giveExtraTime($playerId);
             }

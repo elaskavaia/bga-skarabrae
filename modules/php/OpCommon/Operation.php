@@ -26,6 +26,7 @@ use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Common\OpExpressionRanged;
 use Bga\Games\skarabrae\Common\OpParser;
+use Bga\Games\skarabrae\States\MultiPlayerTurn;
 use BgaSystemException;
 use BgaUserException;
 use Exception;

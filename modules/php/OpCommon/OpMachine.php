@@ -10,6 +10,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\Db\DbMachine;
+use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 use Bga\Games\skarabrae\OpCommon\UnresolvedOperation;
@@ -20,8 +21,6 @@ use BgaSystemException;
 use Exception;
 use ReflectionClass;
 use Throwable;
-
-use function Bga\Games\skarabrae\array_get;
 
 class OpMachine {
     protected Game $game;
@@ -45,20 +44,6 @@ class OpMachine {
             return null;
         }
         $dop = reset($ops);
-
-        // if (count($ops) > 1) {
-        //     $data = Operation::decodeData($dop["data"]);
-        //     $operand = $data["xop"] ?? ",";
-        //     $mnemonic = self::opToMnemonic($operand);
-        //     unset($data["xop"]);
-        //     /** @var ComplexOperation */
-        //     $top = $this->instanciateCommonOperation($mnemonic, $dop["owner"], $data)->withDataField("op", $operand);
-        //     foreach ($ops as $sub) {
-        //         $subOp = $this->instanciateOperationFromDbRow($sub)->withDataField("xop", $operand);
-        //         $top->withDelegate($subOp);
-        //     }
-        //     return $top;
-        // }
 
         return $this->instanciateOperationFromDbRow($dop);
     }
@@ -221,7 +206,7 @@ class OpMachine {
 
     //DISPATCH
 
-    function dispatchAll(int $n = 1000) {
+    function dispatchAll(int $n = Material::MA_GAME_DISPATCH_MAX) {
         // dispatch does mulple rounds without switching state, need to watch for notif limit
         while ($n-- > 0) {
             $state = $this->dispatchOne();
@@ -231,8 +216,8 @@ class OpMachine {
         }
         return PlayerTurnConfirm::class;
     }
-    function dispatchOne() {
-        $op = $this->createTopOperationFromDb(0); // 0 player means we not sure yet
+    function dispatchOne(?string $owner = null) {
+        $op = $this->createTopOperationFromDbForOwner($owner); // 0 player means we not sure yet
         if (!$op) {
             return StateConstants::STATE_MACHINE_HALTED;
         }
@@ -242,6 +227,42 @@ class OpMachine {
         }
         //$this->game->notify->all("message", "starting op " . $op->getType());
         return $op->onEnteringGameState();
+    }
+
+    function multiplayerDistpatch(int $n) {
+        $operations = $this->getTopOperationsMulti();
+        //$this->debugLog("-MULTI: machine top: isMulti=$isMulti " . $this->machine->getlistexpr($operations));
+        if (count($operations) == 0) {
+            return StateConstants::STATE_MACHINE_HALTED;
+        }
+        //$this->game->gamestate->setAllPlayersMultiactive();
+
+        $players = $this->game->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player_info) {
+            $state = $this->multiplayerDistpatchPrivate($player_id, $n);
+        }
+        $this->game->gamestate->updateMultiactiveOrNextState(StateConstants::STATE_MACHINE_HALTED);
+    }
+
+    function multiplayerDistpatchPrivate(int $player_id, int $n) {
+        $state = GameDispatch::class;
+        $color = $this->game->getPlayerColorById($player_id);
+        for ($i = 0; $i < $n; $i++) {
+            $operations = $this->getTopOperationsMulti($color);
+            $isMulti = count($operations) > 0; // $this->hasMultiPlayerOperations($operations);
+            //$this->debugLog("- SINGLE $i: machine top for $color: " . $this->machine->getlistexpr($operations));
+            if (!$isMulti) {
+                $this->game->dbSetPlayerMultiactive($player_id, 0);
+                break;
+            }
+            $this->game->dbSetPlayerMultiactive($player_id, 1);
+            $state = $this->dispatchOne($color);
+            if ($state && $state !== GameDispatch::class) {
+                break;
+            }
+        }
+
+        return $state;
     }
 
     function expandOperation(Operation $op, $count = null) {
@@ -262,6 +283,30 @@ class OpMachine {
             return true;
         }
         return false;
+    }
+
+    function getTopOperationsMulti($owner = null) {
+        $operations = $this->getTopOperations($owner, "multi");
+        if (count($operations) > 0) {
+            $barrank = $this->getBarrierRank();
+            if ($barrank > 0) {
+                $op = reset($operations);
+                if ($op["rank"] > $barrank) {
+                    return [];
+                }
+            }
+        }
+        return $operations;
+    }
+
+    function getBarrierRank() {
+        $ops = $this->db->getOperations(null, "barrier");
+        if (count($ops) == 0) {
+            return -1;
+        }
+        $op = reset($ops);
+        $barrank = $op["rank"];
+        return $barrank;
     }
 
     /** Debug functions */

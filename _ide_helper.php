@@ -967,7 +967,7 @@ namespace Bga\GameFramework {
          * @param string|int|class-string<Bga\GameFramework\States\GameState> $next_state the transition name, or state id, or class name if using Class states
          * @return bool if the call moved to the next state
          */
-        final public function updateMultiactiveOrNextState(string $nextStateIfNone): void
+        final public function updateMultiactiveOrNextState(string|int $nextStateIfNone): void
         {
             //
         }

@@ -63,7 +63,7 @@ class Op_draft extends Operation {
     }
 
     public function auto(): bool {
-        $this->game->switchActivatePlayer($this->getPlayerId());
+        $this->game->switchActivePlayer($this->getPlayerId());
         return parent::auto();
     }
     function resolve() {

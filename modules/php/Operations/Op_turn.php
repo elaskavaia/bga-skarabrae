@@ -25,7 +25,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 class Op_turn extends Operation {
     function auto(): bool {
         $player_id = $this->getPlayerId();
-        $this->game->switchActivatePlayer($player_id);
+        $this->game->switchActivePlayer($player_id);
         $this->game->undoSavepoint();
         return parent::auto();
     }

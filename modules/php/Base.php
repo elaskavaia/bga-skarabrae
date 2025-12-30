@@ -156,6 +156,25 @@ class Base extends Table {
         return null;
     }
 
+    /**
+     * Changes values of multiactivity in db, does not sent notifications.
+     * To send notifications after use updateMultiactiveOrNextState
+     * @param number $player_id, player id <=0 or null - means ALL
+     * @param number $value - 1 multiactive, 0 non multiactive
+     */
+    function dbSetPlayerMultiactive($player_id = -1, $value = 1) {
+        if (!$value) {
+            $value = 0;
+        } else {
+            $value = 1;
+        }
+        $sql = "UPDATE player SET player_is_multiactive = '$value' WHERE player_zombie = 0 and player_eliminated = 0";
+        if ($player_id > 0) {
+            $sql .= " AND player_id = $player_id";
+        }
+        self::DbQuery($sql);
+    }
+
     public function debug_dumpStats() {
         $all_stats = $this->getStatTypes();
         $player_stats = $all_stats["player"];
