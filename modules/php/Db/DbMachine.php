@@ -194,15 +194,13 @@ class DbMachine {
         $sql .= " VALUES ('" . implode("','", $values) . "')";
         $this->game->DbQuery($sql);
         $id = $this->game->DbGetLastId();
+        $this->game->systemAssert("Over 100,000", $id < 100000);
         return $id;
     }
 
     function insertRow($rank, $op) {
         $this->insertList($rank, [$op]);
         $id = $this->game->DbGetLastId();
-        if ($id > 100000) {
-            throw new BgaSystemException("Over 100,000");
-        }
         return $id;
     }
 

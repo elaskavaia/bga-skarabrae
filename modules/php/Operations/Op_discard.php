@@ -65,7 +65,7 @@ class Op_discard extends CountableOperation {
     public function getUiArgs() {
         return ["buttons" => false];
     }
-    function resolve() {
+    function resolve(): void {
         $card = $this->getCheckedArg();
 
         $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));

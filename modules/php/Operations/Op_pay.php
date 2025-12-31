@@ -44,7 +44,7 @@ class Op_pay extends CountableOperation {
         return [$this->getResType()];
     }
 
-    function resolve() {
+    function resolve(): void {
         $this->checkVoid(); //validation
         $count = $this->getCount();
         $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason());

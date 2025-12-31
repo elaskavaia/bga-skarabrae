@@ -207,6 +207,7 @@ class Game extends Base {
         _ when a player refreshes the game page (F5)
     */
     protected function getAllDatas(): array {
+        $result = [];
         $result = parent::getAllDatas();
 
         $result = array_merge($result, $this->tokens->getAllDatas());

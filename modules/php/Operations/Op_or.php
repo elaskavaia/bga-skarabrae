@@ -27,7 +27,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 
 /** User choses operation. If count is used it is shared and decreases for all choices */
 class Op_or extends ComplexOperation {
-    function resolve() {
+    function resolve(): void {
         $res = $this->getCheckedArg();
         if (!is_array($res)) {
             $res = [$res => 1];

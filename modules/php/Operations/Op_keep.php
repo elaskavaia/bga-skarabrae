@@ -57,7 +57,7 @@ class Op_keep extends Operation {
     public function getUiArgs() {
         return ["buttons" => false];
     }
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $state = $this->game->getActionTileSide($this->getReason() ?: "action_special_6");

@@ -21,11 +21,15 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\States\GameDispatchForced;
+use Bga\Games\skarabrae\States\GameDispatch;
 
-// gain roof card
-class Op_roof extends Operation {
-    function resolve(): void {
-        $this->game->effect_drawSimpleCard($this->getOwner(), "roof", 1, $this->getReason());
-        return;
+/** Special operation that act as barrier for all multi player operations */
+class Op_barrier extends Operation {
+    function onEnteringGameState() {
+        // XXX destroy all undo
+        $this->game->customUndoSavepoint();
+        $this->destroy();
+        return GameDispatchForced::class;
     }
 }

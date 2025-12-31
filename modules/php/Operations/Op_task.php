@@ -69,7 +69,7 @@ class Op_task extends Operation {
     function getCard() {
         return $this->getDataField("card", null);
     }
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $action_tile = $this->getCheckedArg();
         $this->game->tokens->dbSetTokenState($action_tile, 1, clienttranslate('${player_name} completes task ${token_name}'));

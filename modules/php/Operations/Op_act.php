@@ -86,13 +86,13 @@ class Op_act extends Operation {
                     $res[$act]["worker"] = $anyWorker;
                 }
                 $rules = $this->game->getActionRules($act);
+                $res[$act]["r"] = $rules;
 
                 $op = $this->game->machine->instanciateOperation($rules, $owner, ["reason" => $act]);
 
                 if ($op->isVoid()) {
                     $res[$act]["err"] = $op->getError();
                     $res[$act]["q"] = 1;
-                    $res[$act]["r"] = $rules;
                 }
             }
         }
@@ -127,7 +127,7 @@ class Op_act extends Operation {
         $this->queue($r, $owner, [], $action_tile);
     }
 
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $args = $this->getArgs();
         $action_tile = $this->getCheckedArg();
@@ -159,7 +159,7 @@ class Op_act extends Operation {
         $owner = $this->getOwner();
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $count = count($workers);
-        return parent::getExtraArgs() + [
+        return [
             "count_workers" => $count,
         ];
     }

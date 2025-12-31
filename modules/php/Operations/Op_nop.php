@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_nop extends Operation {
-    function resolve() {
+    function resolve(): void {
         $this->notifyMessage(""); // empty message
         return;
     }

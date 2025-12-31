@@ -59,7 +59,7 @@ class Op_muster extends CountableOperation {
     public function getUiArgs() {
         return ["buttons" => false];
     }
-    function resolve() {
+    function resolve(): void {
         $card = $this->getCheckedArg();
         $owner = $this->getOwner();
         $and = !!$this->game->getActionTileSide("action_special_5");

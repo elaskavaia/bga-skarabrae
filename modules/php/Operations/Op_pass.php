@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_pass extends Operation {
-    function resolve() {
+    function resolve(): void {
         //  set Turn Marker to Position Pass
         $owner = $this->getOwner();
         $maxpass = $this->game->getMaxTurnMarkerPosition(1);

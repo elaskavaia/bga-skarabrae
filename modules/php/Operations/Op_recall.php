@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_recall extends Operation {
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
         $this->game->tokens->dbSetTokensLocation($workers, "tableau_$owner", 1);

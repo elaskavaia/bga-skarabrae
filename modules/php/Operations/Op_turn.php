@@ -26,11 +26,13 @@ class Op_turn extends Operation {
     function auto(): bool {
         $player_id = $this->getPlayerId();
         $this->game->switchActivePlayer($player_id);
-        $this->game->undoSavepoint();
+
+        $this->game->customUndoSavepoint();
+
         return parent::auto();
     }
 
-    public function resolve() {
+    public function resolve(): void {
         $card = $this->getCheckedArg();
 
         if ($card == "yield") {

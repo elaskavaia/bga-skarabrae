@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_feed extends CountableOperation {
-    function resolve() {
+    function resolve(): void {
         $count = $this->getCheckedArg();
         if ($count > 0) {
             $this->game->effect_incCount($this->getOwner(), "food", -(int) $count, $this->getOpName());

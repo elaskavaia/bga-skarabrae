@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 // gain midden
 class Op_clutter extends CountableOperation {
-    function resolve() {
+    function resolve(): void {
         $color = $this->getOwner();
         $v = $this->game->tokens->getTrackerValue($color, "slider");
         $m = $this->game->getRulesFor("slot_slider_$v", "r", 0);

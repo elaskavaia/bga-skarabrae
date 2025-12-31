@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 
 class Op_turnall extends Operation {
-    function resolve() {
+    function resolve(): void {
         $curturn = $this->game->tokens->dbResourceInc(Game::TURNS_NUMBER_GLOBAL, 1, "");
 
         $others = $this->game->tokens->getTokensOfTypeInLocation("turnmarker");
@@ -42,6 +42,8 @@ class Op_turnall extends Operation {
             $color = $player_info["player_color"];
             $this->queue("turnpick", $color);
         }
+        //if (count($players_basic) > 1)
+        $this->queue("barrier", null);
         if ($curturn > 1) {
             $n = $curturn - 1;
             $this->game->effect_cleanCards($n);

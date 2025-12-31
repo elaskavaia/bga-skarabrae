@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_furnish extends Operation {
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         if ($this->getDataField("paid", false)) {
             $type = $this->getType();

@@ -22,11 +22,9 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
-use Bga\Games\skarabrae\StateConstants;
-use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 
 class Op_round extends Operation {
-    function resolve() {
+    function resolve(): void {
         // start the round
 
         $roundNum = $this->game->tokens->dbResourceInc(Game::ROUNDS_NUMBER_GLOBAL, 1, "");
@@ -35,10 +33,7 @@ class Op_round extends Operation {
         if ($this->game->isEndOfGame()) {
             $this->notifyMessage(clienttranslate("--- End of game ---"));
             $this->game->finalScoring();
-            if ($this->game->isStudio()) {
-                return PlayerTurnConfirm::class;
-            }
-            return StateConstants::STATE_END_GAME;
+            return;
         }
 
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
@@ -52,7 +47,7 @@ class Op_round extends Operation {
             }
         }
 
-        $this->notifyMessage(clienttranslate("games deals new village cards for the round"));
+        $this->notifyMessage(clienttranslate("game deals new village cards for the round"));
         $num = $this->game->getPlayersNumber();
         $cardsNum = $num == 4 ? 5 : 4;
         for ($i = 1; $i <= 3; $i++) {

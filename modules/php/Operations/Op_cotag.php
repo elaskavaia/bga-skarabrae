@@ -9,7 +9,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
  * Tag counter. Count specific tags to change counter of the  operation passed as second arg
  */
 class Op_cotag extends Operation {
-    function resolve() {
+    function resolve(): void {
         // counter function, followed by expression
         $owner = $this->getOwner();
         $tnum = $this->getParam(0);
@@ -25,7 +25,6 @@ class Op_cotag extends Operation {
                 $this->queue("[0,{$skaill}](n_skaill:$op)", $owner, null, $this->getReason());
             }
         }
-        return 1;
     }
 
     function getButtonName() {

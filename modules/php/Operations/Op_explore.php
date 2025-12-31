@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_explore extends Operation {
-    function resolve() {
+    function resolve(): void {
         $card = "action_special_6";
         $owner = $this->getOwner();
         $flipped = $this->game->getActionTileSide("action_special_6");

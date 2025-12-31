@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_tradeInc extends Operation {
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $type = "trade";
         $value = $this->game->tokens->getTrackerValue($owner, $type);

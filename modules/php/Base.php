@@ -53,7 +53,7 @@ class Base extends Table {
         //]);
         $this->notify->addDecorator(function (string $message, array $args) {
             if (!isset($args["player_id"])) {
-                $args["player_id"] = $this->getActivePlayerId();
+                $args["player_id"] = $this->getMostlyActivePlayerId();
             }
             if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
                 $args["player_name"] = $this->getPlayerNameById($args["player_id"]);
@@ -273,14 +273,18 @@ class Base extends Table {
     }
     function getMostlyActivePlayerId() {
         if ($this->isMultiActive()) {
-            return $this->getCurrentPlayerId();
+            return $this->gamestate->getActivePlayerList()[0];
         } else {
             return $this->getActivePlayerId();
         }
     }
 
     function getActivePlayerColor() {
-        return $this->getPlayerColorById((int) $this->getActivePlayerId());
+        $id = $this->getActivePlayerId();
+        if ($id === null || $id <= 0) {
+            return "000000";
+        }
+        return $this->getPlayerColorById((int) $id);
     }
     public function isMultiActive() {
         return $this->gamestate->isMultiactiveState();
@@ -365,6 +369,19 @@ class Base extends Table {
         return $player_ids;
     }
 
+    public function customUndoSavepoint(): void {
+        // $this->undoSavepoint();
+    }
+
+    /**
+     * Override to not throw exception
+     */
+    public function doUndoSavePoint(): void {
+        if (!$this->gamestate->isMultiactiveState()) {
+            $this->doUndoSavePoint();
+        }
+    }
+
     function loadPlayersBasicInfosWithBots($bots = true) {
         return parent::loadPlayersBasicInfos();
     }
@@ -375,6 +392,14 @@ class Base extends Table {
             $colors[] = $player_info["player_color"];
         }
         return $colors;
+    }
+
+    public function getActivePlayerId(): int {
+        if ($this->isMultiActive()) {
+            $this->systemAssert("getActivePlayerId");
+            return 0;
+        }
+        return (int) parent::getActivePlayerId();
     }
     /**
      *

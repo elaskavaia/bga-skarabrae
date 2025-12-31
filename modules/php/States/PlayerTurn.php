@@ -15,7 +15,7 @@ class PlayerTurn extends GameState {
     public function __construct(protected Game $game) {
         parent::__construct(
             $game,
-            id: StateConstants::STATE_PLAYER_TURN_OP,
+            id: StateConstants::STATE_PLAYER_TURN,
             type: StateType::ACTIVE_PLAYER, // This state type means that one player is active and can do actions
             descriptionMyTurn: clienttranslate('${you} perform an action'), // We tell the ACTIVE player what they must do
             description: clienttranslate('${actplayer} performs an action') // We tell OTHER players what they are waiting for

@@ -102,7 +102,7 @@ class Op_craft extends Operation {
     public function getUiArgs() {
         return ["buttons" => false];
     }
-    function resolve() {
+    function resolve(): void {
         if ($this->isPaid()) {
             $card = $this->getCheckedArg();
             $this->game->systemAssert("Cannot determine card", $card);

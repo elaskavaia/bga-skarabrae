@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_tend extends CountableOperation {
-    function resolve() {
+    function resolve(): void {
         $uargs = $this->getCheckedArg(true);
         $nc = 0;
 

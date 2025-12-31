@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 
 // Spin wool
 class Op_spin extends Operation {
-    function resolve() {
+    function resolve(): void {
         $color = $this->getOwner();
         $from = "deck_spin";
         $card = $this->game->tokens->tokens->getTokenOnTop($from);

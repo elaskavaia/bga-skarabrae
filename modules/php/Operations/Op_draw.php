@@ -33,7 +33,7 @@ class Op_draw extends CountableOperation {
         return true;
     }
 
-    function resolve() {
+    function resolve(): void {
         $this->getCheckedArg();
         $owner = $this->getOwner();
         $this->game->systemAssert("Count?", $this->getCount() > 0);
@@ -52,6 +52,6 @@ class Op_draw extends CountableOperation {
         $this->notifyMessage(clienttranslate('${player_name} draws ${count} card/s ${reason}'), [
             "count" => count($cards),
         ]);
-        $this->game->undoSavepoint();
+        $this->game->customUndoSavepoint();
     }
 }

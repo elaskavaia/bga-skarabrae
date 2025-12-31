@@ -26,7 +26,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 use function Bga\Games\skarabrae\getPart;
 
 class Op_clean extends Operation {
-    function resolve() {
+    function resolve(): void {
         $res = $this->getCheckedArg(true, true);
         $args = $this->getArgs();
 

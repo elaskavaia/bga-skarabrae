@@ -81,7 +81,7 @@ class Op_seq extends ComplexOperation {
         return $this->getRecName(" ");
     }
 
-    public function resolve() {
+    public function resolve(): void {
         if ($this->isRangedChoice()) {
             $c = $this->getCheckedArg();
             $this->withDataField("count", $c);
@@ -90,7 +90,6 @@ class Op_seq extends ComplexOperation {
             $this->saveToDb();
             return;
         }
-        return parent::resolve();
     }
 
     function getOperator() {

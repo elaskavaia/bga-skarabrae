@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 
 // special action
 class Op_build extends Operation {
-    function resolve() {
+    function resolve(): void {
         $card = "action_special_8";
         $state = $this->game->getActionTileSide($card);
         $dis = $state == 0 ? 2 : 3;

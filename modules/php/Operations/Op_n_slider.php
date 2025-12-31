@@ -50,7 +50,7 @@ class Op_n_slider extends CountableOperation {
         }
     }
 
-    function resolve() {
+    function resolve(): void {
         $this->checkVoid();
         $count = $this->getCount();
         $this->game->effect_incCount($this->getOwner(), $this->getResType(), -$count, $this->getReason(), [

@@ -50,7 +50,7 @@ class Op_village extends Operation {
         return clienttranslate('${You} must select a village card');
     }
 
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $maxpass = $this->game->getMaxTurnMarkerPosition(2);

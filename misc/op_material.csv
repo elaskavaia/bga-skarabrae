@@ -2,7 +2,6 @@ type|name|php
 #set id=Op_{type}
 
 #set class=
-
 furnish|Furnish
 furnishPay|Furnish
 cook|Cook
@@ -30,6 +29,28 @@ spin|Spin Wool
 tend|Tend Land
 draft|Select Special Action
 turnpick|Turn
+
+nop|None
+#fake name
+barrier|None
+n_midden|Clean Midden
+or|Choice
+unique|Unique Choice
+order|Choose Order
+seq|Sequence
+payAny|Pay any Resource
+act|Worker Action
+gain|Gain
+pay|Pay
+paygain|Trade
+recall|Return Workers
+pass|Delay
+round|Round
+turn|Turn
+turnall|Turn
+village|Gain Village Card
+tradeInc|Move up on Trade track
+
 
 #set class=Op_gain
 
@@ -70,22 +91,3 @@ n_bone|Pay Bone
 n_boar|Pay Boar
 
 
-#set class=
-nop|None
-n_midden|Clean Midden
-or|Choice
-unique|Unique Choice
-order|Choose Order
-seq|Sequence
-payAny|Pay any Resource
-act|Worker Action
-gain|Gain
-pay|Pay
-paygain|Trade
-recall|Return Workers
-pass|Delay
-round|Round
-turn|Turn
-turnall|Turn
-village|Gain Village Card
-tradeInc|Move up on Trade track

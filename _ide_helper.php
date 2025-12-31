@@ -967,9 +967,9 @@ namespace Bga\GameFramework {
          * @param string|int|class-string<Bga\GameFramework\States\GameState> $next_state the transition name, or state id, or class name if using Class states
          * @return bool if the call moved to the next state
          */
-        final public function updateMultiactiveOrNextState(string|int $nextStateIfNone): void
+        final public function updateMultiactiveOrNextState(string|int $nextStateIfNone): bool
         {
-            //
+            return false;
         }
 
         /**
@@ -1281,9 +1281,9 @@ namespace Bga\GameFramework {
          * 
          * @return string the active player id typed as string
          */
-        final public function getActivePlayerId():int
+         public function getActivePlayerId():int
         {
-            return '0'; 
+            return 0; 
         }
 
         /**

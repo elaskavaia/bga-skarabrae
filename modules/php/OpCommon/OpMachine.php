@@ -14,7 +14,10 @@ use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 use Bga\Games\skarabrae\OpCommon\UnresolvedOperation;
+use Bga\Games\skarabrae\States\GameDispatchForced;
 use Bga\Games\skarabrae\States\GameDispatch;
+use Bga\Games\skarabrae\States\MultiPlayerMaster;
+use Bga\Games\skarabrae\States\MultiPlayerTurnPrivate;
 use Bga\Games\skarabrae\States\PlayerTurnConfirm;
 
 use BgaSystemException;
@@ -22,7 +25,10 @@ use Exception;
 use ReflectionClass;
 use Throwable;
 
+use function Bga\Games\skarabrae\toJson;
+
 class OpMachine {
+    const MA_GAME_DISPATCH_MAX = 1000;
     protected Game $game;
 
     public function __construct(protected DbMachine $db = new DbMachine()) {
@@ -70,10 +76,6 @@ class OpMachine {
 
     function instanciateOperation(string $type, ?string $owner = null, mixed $data = null, mixed $id = 0): Operation {
         try {
-            if ($owner === null) {
-                $owner = $this->game->getActivePlayerColor();
-            }
-
             if ($id) {
                 $id = (int) $id;
             } else {
@@ -206,9 +208,12 @@ class OpMachine {
 
     //DISPATCH
 
-    function dispatchAll(int $n = Material::MA_GAME_DISPATCH_MAX) {
+    function dispatchAll(int $n = OpMachine::MA_GAME_DISPATCH_MAX) {
         // dispatch does mulple rounds without switching state, need to watch for notif limit
-        while ($n-- > 0) {
+        for ($i = 0; $i < $n; $i++) {
+            if ($this->isMultiplayerOperationMode()) {
+                return MultiPlayerMaster::class;
+            }
             $state = $this->dispatchOne();
             if ($state && $state !== GameDispatch::class) {
                 return $state;
@@ -216,8 +221,9 @@ class OpMachine {
         }
         return PlayerTurnConfirm::class;
     }
-    function dispatchOne(?string $owner = null) {
-        $op = $this->createTopOperationFromDbForOwner($owner); // 0 player means we not sure yet
+    function dispatchOne() {
+        //$this->game->debugLog("- SINGLE: machine top: ", array_values($this->getTopOperations(null)));
+        $op = $this->createTopOperationFromDbForOwner(null); // null means any
         if (!$op) {
             return StateConstants::STATE_MACHINE_HALTED;
         }
@@ -229,39 +235,66 @@ class OpMachine {
         return $op->onEnteringGameState();
     }
 
-    function multiplayerDistpatch(int $n) {
-        $operations = $this->getTopOperationsMulti();
-        //$this->debugLog("-MULTI: machine top: isMulti=$isMulti " . $this->machine->getlistexpr($operations));
-        if (count($operations) == 0) {
-            return StateConstants::STATE_MACHINE_HALTED;
+    function multiplayerDistpatch(int $n = OpMachine::MA_GAME_DISPATCH_MAX) {
+        //$this->game->debugLog("- MULTI: machine top: ", array_values($this->getTopOperationsMulti()));
+        if (!$this->isMultiplayerOperationMode()) {
+            // fall out of multiplayer state
+            return GameDispatchForced::class;
         }
         //$this->game->gamestate->setAllPlayersMultiactive();
-
+        $this->game->dbSetPlayerMultiactive(null, 1);
         $players = $this->game->loadPlayersBasicInfos();
+        $changedState = null;
         foreach ($players as $player_id => $player_info) {
             $state = $this->multiplayerDistpatchPrivate($player_id, $n);
+
+            if ($state !== MultiPlayerMaster::class) {
+                $changedState = $state;
+            }
         }
-        $this->game->gamestate->updateMultiactiveOrNextState(StateConstants::STATE_MACHINE_HALTED);
+        //if (!$this->game->gamestate->updateMultiactiveOrNextState($changedState))
+        return $changedState;
     }
 
     function multiplayerDistpatchPrivate(int $player_id, int $n) {
-        $state = GameDispatch::class;
+        $state = GameDispatchForced::class;
         $color = $this->game->getPlayerColorById($player_id);
         for ($i = 0; $i < $n; $i++) {
             $operations = $this->getTopOperationsMulti($color);
             $isMulti = count($operations) > 0; // $this->hasMultiPlayerOperations($operations);
-            //$this->debugLog("- SINGLE $i: machine top for $color: " . $this->machine->getlistexpr($operations));
+            // $this->game->debugLog("- MULTI SINGLE $i: machine top for $color: ", array_values($operations));
             if (!$isMulti) {
+                $this->game->gamestate->unsetPrivateState($player_id);
                 $this->game->dbSetPlayerMultiactive($player_id, 0);
-                break;
+                //$this->game->gamestate->setPlayerNonMultiactive($player_id, "notpossible");
+                return GameDispatchForced::class;
             }
-            $this->game->dbSetPlayerMultiactive($player_id, 1);
-            $state = $this->dispatchOne($color);
-            if ($state && $state !== GameDispatch::class) {
-                break;
-            }
-        }
+            //$this->game->dbSetPlayerMultiactive($player_id, 1);
+            $this->game->gamestate->setPlayersMultiactive([$player_id], "notpossible", false);
 
+            $dop = reset($operations);
+            $op = $this->instanciateOperationFromDbRow($dop);
+            if ($this->expandOperation($op)) {
+                $op->destroy();
+                continue;
+            }
+
+            $state = $op->onEnteringGameState();
+            if ($state === null || $state === GameDispatch::class) {
+                continue;
+            }
+            break;
+        }
+        if ($i >= OpMachine::MA_GAME_DISPATCH_MAX) {
+            return PlayerTurnConfirm::class;
+        }
+        if ($state === MultiPlayerTurnPrivate::class) {
+            $this->game->gamestate->setPrivateState($player_id, StateConstants::STATE_MULTI_PLAYER_TURN_PRIVATE);
+            return MultiPlayerMaster::class;
+        }
+        if ($state === GameDispatch::class || $state === null) {
+            return MultiPlayerMaster::class;
+        }
         return $state;
     }
 
@@ -286,17 +319,28 @@ class OpMachine {
     }
 
     function getTopOperationsMulti($owner = null) {
-        $operations = $this->getTopOperations($owner, "multi");
+        $operations = $this->getTopOperations($owner);
         if (count($operations) > 0) {
+            $op = reset($operations);
+            if ($op["type"] == "barrier") {
+                return [];
+            }
+            if ($op["owner"] === null) {
+                return [];
+            }
             $barrank = $this->getBarrierRank();
             if ($barrank > 0) {
-                $op = reset($operations);
                 if ($op["rank"] > $barrank) {
                     return [];
                 }
+            } else {
+                return [];
             }
         }
         return $operations;
+    }
+    function isMultiplayerOperationMode() {
+        return count($this->getTopOperationsMulti()) > 0;
     }
 
     function getBarrierRank() {
@@ -319,6 +363,7 @@ class OpMachine {
 
     function getArgs(int $player_id) {
         $op = $this->createTopOperationFromDb($player_id);
+
         return $op->getArgs();
     }
 

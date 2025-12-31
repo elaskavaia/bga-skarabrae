@@ -63,7 +63,7 @@ class Op_n_midden extends CountableOperation {
         return Operation::TTYPE_TOKEN_COUNT;
     }
 
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $res = $this->getCheckedArg(true);
         $count = 0;

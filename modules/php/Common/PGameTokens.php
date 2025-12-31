@@ -37,7 +37,7 @@ class PGameTokens {
     }
 
     function autoreshuffleHandler($place_from, $place_to) {
-        $player_id = $this->game->getActivePlayerId();
+        $player_id = $this->game->getMostlyActivePlayerId();
         if ($this->isCounterAllowedForLocation($player_id, $place_from)) {
             $this->notifyCounterChanged($place_from, ["nod" => true]);
         }

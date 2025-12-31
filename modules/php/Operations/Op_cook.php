@@ -28,7 +28,7 @@ class Op_cook extends Operation {
         return Operation::TTYPE_TOKEN_COUNT;
     }
 
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $res = $this->getCheckedArg();
         $prevWeight = $this->getWeight();

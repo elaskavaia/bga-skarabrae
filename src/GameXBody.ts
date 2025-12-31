@@ -181,6 +181,15 @@ class GameXBody extends GameMachine {
     });
   }
 
+  onToken_MultiPlayerTurnPrivate(tid: string) {
+    this.onToken_PlayerTurn(tid);
+  }
+  onToken_MultiPlayerMaster(tid: string) {
+    this.onToken_PlayerTurn(tid);
+  }
+  onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
+    this.onEnteringState_PlayerTurn(opInfo);
+  }
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
@@ -193,7 +202,8 @@ class GameXBody extends GameMachine {
     }
   }
 
-  onLeavingState_PlayerTurn() {
+  onLeavingState(stateName: string): void {
+    super.onLeavingState(stateName);
     const opInfo = this.opInfo;
     if (opInfo?.type == "turn") $("thething").appendChild($("mainarea"));
     if (opInfo?.ui?.replicate) {

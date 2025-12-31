@@ -26,7 +26,7 @@ use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Common\OpExpression;
 use Bga\Games\skarabrae\Common\OpExpressionRanged;
 use Bga\Games\skarabrae\Common\OpParser;
-use Bga\Games\skarabrae\States\MultiPlayerTurn;
+use Bga\Games\skarabrae\States\MultiPlayerTurnPrivate;
 use BgaSystemException;
 use BgaUserException;
 use Exception;
@@ -215,6 +215,7 @@ abstract class Operation {
         if ($owner === null) {
             $owner = $this->getOwner();
         }
+
         if ($reason === null) {
             $reason = $this->getOpId();
         }
@@ -555,6 +556,9 @@ abstract class Operation {
 
         if (!$isAuto) {
             // switch to player state
+            if ($this->game->machine->isMultiplayerOperationMode()) {
+                return MultiPlayerTurnPrivate::class;
+            }
             return PlayerTurn::class;
         }
         $this->destroy();
@@ -622,7 +626,7 @@ abstract class Operation {
     }
 
     /** User does the action. If this return false or void or 0 we will end the operation, and return the state */
-    function resolve() {
+    function resolve(): void {
         return;
     }
 

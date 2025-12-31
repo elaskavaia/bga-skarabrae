@@ -32,7 +32,7 @@ class Op_recruit extends Operation {
 
         return [$worker];
     }
-    function resolve() {
+    function resolve(): void {
         $worker = $this->getCheckedArg();
         $owner = $this->getOwner();
         $this->game->tokens->dbSetTokenLocation($worker, "tableau_$owner", 1);

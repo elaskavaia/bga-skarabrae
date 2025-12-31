@@ -1687,6 +1687,15 @@ var GameXBody = /** @class */ (function (_super) {
             }
         });
     };
+    GameXBody.prototype.onToken_MultiPlayerTurnPrivate = function (tid) {
+        this.onToken_PlayerTurn(tid);
+    };
+    GameXBody.prototype.onToken_MultiPlayerMaster = function (tid) {
+        this.onToken_PlayerTurn(tid);
+    };
+    GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
+        this.onEnteringState_PlayerTurn(opInfo);
+    };
     GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         _super.prototype.onEnteringState_PlayerTurn.call(this, opInfo);
         switch (opInfo.type) {
@@ -1698,8 +1707,9 @@ var GameXBody = /** @class */ (function (_super) {
                 break;
         }
     };
-    GameXBody.prototype.onLeavingState_PlayerTurn = function () {
+    GameXBody.prototype.onLeavingState = function (stateName) {
         var _a;
+        _super.prototype.onLeavingState.call(this, stateName);
         var opInfo = this.opInfo;
         if ((opInfo === null || opInfo === void 0 ? void 0 : opInfo.type) == "turn")
             $("thething").appendChild($("mainarea"));

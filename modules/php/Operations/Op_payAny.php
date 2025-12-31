@@ -44,6 +44,7 @@ class Op_payAny extends CountableOperation {
 
     function getCostArr() {
         $owner = $this->getOwner();
+        $this->game->systemAssert("Owner has to be set for payAny", $owner);
         $n = $this->getCount();
         $ress = Material::getAllNonPoopResources();
         $list = [];
@@ -61,7 +62,7 @@ class Op_payAny extends CountableOperation {
         return $list;
     }
 
-    function resolve() {
+    function resolve(): void {
         $res = $this->getCheckedArg();
         $n = $this->getCount();
         $this->queue("{$n}n_{$res}", $this->getOwner(), [], $this->getReason());

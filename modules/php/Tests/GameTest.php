@@ -19,8 +19,14 @@ use Bga\Games\skarabrae\OpCommon\OpMachine;
 use Bga\Games\skarabrae\Operations\Op_furnish;
 use Bga\Games\skarabrae\Operations\Op_furnishPay;
 use Bga\Games\skarabrae\Operations\Op_task;
+use Bga\Games\skarabrae\Operations\Op_turn;
+use Bga\Games\skarabrae\Operations\Op_turnall;
+use Bga\Games\skarabrae\Operations\Op_turnpick;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
+use Bga\Games\skarabrae\States\GameDispatchForced;
+use Bga\Games\skarabrae\States\MachineHalted;
+use Bga\Games\skarabrae\States\MultiPlayerMaster;
 use Bga\Games\skarabrae\States\PlayerTurn;
 use Bga\Games\skarabrae\Tests\MachineInMem;
 use Bga\Games\skarabrae\Tests\TokensInMem;
@@ -429,5 +435,27 @@ final class GameTest extends TestCase {
         /** @var Op_task */
         $op = $this->dispatchOneStep();
         $this->assertTrue($op instanceof Op_paygain);
+    }
+
+    public function testTurnall() {
+        $this->game->tokens->createTokens();
+
+        $this->game->machine->queue("turnall", PCOLOR, ["num" => 1]);
+
+        $op = $this->dispatch(MultiPlayerMaster::class);
+        $this->assertTrue($op instanceof Op_turnpick);
+        $state = $this->game->machine->multiplayerDistpatch();
+        $this->assertEquals(null, $state);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_turn);
+        $op->destroy();
+        $this->game->machine->multiplayerDistpatch();
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_turn);
+        $op->destroy();
+        $state = $this->game->machine->multiplayerDistpatch();
+        $this->assertEquals(GameDispatchForced::class, $state);
+        $this->dispatch(GameDispatchForced::class);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
     }
 }

@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_gain extends CountableOperation {
-    function resolve() {
+    function resolve(): void {
         $count = $this->getCheckedArg();
         //$this->game->systemAssert("missing reason", $this->getReason());
         $this->game->effect_incCount($this->getOwner(), $this->getType(), (int) $count, $this->getReason());

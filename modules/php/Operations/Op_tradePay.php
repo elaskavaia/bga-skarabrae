@@ -36,7 +36,7 @@ class Op_tradePay extends Operation {
             return ["q" => Material::MA_ERR_MAX];
         }
         $cost = $this->getCostOp();
-        if ($this->game->machine->instanciateOperation($cost)->isVoid()) {
+        if ($this->game->machine->instanciateOperation($cost, $owner)->isVoid()) {
             return ["q" => Material::MA_ERR_COST];
         }
 
@@ -65,7 +65,7 @@ class Op_tradePay extends Operation {
         return "{$n}payAny";
     }
 
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $this->queue($this->getCostOp(), $this->getOwner(), [], "action_main_5_{$owner}");
     }

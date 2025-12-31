@@ -66,7 +66,7 @@ class Op_draft extends Operation {
         $this->game->switchActivePlayer($this->getPlayerId());
         return parent::auto();
     }
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $this->game->playerStats->set("game_special_action", (int) getPart($card, 2), $this->getPlayerId());

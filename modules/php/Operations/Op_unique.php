@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 
 class Op_unique extends ComplexOperation {
-    function resolve() {
+    function resolve(): void {
         $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {

@@ -15,15 +15,7 @@ class GameDispatch extends GameState {
     }
 
     public function onEnteringState() {
-        $game = $this->game;
-        if ($game->isEndOfGame()) {
-            return StateConstants::STATE_END_GAME;
-        }
-        $state = $game->machine->dispatchAll();
-        if ($state === StateConstants::STATE_MACHINE_HALTED) {
-            // should never happen
-            return StateConstants::STATE_PLAYER_TURN_CONF;
-        }
+        $state = $this->game->machine->dispatchAll();
         return $state;
     }
 }

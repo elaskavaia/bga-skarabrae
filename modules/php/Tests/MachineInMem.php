@@ -53,22 +53,22 @@ class MachineInMem extends DbMachine {
         return $this->xtable;
     }
 
-    function getOperationsByRank($rank = null, $owner = null, $pool = null) {
+    function getOperationsByRank($rank = null, $owner = null, $type = null) {
         if ($rank === null) {
-            $rank = $this->getTopRank($owner, $pool);
+            $rank = $this->getTopRank($owner, $type);
         }
         $this->checkInt($rank);
 
         $arr = $this->xtable;
-        return array_filter($arr, function ($elem) use ($rank, $owner, $pool) {
-            return $elem["rank"] == $rank && ($owner === null || $elem["owner"] == $owner) && ($pool === null || $elem["pool"] === $pool);
+        return array_filter($arr, function ($elem) use ($rank, $owner, $type) {
+            return $elem["rank"] == $rank && ($owner === null || $elem["owner"] == $owner) && ($type === null || $elem["type"] === $type);
         });
     }
 
-    function getOperations($owner = null, $pool = null) {
+    function getOperations($owner = null, $type = null) {
         $arr = $this->xtable;
-        $res = array_filter($arr, function ($elem) use ($owner, $pool) {
-            return $elem["rank"] >= 0 && ($owner === null || $elem["owner"] == $owner) && ($pool === null || $elem["pool"] === $pool);
+        $res = array_filter($arr, function ($elem) use ($owner, $type) {
+            return $elem["rank"] >= 0 && ($owner === null || $elem["owner"] == $owner) && ($type === null || $elem["type"] === $type);
         });
         uasort($res, function ($a, $b) {
             return $a["rank"] <=> $b["rank"];
@@ -81,7 +81,7 @@ class MachineInMem extends DbMachine {
     }
     public static function DbQuery($sql, $specific_db = null, $bMulti = false) {
         //echo "dbquery: $sql\n";
-        throw new feException("not implemented query");
+        throw new \feException("not implemented query");
     }
 
     function DbSetField($field, $value, $idOrList, $quoted = false) {
@@ -94,7 +94,7 @@ class MachineInMem extends DbMachine {
     }
 
     public static function getCollectionFromDB($sql, $bSingleValue = false, $low_priority_select = false) {
-        throw new feException("not implemented query");
+        throw new \feException("not implemented query");
     }
 
     function insertList($rank, $list) {

@@ -44,7 +44,7 @@ class Op_activate extends Operation {
         $this->queue($r, $owner, [], $action_tile);
     }
 
-    function resolve() {
+    function resolve(): void {
         $action_tile = $this->getCheckedArg();
         $this->activateAction($action_tile);
     }

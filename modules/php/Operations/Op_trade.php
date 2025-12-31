@@ -23,7 +23,7 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_trade extends Operation {
-    function resolve() {
+    function resolve(): void {
         $owner = $this->getOwner();
         if ($this->getDataField("paid", false)) {
             $type = $this->getType();
@@ -53,6 +53,7 @@ class Op_trade extends Operation {
         if (!$this->getDataField("paid", false)) {
             $owner = $this->getOwner();
             $param = (int) $this->getParams() ?: 0;
+
             $op = $this->game->machine->instanciateOperation("tradePay", $owner, ["dis" => $param]);
             if ($op->isVoid()) {
                 return ["err" => $op->getError() ?: "err"];

@@ -60,7 +60,7 @@ class Op_furnishPay extends Operation {
         return "{$coeff}(n_hide/2n_wool)";
     }
 
-    function resolve() {
+    function resolve(): void {
         $this->queue($this->getCost(), $this->getOwner(), [], $this->getOpId());
     }
 }
