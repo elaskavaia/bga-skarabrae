@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\OpCommon;
 
-use Bga\Games\skarabrae\Common\OpExpression;
-use Bga\Games\skarabrae\Common\OpExpressionRanged;
+use Bga\Games\skarabrae\OpCommon\OpExpression;
+use Bga\Games\skarabrae\OpCommon\OpExpressionRanged;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;

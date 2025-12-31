@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Notify;
-use Bga\Games\skarabrae\Common\OpExpression;
+use Bga\Games\skarabrae\OpCommon\OpExpression;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Common\PGameTokens;
@@ -445,7 +445,7 @@ final class GameTest extends TestCase {
         $op = $this->dispatch(MultiPlayerMaster::class);
         $this->assertTrue($op instanceof Op_turnpick);
         $state = $this->game->machine->multiplayerDistpatch();
-        $this->assertEquals(null, $state);
+        $this->assertEquals(GameDispatchForced::class, $state);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_turn);
         $op->destroy();

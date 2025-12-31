@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Bga\Games\skarabrae\Common;
+namespace Bga\Games\skarabrae\OpCommon;
 
 use Error;
 use Exception;

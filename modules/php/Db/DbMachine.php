@@ -6,7 +6,7 @@ namespace Bga\Games\skarabrae\Db;
 
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Common\OpExpression;
+use Bga\Games\skarabrae\OpCommon\OpExpression;
 use BgaSystemException;
 use Throwable;
 
