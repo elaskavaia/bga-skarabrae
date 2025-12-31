@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\States;
 
+use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\StateType;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\GameFramework\States\PossibleAction;
-use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\GameState;
 
 class MultiPlayerMaster extends GameState {
@@ -18,7 +18,8 @@ class MultiPlayerMaster extends GameState {
             id: StateConstants::STATE_MULTI_PLAYER_MASTER,
             type: StateType::MULTIPLE_ACTIVE_PLAYER, // This state type means that one player is active and can do actions
             descriptionMyTurn: "",
-            description: "",
+            description: "Other players making their choices",
+            transitions: ["loopback" => StateConstants::STATE_MULTI_PLAYER_MASTER],
             initialPrivate: StateConstants::STATE_MULTI_PLAYER_TURN_PRIVATE
         );
     }
@@ -26,18 +27,19 @@ class MultiPlayerMaster extends GameState {
     public function getArgs(): array {
         // Send playable card ids of the active player privately
         // $this->game->systemAssert("getArgs MultiPlayerMaster");
-        return [];
-        // $res = [
-        //     "description" => $args["description"] ?? "",
-        //     "_private" => [],
-        // ];
+        //return [];
+        $res = [
+            "description" => $args["description"] ?? "",
+            "_private" => [],
+            "ui" => ["undo" => true],
+        ];
         // $ids = $this->game->gamestate->getActivePlayerList();
         // foreach ($ids as $player_id) {
         //     $args = $this->game->machine->getArgs((int) $player_id);
         //     $res["_private"][$player_id] = $args;
         // }
 
-        // return $res;
+        return $res;
     }
 
     public function onEnteringState() {
@@ -45,11 +47,13 @@ class MultiPlayerMaster extends GameState {
     }
 
     #[PossibleAction]
+    #[CheckAction(false)]
     function action_undo(int $move_id = 0) {
-        return $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
+        $player_id = (int) $this->game->getCurrentPlayerId();
+        return $this->game->machine->action_undo($player_id, $move_id);
     }
 
     public function zombie(int $playerId) {
-        return $this->game->machine->action_whatever($playerId);
+        $this->game->systemAssert("Not supported zombie in this state");
     }
 }

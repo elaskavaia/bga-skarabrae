@@ -22,6 +22,7 @@ namespace Bga\Games\skarabrae;
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
+use Bga\GameFramework\UserException;
 use Bga\Games\skarabrae\OpCommon\OpMachine;
 use BgaSystemException;
 use BgaUserException;
@@ -33,6 +34,7 @@ class Base extends Table {
     public OpMachine $machine;
     public Material $material;
     protected array $player_colors;
+    protected Base $game;
 
     function __construct() {
         // Your global variables labels:
@@ -42,6 +44,7 @@ class Base extends Table {
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
+        $this->game = $this;
 
         //self::initGameStateLabels([
         //    "my_first_global_variable" => 10,
@@ -97,7 +100,7 @@ class Base extends Table {
                 "')";
         }
         $sql .= implode(",", $values);
-        self::DbQuery($sql);
+        $this->DbQuery($sql);
         self::reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         self::reloadPlayersBasicInfos();
 
@@ -172,7 +175,7 @@ class Base extends Table {
         if ($player_id > 0) {
             $sql .= " AND player_id = $player_id";
         }
-        self::DbQuery($sql);
+        $this->DbQuery($sql);
     }
 
     public function debug_dumpStats() {
@@ -369,19 +372,6 @@ class Base extends Table {
         return $player_ids;
     }
 
-    public function customUndoSavepoint(): void {
-        // $this->undoSavepoint();
-    }
-
-    /**
-     * Override to not throw exception
-     */
-    public function doUndoSavePoint(): void {
-        if (!$this->gamestate->isMultiactiveState()) {
-            $this->doUndoSavePoint();
-        }
-    }
-
     function loadPlayersBasicInfosWithBots($bots = true) {
         return parent::loadPlayersBasicInfos();
     }
@@ -394,20 +384,13 @@ class Base extends Table {
         return $colors;
     }
 
-    public function getActivePlayerId(): int {
-        if ($this->isMultiActive()) {
-            $this->systemAssert("getActivePlayerId");
-            return 0;
-        }
-        return (int) parent::getActivePlayerId();
-    }
     /**
      *
      * @return integer player id based on hex $color, player is not in the list return 0
      */
     function getPlayerIdByColor(?string $color): int {
         if (!$color) {
-            return (int) $this->getActivePlayerId();
+            return $this->getActivePlayerId();
         }
 
         $players = $this->loadPlayersBasicInfosWithBots();
@@ -579,6 +562,190 @@ class Base extends Table {
     function isStudio() {
         return $this->getBgaEnvironment() == "studio";
     }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Undo
+    ////////////
+    protected $undoSaveOnMoveEndDup = false;
+
+    public function customUndoSavepoint(): void {
+        // $this->undoSavepoint();
+    }
+    /*
+     * @Override
+     * - have to override to track second copy of var flag as original one is private
+     */
+    public function undoSavepoint(): void {
+        //parent::undoSavepoint(); // do not set the original flag - it cannot be unset
+        $this->setUndoSavepoint(true);
+        //$this->statelog("undoSavepoint");
+    }
+
+    function setUndoSavepoint(bool $value) {
+        $this->undoSaveOnMoveEndDup = $value;
+    }
+
+    function isUndoSavepoint() {
+        return $this->undoSaveOnMoveEndDup;
+    }
+
+    /*
+     * @Override
+     * - I had to override this not fail in multiactive, it will just ignore it
+     * - fixed resetting the save flag when its done
+     */
+    function doUndoSavePoint() {
+        //$this->statelog("*** doUndoSavePoint *** " . $this->undoSaveOnMoveEndDup);
+        if (!$this->isUndoSavepoint()) {
+            return;
+        }
+
+        try {
+            $this->doCustomUndoSavePoint();
+        } catch (Exception $e) {
+            $this->error("undo save point failed " . $e->getMessage());
+            $this->error($e->getTraceAsString());
+        } finally {
+            $this->setUndoSavepoint(false);
+        }
+    }
+
+    function doCustomUndoSavePoint() {
+        //$this->statelog("*** doCustomUndoSavePoint ***");
+        if ($this->game->gamestate->isMultiactiveState()) {
+            return;
+        }
+
+        $this->bgaDoUndoSavePoint();
+    }
+
+    /*
+     * @Override
+     * fixed bug where it does not save state if there is no notifications
+     */
+    function sendNotifications() {
+        //$next = $this->getNextMoveId();
+        parent::sendNotifications();
+        if ($this->undoSaveOnMoveEndDup) {
+            try {
+                $this->doUndoSavePoint();
+                // $this->setGameStateValue('next_move_id', $next); // restore next move so it does not increase
+                // parent::sendNotifications(); // if any notif was produced by undo save point send them also
+            } catch (Exception $e) {
+                $this->error($e->getTraceAsString());
+            }
+        }
+    }
+    function dbGetFieldList(string $table) {
+        $result = [];
+        $fields = $this->game->getObjectListFromDB("SHOW COLUMNS FROM $table");
+        foreach ($fields as $field) {
+            $result[] = $field["Field"];
+        }
+        return $result;
+    }
+
+    function dbGetFieldListAsString(string $table) {
+        $fields_list = $this->dbGetFieldList($table);
+        $fields = "`" . implode("`,`", $fields_list) . "`";
+        return $fields;
+    }
+    function undoRestorePoint(): void {
+        $this->bgaUndoRestorePoint();
+    }
+
+    function bgaUndoRestorePoint() {
+        // self::notifyAllPlayers('undoRestorePoint', clienttranslate('${player_name} takes back his move'), [
+        //     'player_name' => self::getActivePlayerName(),
+        // ]);
+
+        $undo_moves_player = $this->game->getGameStateValue("undo_moves_player");
+        if ($undo_moves_player != $this->game->getCurrentPlayerId()) {
+            throw new UserException(clienttranslate("The stored UNDO corresponds to another player's turn: you cannot restore it"));
+        }
+
+        // if ($this->gamestate->isMutiactiveState()) {
+        //     throw new UserException("UNDO cannot be used for multiple active players game states");
+        // }
+
+        // Copy all savepoints tables back to their respective table
+        $tables = $this->game->getObjectListFromDB("SHOW TABLES", true);
+        $prefix = "zz_savepoint_";
+        $other_prefix = "zz_replay";
+
+        // Particular case: keep current "zombie" states and reflexion time
+        // Note: for the ACTIVE player we must NOT keep reflexion time values (start and remaining) for the case where some extra time has been added between
+        //  the save and the restore. If some extra time has been added, keeping the time can lead to infinite loop (action => extratime => undo)
+        //  where the player can accumulate as much time as he wants
+        $this->game->DbQuery("UPDATE zz_savepoint_player, player
+                                SET    zz_savepoint_player.player_zombie=player.player_zombie
+                                WHERE  zz_savepoint_player.player_id=player.player_id");
+        $this->game->DbQuery("UPDATE zz_savepoint_player, player
+                                SET    zz_savepoint_player.player_start_reflexion_time=player.player_start_reflexion_time,
+                                       zz_savepoint_player.player_remaining_reflexion_time=player.player_remaining_reflexion_time
+                                WHERE  zz_savepoint_player.player_id=player.player_id
+                                  AND  player.player_remaining_reflexion_time < zz_savepoint_player.player_remaining_reflexion_time");
+
+        // Another particular case: keep globals that cannot be undone
+        // GAMESTATE_GAME_RESULT_NEUTRALIZED
+        // GAMESTATE_NEUTRALIZED_PLAYER_ID
+        $this->game->DbQuery("UPDATE zz_savepoint_global, `global`
+                                SET zz_savepoint_global.global_value=`global`.global_value
+                                WHERE zz_savepoint_global.global_id=`global`.global_id
+                                  AND `global`.global_id IN (301, 302)");
+
+        foreach ($tables as $table) {
+            if (startsWith($table, $prefix)) {
+                // Save point => must be restored
+                $original = substr($table, strlen($prefix));
+                $copy = $table;
+                $fields = $this->dbGetFieldListAsString($original);
+                if ($original == "gamelog") {
+                    // Particular case: keep private messages
+                    $this->game->DbQuery("DELETE FROM $original WHERE gamelog_private!='1'");
+                    $this->game->DbQuery("INSERT INTO $original SELECT * FROM $copy WHERE gamelog_private!='1'");
+                } else {
+                    $this->game->DbQuery("DELETE FROM $original");
+                    $this->game->DbQuery("INSERT INTO $original ($fields) SELECT $fields FROM $copy");
+                }
+            } elseif (substr($table, 0, strlen($other_prefix)) == $other_prefix) {
+                // Don't touch this other table too
+            } else {
+                // This table is an original
+            }
+        }
+
+        // At the end of the undo, we must erase the old savepoint by the new one.
+        // This may be paradoxal, but this way we ensure that the savepoint gets all the recent updates that was not concerned by the undo,
+        // including the latest notifications "undoRestorePoint".
+        // Also, it allows us to have a reliable undoIsCurrentlyOnSavepoint
+        //$this->game->undoSavepoint(); // UNDOX remove
+        $this->game->notify->all("undoRestorePoint", "", []);
+    }
+
+    function bgaDoUndoSavePoint() {
+        $tables = $this->getObjectListFromDB("SHOW TABLES", true);
+        $this->setGameStateValue("undo_moves_player", $this->getActivePlayerId());
+        $prefix = "zz_savepoint_";
+        foreach ($tables as $table) {
+            if (str_starts_with($table, $prefix)) {
+                continue;
+            } elseif (str_starts_with($table, "zz_replay")) {
+                continue;
+            } elseif ($table == "replaysavepoint") {
+                continue;
+            } elseif ($table == "bga_user_preferences") {
+                continue;
+            } elseif ($table == "multiundo") {
+                continue;
+            } else {
+                $copy = $prefix . $table;
+                $this->DbQuery("DELETE FROM $copy");
+                $fields = $this->dbGetFieldList($table);
+                $this->DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
+            }
+        }
+    }
     //////////////////////////////////////////////////////////////////////////////
     //////////// Zombie
     ////////////
@@ -619,12 +786,12 @@ class Base extends Table {
         //        if( $from_version <= 1404301345 )
         //        {
         //            $sql = "ALTER TABLE xxxxxxx ....";
-        //            self::DbQuery( $sql );
+        //            $this->DbQuery( $sql );
         //        }
         //        if( $from_version <= 1405061421 )
         //        {
         //            $sql = "CREATE TABLE xxxxxxx ....";
-        //            self::DbQuery( $sql );
+        //            $this->DbQuery( $sql );
         //        }
         //        // Please add your future database scheme changes here
         //

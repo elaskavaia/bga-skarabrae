@@ -24,44 +24,46 @@ class MultiPlayerTurnPrivate extends GameState {
     }
 
     public function getArgs(?int $player_id): array {
-        $this->game->systemAssert("Player id is not set in MultiPlayerTurnPrivate", $player_id);
+        if (!$player_id) {
+            return [];
+        }
+        $this->game->systemAssert("Player id is not set in MultiPlayerTurnPrivate getArgs", $player_id);
         $args = $this->game->machine->getArgs($player_id);
         return $args;
     }
 
     public function onEnteringState(int $player_id) {
-        $this->game->systemAssert("Player id is not set in MultiPlayerTurnPrivate", $player_id);
+        $this->game->systemAssert("Player id is not set in MultiPlayerTurnPrivate onEnteringState", $player_id);
         $state = $this->game->machine->onEnteringPlayerState($player_id);
-        if ($state === null) {
-            return null;
-        }
-        if ($state === GameDispatch::class) {
-            return MultiPlayerMaster::class;
-        }
         return $state;
     }
     #[PossibleAction]
     function action_resolve(#[JsonParam] array $data) {
-        $this->game->machine->action_resolve((int) $this->game->getCurrentPlayerId(), $data);
-        return MultiPlayerMaster::class;
+        $player_id = (int) $this->game->getCurrentPlayerId();
+        $this->game->machine->action_resolve($player_id, $data);
+        return $this->game->machine->multiplayerDistpatchPrivate($player_id);
     }
     #[PossibleAction]
     function action_skip() {
-        $this->game->machine->action_skip((int) $this->game->getCurrentPlayerId());
-        return MultiPlayerMaster::class;
+        $player_id = (int) $this->game->getCurrentPlayerId();
+        $this->game->machine->action_skip($player_id);
+        return $this->game->machine->multiplayerDistpatchPrivate($player_id);
     }
     #[PossibleAction]
     function action_undo(int $move_id = 0) {
-        $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
-        return MultiPlayerMaster::class;
+        $player_id = (int) $this->game->getCurrentPlayerId();
+        $this->game->machine->action_undo($player_id, $move_id);
+        return $this->game->machine->multiplayerDistpatchPrivate($player_id);
     }
     #[PossibleAction]
     function action_whatever() {
-        $this->game->machine->action_whatever((int) $this->game->getCurrentPlayerId());
-        return MultiPlayerMaster::class;
+        $player_id = (int) $this->game->getCurrentPlayerId();
+        $this->game->machine->action_whatever($player_id);
+        return $this->game->machine->multiplayerDistpatchPrivate($player_id);
     }
     public function zombie(int $playerId) {
+        $player_id = (int) $this->game->getCurrentPlayerId();
         $this->game->machine->action_whatever($playerId);
-        return MultiPlayerMaster::class;
+        return $this->game->machine->multiplayerDistpatchPrivate($player_id);
     }
 }

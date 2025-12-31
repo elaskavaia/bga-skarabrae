@@ -1173,6 +1173,7 @@ var GameMachine = /** @class */ (function (_super) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
             this.setSubPrompt("");
+            this.addUndoButton(opInfo.ui.undo);
             return;
         }
         this.completeOpInfo(opInfo);
@@ -1274,7 +1275,7 @@ var GameMachine = /** @class */ (function (_super) {
             this.activateMultiSelectPrompt(opInfo);
         }
         // need a global condition when this can be added
-        this.addUndoButton();
+        this.addUndoButton(this.bga.players.isCurrentPlayerActive() || opInfo.ui.undo);
     };
     GameMachine.prototype.getParamPresentation = function (target, paramInfo) {
         var _a;
@@ -1394,11 +1395,16 @@ var GameMachine = /** @class */ (function (_super) {
             data: JSON.stringify(args)
         });
     };
-    GameMachine.prototype.addUndoButton = function () {
+    GameMachine.prototype.addUndoButton = function (cond) {
         var _this = this;
         var _a;
-        if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && this.bga.players.isCurrentPlayerActive()) {
-            var div = this.statusBar.addActionButton(_("Undo"), function () { return _this.bga.actions.performAction("action_undo"); }, {
+        if (cond === void 0) { cond = true; }
+        if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && cond) {
+            var div = this.statusBar.addActionButton(_("Undo"), function () {
+                return _this.bga.actions.performAction("action_undo", [], {
+                    checkAction: false
+                });
+            }, {
                 color: "alert",
                 id: "button_undo"
             });
@@ -1694,6 +1700,9 @@ var GameXBody = /** @class */ (function (_super) {
         this.onToken_PlayerTurn(tid);
     };
     GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
+        this.onEnteringState_PlayerTurn(opInfo);
+    };
+    GameXBody.prototype.onEnteringState_MultiPlayerMaster = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
     };
     GameXBody.prototype.onEnteringState_PlayerTurn = function (opInfo) {

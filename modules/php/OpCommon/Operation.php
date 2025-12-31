@@ -50,7 +50,7 @@ abstract class Operation {
     protected $queueRank = 1;
 
     public function __construct(private string $type, private ?string $owner = null, mixed $data = null, private int $id = 0) {
-        $this->game = Game::$game;
+        $this->game = Game::$instance;
 
         $this->withData($data);
     }

@@ -59,7 +59,7 @@ class Op_draft extends Operation {
         return true;
     }
     public function getUiArgs() {
-        return ["buttons" => false];
+        return ["buttons" => false, "undo" => true];
     }
 
     public function auto(): bool {
@@ -71,7 +71,13 @@ class Op_draft extends Operation {
         $card = $this->getCheckedArg();
         $this->game->playerStats->set("game_special_action", (int) getPart($card, 2), $this->getPlayerId());
         $this->game->tokens->dbSetTokenLocation($card, "tableau_{$owner}", 0, "*", [], $this->getPlayerId());
-        $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "hand_$owner");
-        $this->game->tokens->dbSetTokensLocation($cards, "limbo", 0, "");
+    }
+
+    public function undo() {
+        $owner = $this->getOwner();
+        $card = $this->game->tokens->tokens->getTokensOfTypeInLocationSingleKey("action_special", "tableau_{$owner}");
+        $this->game->systemAssert("missing card", $card);
+        $this->game->tokens->dbSetTokenLocation($card, "hand_{$owner}", 0, "*", ["_private" => true], $this->getPlayerId());
+        $this->game->machine->push($this->getType(), $owner);
     }
 }

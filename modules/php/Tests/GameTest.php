@@ -445,7 +445,7 @@ final class GameTest extends TestCase {
         $op = $this->dispatch(MultiPlayerMaster::class);
         $this->assertTrue($op instanceof Op_turnpick);
         $state = $this->game->machine->multiplayerDistpatch();
-        $this->assertEquals(GameDispatchForced::class, $state);
+        $this->assertEquals(null, $state);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_turn);
         $op->destroy();

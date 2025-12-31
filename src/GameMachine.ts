@@ -51,6 +51,7 @@ interface OpInfo {
   ui: {
     buttons?: boolean;
     replicate?: boolean;
+    undo?: boolean;
   };
 }
 
@@ -61,6 +62,7 @@ class GameMachine extends Game1Tokens {
     if (!this.bga.players.isCurrentPlayerActive()) {
       if (opInfo?.description) this.statusBar.setTitle(opInfo.description, opInfo);
       this.setSubPrompt("");
+      this.addUndoButton(opInfo.ui.undo);
       return;
     }
     this.completeOpInfo(opInfo);
@@ -164,7 +166,7 @@ class GameMachine extends Game1Tokens {
     }
 
     // need a global condition when this can be added
-    this.addUndoButton();
+    this.addUndoButton(this.bga.players.isCurrentPlayerActive() || opInfo.ui.undo);
   }
 
   getParamPresentation(target: string, paramInfo: ParamInfo) {
@@ -298,12 +300,19 @@ class GameMachine extends Game1Tokens {
     });
   }
 
-  addUndoButton() {
-    if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && this.bga.players.isCurrentPlayerActive()) {
-      const div = this.statusBar.addActionButton(_("Undo"), () => this.bga.actions.performAction("action_undo"), {
-        color: "alert",
-        id: "button_undo"
-      });
+  addUndoButton(cond: boolean = true) {
+    if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && cond) {
+      const div = this.statusBar.addActionButton(
+        _("Undo"),
+        () =>
+          this.bga.actions.performAction("action_undo", [], {
+            checkAction: false
+          }),
+        {
+          color: "alert",
+          id: "button_undo"
+        }
+      );
       div.classList.add("button_undo");
       div.title = _("Undo all possible steps");
       $("undoredo_wrap")?.appendChild(div);

@@ -1279,9 +1279,9 @@ namespace Bga\GameFramework {
          *
          * Note: avoid using this method in a "multiplayer" state because it does not mean anything.
          * 
-         * @return string the active player id typed as string
+         * @return int the active player id typed as string
          */
-         public function getActivePlayerId():int
+         public function getActivePlayerId(): int
         {
             return 0; 
         }
@@ -1906,7 +1906,7 @@ namespace Bga\GameFramework {
         /**
          * Restore the situation previously saved as an "Undo save point".
          */
-        final public function undoRestorePoint(): void
+        public function undoRestorePoint(): void
         {
             //
         }
@@ -1914,7 +1914,7 @@ namespace Bga\GameFramework {
         /**
          * Save the whole game situation inside an "Undo save point".
          */
-        final public function undoSavepoint(): void
+        public function undoSavepoint(): void
         {
             //
         }

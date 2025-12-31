@@ -190,6 +190,9 @@ class GameXBody extends GameMachine {
   onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
   }
+  onEnteringState_MultiPlayerMaster(opInfo: OpInfo) {
+    this.onEnteringState_PlayerTurn(opInfo);
+  }
   onEnteringState_PlayerTurn(opInfo: OpInfo) {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {

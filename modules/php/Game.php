@@ -30,13 +30,13 @@ use Bga\Games\skarabrae\States\GameDispatch;
 class Game extends Base {
     const TURNS_NUMBER_GLOBAL = "tracker_nturns";
     const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
-    public static Game $game;
+    public static Game $instance;
     public OpMachine $machine;
     public Material $material;
     public PGameTokens $tokens;
 
     function __construct() {
-        Game::$game = $this;
+        Game::$instance = $this;
         parent::__construct();
         self::initGameStateLabels([
             "variant_draft_num" => 100,
@@ -89,7 +89,7 @@ class Game extends Base {
         //6. Place the Turn Order Tile within reach of all players.
         //Randomly stack the Turn Markers of all player colours being used on the left space of the Turn Order Tile.
 
-        $startingPlayer = (int) $this->getActivePlayerId();
+        $startingPlayer = $this->getActivePlayerId();
 
         //2-Players: Include 1 more Turn Marker of an unused colour.
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
@@ -157,7 +157,8 @@ class Game extends Base {
             }
             $order--;
         }
-
+        $this->machine->queue("barrier"); // wait for multiplayer to finish
+        $this->machine->queue("draftdiscard");
         $this->machine->queue("round", $this->getPlayerColorById($startingPlayer));
         return GameDispatch::class;
     }

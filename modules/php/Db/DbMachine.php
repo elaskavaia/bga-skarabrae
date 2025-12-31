@@ -17,7 +17,7 @@ use Throwable;
 class DbMachine {
     protected Game $game;
     public function __construct() {
-        $this->game = Game::$game;
+        $this->game = Game::$instance;
     }
     function _($text) {
         return $this->game->_($text);
