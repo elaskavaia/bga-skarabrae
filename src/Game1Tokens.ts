@@ -89,7 +89,7 @@ class Game1Tokens extends Game0Basics {
   }
 
   onLeavingState(stateName: string): void {
-    // console.log("onLeavingState: " + stateName);
+    console.log("onLeavingState: " + stateName);
     //this.disconnectAllTemp();
     this.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
     if (!this.on_client_state) {

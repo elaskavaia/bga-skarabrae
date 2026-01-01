@@ -67,7 +67,7 @@ class DbMachine {
     }
 
     function gettablearr() {
-        $arr = $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0");
+        $arr = $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 ORDER BY rank ASC");
         return array_values($arr);
     }
 
@@ -204,6 +204,11 @@ class DbMachine {
         return $id;
     }
 
+    function getLastId() {
+        $id = $this->game->getUniqueValueFromDB("SELECT MAX(id) from machine");
+        return $id;
+    }
+
     function getTopOperations($owner = null) {
         return $this->getOperationsByRank(null, $owner);
     }
@@ -214,7 +219,7 @@ class DbMachine {
         }
         $this->checkInt($rank);
         $andowner = "";
-        if ($owner) {
+        if ($owner !== null) {
             $andowner = " AND owner = '$owner'";
         }
         return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank = $rank $andowner");
@@ -223,14 +228,18 @@ class DbMachine {
     function getOperations($owner = null, $type = null) {
         $andowner = "";
         $andtype = "";
-        if ($owner) {
+        if ($owner !== null) {
             $andowner = " AND owner = '$owner'";
         }
-        if ($type) {
+        if ($type !== null) {
             $andtype = " AND type = '$type'";
         }
 
         return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 $andowner $andtype ORDER BY rank ASC");
+    }
+
+    function getOperationsNoOwner() {
+        return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 AND owner IS NULL ORDER BY rank ASC");
     }
 
     function createRow($type, $owner = null, $data = null) {

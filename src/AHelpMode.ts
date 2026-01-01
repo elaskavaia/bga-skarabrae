@@ -50,7 +50,7 @@ class HelpMode {
   }
 
   onClickForHelp(event) {
-    console.trace("onhelp", event);
+    //console.trace("onhelp", event);
     if (!this._helpMode) return false;
     event.stopPropagation();
     event.preventDefault();

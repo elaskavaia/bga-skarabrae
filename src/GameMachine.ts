@@ -62,7 +62,7 @@ class GameMachine extends Game1Tokens {
     if (!this.bga.players.isCurrentPlayerActive()) {
       if (opInfo?.description) this.statusBar.setTitle(opInfo.description, opInfo);
       this.setSubPrompt("");
-      this.addUndoButton(opInfo.ui.undo);
+      this.addUndoButton(opInfo.ui?.undo);
       return;
     }
     this.completeOpInfo(opInfo);

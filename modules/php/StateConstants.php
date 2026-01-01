@@ -12,6 +12,7 @@ class StateConstants {
     const STATE_PLAYER_TURN_CONF = 15;
     const STATE_GAME_DISPATCH_FORCED = 17;
     const STATE_MULTI_PLAYER_MASTER = 16;
+    const STATE_MULTI_PLAYER_WAIT_PRIVATE = 18;
 
     // special state to indicate that stack machine is empty
     const STATE_MACHINE_HALTED = 42;

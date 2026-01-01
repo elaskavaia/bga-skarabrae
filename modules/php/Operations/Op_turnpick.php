@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 
 use function Bga\Games\skarabrae\getPart;
 
@@ -36,14 +37,11 @@ class Op_turnpick extends Operation {
         }
         if ($token) {
             $color = getPart($token, 1);
-            if ($color === "000000") {
+            if ($color === OpMachine::GAME_MULTI_COLOR) {
                 $this->queue("village", $color);
-                $this->queue("turnpick");
             } else {
                 $this->queue("turn", $color);
             }
-        } else {
-            throw new \BgaSystemException("No players to take turn in turnall");
         }
 
         return true;

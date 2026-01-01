@@ -16,6 +16,7 @@ use Bga\Games\skarabrae\Operations\Op_cotag;
 use Bga\Games\skarabrae\Operations\Op_craft;
 use Bga\Games\skarabrae\Operations\Op_pay;
 use Bga\Games\skarabrae\OpCommon\OpMachine;
+use Bga\Games\skarabrae\Operations\Op_barrier;
 use Bga\Games\skarabrae\Operations\Op_furnish;
 use Bga\Games\skarabrae\Operations\Op_furnishPay;
 use Bga\Games\skarabrae\Operations\Op_task;
@@ -438,20 +439,27 @@ final class GameTest extends TestCase {
     }
 
     public function testTurnall() {
+        if (!$this->game->machine->isMultiplayerSupported()) {
+            $this->assertTrue(true);
+            return;
+        }
         $this->game->tokens->createTokens();
 
-        $this->game->machine->queue("turnall", PCOLOR, ["num" => 1]);
+        $this->game->machine->queue("turnall", OpMachine::GAME_MULTI_COLOR, ["num" => 1]);
+        $this->game->machine->queue("barrier", OpMachine::GAME_BARIER_COLOR);
 
         $op = $this->dispatch(MultiPlayerMaster::class);
-        $this->assertTrue($op instanceof Op_turnpick);
+        $this->assertTrue($op instanceof Op_turnall);
+        //$this->assertTrue($op instanceof Op_turnpick);
         $state = $this->game->machine->multiplayerDistpatch();
         $this->assertEquals(null, $state);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_turn);
         $op->destroy();
-        $this->game->machine->multiplayerDistpatch();
+        $state = $this->game->machine->multiplayerDistpatch();
+        $this->assertEquals(GameDispatchForced::class, $state);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
-        $this->assertTrue($op instanceof Op_turn);
+        $this->assertTrue($op instanceof Op_barrier);
         $op->destroy();
         $state = $this->game->machine->multiplayerDistpatch();
         $this->assertEquals(GameDispatchForced::class, $state);

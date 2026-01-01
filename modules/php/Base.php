@@ -55,7 +55,7 @@ class Base extends Table {
         //      ...
         //]);
         $this->notify->addDecorator(function (string $message, array $args) {
-            if (!isset($args["player_id"])) {
+            if (!isset($args["player_id"]) && str_contains($message, '${player_name}')) {
                 $args["player_id"] = $this->getMostlyActivePlayerId();
             }
             if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
@@ -276,7 +276,11 @@ class Base extends Table {
     }
     function getMostlyActivePlayerId() {
         if ($this->isMultiActive()) {
-            return $this->gamestate->getActivePlayerList()[0];
+            $list = $this->gamestate->getActivePlayerList();
+            if (count($list) > 0) {
+                return $list[0];
+            }
+            return 0;
         } else {
             return $this->getActivePlayerId();
         }
@@ -389,8 +393,8 @@ class Base extends Table {
      * @return integer player id based on hex $color, player is not in the list return 0
      */
     function getPlayerIdByColor(?string $color): int {
-        if (!$color) {
-            return $this->getActivePlayerId();
+        if ($color === null) {
+            return 0;
         }
 
         $players = $this->loadPlayersBasicInfosWithBots();
@@ -561,6 +565,10 @@ class Base extends Table {
 
     function isStudio() {
         return $this->getBgaEnvironment() == "studio";
+    }
+
+    function getPrivateStateId($player_id): int {
+        return (int) $this->getUniqueValueFromDB("SELECT player_state FROM player WHERE player_id = $player_id");
     }
 
     //////////////////////////////////////////////////////////////////////////////

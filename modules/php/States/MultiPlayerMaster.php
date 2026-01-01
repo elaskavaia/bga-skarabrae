@@ -20,7 +20,7 @@ class MultiPlayerMaster extends GameState {
             descriptionMyTurn: "",
             description: "Other players making their choices",
             transitions: ["loopback" => StateConstants::STATE_MULTI_PLAYER_MASTER],
-            initialPrivate: StateConstants::STATE_MULTI_PLAYER_TURN_PRIVATE
+            initialPrivate: StateConstants::STATE_MULTI_PLAYER_WAIT_PRIVATE
         );
     }
 

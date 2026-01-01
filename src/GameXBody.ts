@@ -180,16 +180,20 @@ class GameXBody extends GameMachine {
       }
     });
   }
-
+  onUpdateActionButtons_MultiPlayerTurnPrivate(opInfo: OpInfo) {
+    // this.onEnteringState_PlayerTurn(opInfo);
+    console.log("onUpdateActionButtons_MultiPlayerTurnPrivate", opInfo);
+  }
+  onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
+    this.onEnteringState_PlayerTurn(opInfo);
+  }
   onToken_MultiPlayerTurnPrivate(tid: string) {
     this.onToken_PlayerTurn(tid);
   }
   onToken_MultiPlayerMaster(tid: string) {
     this.onToken_PlayerTurn(tid);
   }
-  onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
-    this.onEnteringState_PlayerTurn(opInfo);
-  }
+
   onEnteringState_MultiPlayerMaster(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
   }
@@ -448,7 +452,7 @@ class GameXBody extends GameMachine {
     console.log("notifications subscriptions setup");
 
     // automatically listen to the notifications, based on the `notif_xxx` function on this class.
-    this.bgaSetupPromiseNotifications({
+    this.bga.notifications.setupPromiseNotifications({
       minDuration: 1,
       minDurationNoText: 1,
 

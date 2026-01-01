@@ -22,6 +22,7 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 
 class Op_turnall extends Operation {
     function resolve(): void {
@@ -35,15 +36,11 @@ class Op_turnall extends Operation {
             }
         }
 
-        $players_basic = $this->game->loadPlayersBasicInfos();
-
         $this->notifyMessage(clienttranslate('-- Turn ${turn} --'), ["turn" => $curturn]);
-        foreach ($players_basic as $player_info) {
-            $color = $player_info["player_color"];
-            $this->queue("turnpick", $color);
-        }
+
+        $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         //if (count($players_basic) > 1)
-        $this->queue("barrier", null);
+        $this->queue("barrier", OpMachine::GAME_BARIER_COLOR);
         if ($curturn > 1) {
             $n = $curturn - 1;
             $this->game->effect_cleanCards($n);

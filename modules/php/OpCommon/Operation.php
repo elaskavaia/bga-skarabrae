@@ -552,6 +552,10 @@ abstract class Operation {
 
     /** Called on game state to see if we can do this one automatically and if not change players and return state we want to be in */
     function onEnteringGameState() {
+        if ($this->expandOperation()) {
+            $this->destroy();
+            return;
+        }
         $isAuto = $this->auto();
 
         if (!$isAuto) {

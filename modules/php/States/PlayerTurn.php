@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\States;
 
+use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\StateType;
 use Bga\Games\skarabrae\Game;
 use Bga\Games\skarabrae\StateConstants;
@@ -44,13 +45,15 @@ class PlayerTurn extends GameState {
     function action_skip() {
         return $this->game->machine->action_skip((int) $this->game->getCurrentPlayerId());
     }
-    #[PossibleAction]
-    function action_undo(int $move_id = 0) {
-        return $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
-    }
+
     #[PossibleAction]
     function action_whatever() {
         return $this->game->machine->action_whatever((int) $this->game->getCurrentPlayerId());
+    }
+    #[PossibleAction]
+    #[CheckAction(false)]
+    function action_undo(int $move_id = 0) {
+        return $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
     }
     public function zombie(int $playerId) {
         return $this->game->machine->action_whatever($playerId);

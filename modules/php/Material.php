@@ -273,6 +273,10 @@ class Material {
         "type" => "barrier",
         "name" => clienttranslate("None"),
 ],
+    "Op_draftdiscard" => [ 
+        "type" => "draftdiscard",
+        "name" => clienttranslate("Discard"),
+],
     "Op_n_midden" => [ 
         "type" => "n_midden",
         "name" => clienttranslate("Clean Midden"),

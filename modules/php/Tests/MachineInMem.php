@@ -61,14 +61,14 @@ class MachineInMem extends DbMachine {
 
         $arr = $this->xtable;
         return array_filter($arr, function ($elem) use ($rank, $owner, $type) {
-            return $elem["rank"] == $rank && ($owner === null || $elem["owner"] == $owner) && ($type === null || $elem["type"] === $type);
+            return $elem["rank"] == $rank && ($owner === null || $elem["owner"] === $owner) && ($type === null || $elem["type"] === $type);
         });
     }
 
     function getOperations($owner = null, $type = null) {
         $arr = $this->xtable;
         $res = array_filter($arr, function ($elem) use ($owner, $type) {
-            return $elem["rank"] >= 0 && ($owner === null || $elem["owner"] == $owner) && ($type === null || $elem["type"] === $type);
+            return $elem["rank"] >= 0 && ($owner === null || $elem["owner"] === $owner) && ($type === null || $elem["type"] === $type);
         });
         uasort($res, function ($a, $b) {
             return $a["rank"] <=> $b["rank"];
@@ -76,7 +76,18 @@ class MachineInMem extends DbMachine {
         return $res;
     }
 
-    function DbGetLastId() {
+    function getOperationsNoOwner() {
+        $arr = $this->xtable;
+        $res = array_filter($arr, function ($elem) {
+            return $elem["rank"] >= 0 && $elem["owner"] === null;
+        });
+        uasort($res, function ($a, $b) {
+            return $a["rank"] <=> $b["rank"];
+        });
+        return $res;
+    }
+
+    function getLastId() {
         return count($this->xtable);
     }
     public static function DbQuery($sql, $specific_db = null, $bMulti = false) {
@@ -100,14 +111,14 @@ class MachineInMem extends DbMachine {
     function insertList($rank, $list) {
         foreach ($list as $row) {
             if (!isset($row["id"])) {
-                $row["id"] = $this->DbGetLastId() + 1;
+                $row["id"] = $this->getLastId() + 1;
             }
             $row["rank"] = $rank;
 
             $this->xtable[] = $row;
         }
 
-        return $this->DbGetLastId();
+        return $this->getLastId();
     }
 
     function gettablearr($table = null, $fakeid = true) {

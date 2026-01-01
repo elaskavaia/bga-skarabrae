@@ -259,13 +259,18 @@ class Game0Basics extends GameGui<any> {
     return this.gamedatas.playerorder.length == 1;
   }
 
-  notif_log(notif: Notif) {
-    if (notif.log) {
-      console.log(notif.log, notif.args);
-      var message = this.format_string_recursive(notif.log, notif.args);
-      if (message != notif.log) console.log(message);
+  notif_log(args: any) {
+    // if (notif.log) {
+    //   console.log(notif.log, notif.args);
+    //   var message = this.format_string_recursive(notif.log, notif.args);
+    //   if (message != notif.log) console.log(message);
+    // } else {
+    if (args.log) {
+      var message = this.format_string_recursive(args.log, args.args);
+      delete args.log;
+      console.log("debug log", message, args);
     } else {
-      console.log("hidden log", notif);
+      console.log("hidden log", args);
     }
   }
 

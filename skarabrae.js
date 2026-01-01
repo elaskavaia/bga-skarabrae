@@ -279,15 +279,19 @@ var Game0Basics = /** @class */ (function (_super) {
     Game0Basics.prototype.isSolo = function () {
         return this.gamedatas.playerorder.length == 1;
     };
-    Game0Basics.prototype.notif_log = function (notif) {
-        if (notif.log) {
-            console.log(notif.log, notif.args);
-            var message = this.format_string_recursive(notif.log, notif.args);
-            if (message != notif.log)
-                console.log(message);
+    Game0Basics.prototype.notif_log = function (args) {
+        // if (notif.log) {
+        //   console.log(notif.log, notif.args);
+        //   var message = this.format_string_recursive(notif.log, notif.args);
+        //   if (message != notif.log) console.log(message);
+        // } else {
+        if (args.log) {
+            var message = this.format_string_recursive(args.log, args.args);
+            delete args.log;
+            console.log("debug log", message, args);
         }
         else {
-            console.log("hidden log", notif);
+            console.log("hidden log", args);
         }
     };
     Game0Basics.prototype.notif_message_warning = function (notif) {
@@ -384,7 +388,7 @@ var HelpMode = /** @class */ (function () {
         this._displayedTooltip = null;
     };
     HelpMode.prototype.onClickForHelp = function (event) {
-        console.trace("onhelp", event);
+        //console.trace("onhelp", event);
         if (!this._helpMode)
             return false;
         event.stopPropagation();
@@ -483,7 +487,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         this.setupTokens();
     };
     Game1Tokens.prototype.onLeavingState = function (stateName) {
-        // console.log("onLeavingState: " + stateName);
+        console.log("onLeavingState: " + stateName);
         //this.disconnectAllTemp();
         this.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
         if (!this.on_client_state) {
@@ -1168,12 +1172,12 @@ var GameMachine = /** @class */ (function (_super) {
     }
     GameMachine.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         var _this = this;
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f;
         if (!this.bga.players.isCurrentPlayerActive()) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
             this.setSubPrompt("");
-            this.addUndoButton(opInfo.ui.undo);
+            this.addUndoButton((_a = opInfo.ui) === null || _a === void 0 ? void 0 : _a.undo);
             return;
         }
         this.completeOpInfo(opInfo);
@@ -1202,7 +1206,7 @@ var GameMachine = /** @class */ (function (_super) {
             var q = paramInfo.q;
             var active = q == 0;
             if (div && active && !multiCount) {
-                (_a = div.classList) === null || _a === void 0 ? void 0 : _a.add(this.classActiveSlot);
+                (_b = div.classList) === null || _b === void 0 ? void 0 : _b.add(this.classActiveSlot);
                 div.dataset.targetOpType = opInfo.type;
             }
             var altNode = void 0;
@@ -1217,14 +1221,14 @@ var GameMachine = /** @class */ (function (_super) {
                 this.updateTooltip(div.id, clone);
             }
             else if (opInfo.ui.buttons || !div) {
-                var color = (_b = paramInfo.color) !== null && _b !== void 0 ? _b : (multiselect ? "secondary" : "primary");
+                var color = (_c = paramInfo.color) !== null && _c !== void 0 ? _c : (multiselect ? "secondary" : "primary");
                 var button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), function (event) { return _this.onToken(event); }, {
                     color: color,
                     disabled: !active,
                     id: "button_" + target
                 });
                 if (!active) {
-                    button.title = this.getTr((_c = paramInfo.err) !== null && _c !== void 0 ? _c : _("Operation cannot be performed now"), paramInfo);
+                    button.title = this.getTr((_d = paramInfo.err) !== null && _d !== void 0 ? _d : _("Operation cannot be performed now"), paramInfo);
                 }
                 else {
                     if (paramInfo.tooltip)
@@ -1252,8 +1256,8 @@ var GameMachine = /** @class */ (function (_super) {
             var paramInfo = opInfo.info[target];
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
-                var color = (_d = paramInfo.color) !== null && _d !== void 0 ? _d : "secondary";
-                var call_1 = (_e = paramInfo.call) !== null && _e !== void 0 ? _e : target;
+                var color = (_e = paramInfo.color) !== null && _e !== void 0 ? _e : "secondary";
+                var call_1 = (_f = paramInfo.call) !== null && _f !== void 0 ? _f : target;
                 var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), function () {
                     return _this.bga.actions.performAction("action_".concat(call_1), {
                         data: JSON.stringify({ target: target })
@@ -1267,8 +1271,8 @@ var GameMachine = /** @class */ (function (_super) {
         };
         var this_1 = this;
         // secondary buttons
-        for (var _f = 0, sortedTargets_2 = sortedTargets; _f < sortedTargets_2.length; _f++) {
-            var target = sortedTargets_2[_f];
+        for (var _g = 0, sortedTargets_2 = sortedTargets; _g < sortedTargets_2.length; _g++) {
+            var target = sortedTargets_2[_g];
             _loop_1(target);
         }
         if (multiselect) {
@@ -1693,14 +1697,18 @@ var GameXBody = /** @class */ (function (_super) {
             }
         });
     };
+    GameXBody.prototype.onUpdateActionButtons_MultiPlayerTurnPrivate = function (opInfo) {
+        // this.onEnteringState_PlayerTurn(opInfo);
+        console.log("onUpdateActionButtons_MultiPlayerTurnPrivate", opInfo);
+    };
+    GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
+        this.onEnteringState_PlayerTurn(opInfo);
+    };
     GameXBody.prototype.onToken_MultiPlayerTurnPrivate = function (tid) {
         this.onToken_PlayerTurn(tid);
     };
     GameXBody.prototype.onToken_MultiPlayerMaster = function (tid) {
         this.onToken_PlayerTurn(tid);
-    };
-    GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
-        this.onEnteringState_PlayerTurn(opInfo);
     };
     GameXBody.prototype.onEnteringState_MultiPlayerMaster = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
@@ -1990,7 +1998,7 @@ var GameXBody = /** @class */ (function (_super) {
         var _this = this;
         console.log("notifications subscriptions setup");
         // automatically listen to the notifications, based on the `notif_xxx` function on this class.
-        this.bgaSetupPromiseNotifications({
+        this.bga.notifications.setupPromiseNotifications({
             minDuration: 1,
             minDurationNoText: 1,
             logger: console.log,

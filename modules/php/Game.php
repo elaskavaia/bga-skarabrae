@@ -157,7 +157,7 @@ class Game extends Base {
             }
             $order--;
         }
-        $this->machine->queue("barrier"); // wait for multiplayer to finish
+
         $this->machine->queue("draftdiscard");
         $this->machine->queue("round", $this->getPlayerColorById($startingPlayer));
         return GameDispatch::class;
@@ -747,9 +747,7 @@ class Game extends Base {
     }
 
     function debug_q() {
-        $token = null;
-        $pos = $this->getMaxTurnMarkerPosition(0, $token);
-        $this->debugConsole("marker $pos token $token.");
+        $this->machine->multiplayerDistpatchContinue();
     }
     /**
      * Example of debug function.
@@ -802,7 +800,7 @@ class Game extends Base {
 
     function debug_dumpMachineDb() {
         $t = $this->machine->gettablearr();
-        $this->debugLog("all stack", ["t" => $t]);
+        $this->debugLog("all stack " . ($t[0]["type"] ?? "halt"), $t);
         return $t;
     }
     function debugConsole($info, $args = []) {
@@ -810,7 +808,7 @@ class Game extends Base {
         $this->warn($info);
     }
     function debugLog($info, $args = []) {
-        $this->notify->all("log", "", $args + ["info" => $info]);
-        $this->warn($info . ": " . toJson($args));
+        $this->notify->all("log", "", ["log" => $info, "args" => $args]);
+        //$this->warn($info . ": " . toJson($args));
     }
 }

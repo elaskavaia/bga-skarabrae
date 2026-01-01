@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 
 class Op_village extends Operation {
     public function getPossibleMoves() {
@@ -54,7 +55,7 @@ class Op_village extends Operation {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $maxpass = $this->game->getMaxTurnMarkerPosition(2);
-        if ($owner === "000000") {
+        if ($owner === OpMachine::GAME_MULTI_COLOR) {
             $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('neutral player discards ${token_name}'));
         } else {
             $this->game->effect_gainCard($owner, $card, $this->getOpId());
@@ -65,7 +66,7 @@ class Op_village extends Operation {
         }
 
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
-
+        $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         return;
     }
 }
