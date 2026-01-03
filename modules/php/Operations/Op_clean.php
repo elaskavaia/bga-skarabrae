@@ -33,7 +33,7 @@ class Op_clean extends Operation {
         $maxcount = $args["count"];
         $userCount = count($res);
 
-        foreach ($res as $item) {
+        foreach ($res as $item => $count) {
             $name = getPart($item, 1);
             $this->game->effect_incCount($this->getOwner(), $name, -1, $this->getReason());
         }
@@ -92,7 +92,7 @@ class Op_clean extends Operation {
     }
 
     function getArgType() {
-        return Operation::TTYPE_TOKEN_ARRAY;
+        return Operation::TTYPE_TOKEN_COUNT;
     }
 
     function getPrompt() {

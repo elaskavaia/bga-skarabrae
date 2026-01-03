@@ -226,9 +226,12 @@ class Game1Tokens extends Game0Basics {
     const classes = displayInfo.imageTypes.split(/  */);
     tokenNode.classList.add(...classes);
     if (displayInfo.name) tokenNode.dataset.name = this.getTr(displayInfo.name);
+    this.addListenerWithGuard(tokenNode, placeInfo.onClick);
+  }
 
-    if (!tokenNode.getAttribute("_lis") && placeInfo.onClick) {
-      tokenNode.addEventListener("click", placeInfo.onClick);
+  addListenerWithGuard(tokenNode: HTMLElement, handler: EventListener) {
+    if (!tokenNode.getAttribute("_lis") && handler) {
+      tokenNode.addEventListener("click", handler);
       tokenNode.setAttribute("_lis", "1");
     }
   }
@@ -715,7 +718,6 @@ player_name (only for PlayerCounter)
       const name = args.name;
       const value = args.value;
       const node = $(name);
-      console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
       if (node && this.gamedatas.tokens[name]) {
         args.nop = true; // no move animation
         return this.placeTokenServer(name, this.gamedatas.tokens[name].location, value, args);

@@ -138,15 +138,21 @@
   width: 30px;
   height: 50px;
 }
-.storage .wooden {
-  filter: v.$dropShadow2;
+.storage {
+  .wooden,
+  .tracker.slider {
+    filter: v.$dropShadow2;
+  }
 }
 
 .tracker.slider {
   background-image: url(img/SliderBGA.png);
   background-size: cover;
-  aspect-ratio: 209 / 634;
-  filter: v.$dropShadow2;
+  aspect-ratio: 198 / 634;
+  .action-button & {
+    margin-right: auto;
+    margin-left: auto;
+  }
 }
 .pboard .tracker.slider {
   position: absolute;

@@ -72,6 +72,7 @@ class Op_cook extends Operation {
             $list[$recipe_token] = [
                 "q" => 0,
                 "name" => '${token_div}',
+                "target" => "tracker_{$item}_{$owner}",
                 "w" => $weight,
                 "max" => min(floor($limit / $weight), $this->game->tokens->getTrackerValue($owner, $item)),
                 "args" => [

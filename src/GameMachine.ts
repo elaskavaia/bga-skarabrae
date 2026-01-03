@@ -12,14 +12,20 @@
 interface BasicParamInfo {
   q: number; // error code
   max?: number; // max count for this param
+
   err?: string | NotificationMessage; // error string if error code is set
   name?: string | NotificationMessage; // alternative param representation (can be rec tr)
-  info?: ParamInfoArray; // param info for next argument
+  tooltip?: string | NotificationMessage;
+
   sec?: boolean; // this is secondary target
   o?: number; //  priority order
   color?: string; // button color
-  tooltip?: string;
+  confirm?: string; // extra confirmation dialog before submitting
+
+  target?: string; // representation item
   args?: any;
+
+  info?: ParamInfoArray; // param info for next argument
 }
 
 type ParamInfo = BasicParamInfo;
@@ -52,6 +58,7 @@ interface OpInfo {
     buttons?: boolean;
     replicate?: boolean;
     undo?: boolean;
+    color?: string; // buton color fallback
   };
 }
 
@@ -78,7 +85,6 @@ class GameMachine extends Game1Tokens {
       });
     }
     const multiselect = this.isMultiSelectArgs(opInfo);
-    const multiCount = this.isMultiCountArgs(opInfo);
 
     const sortedTargets = Object.keys(opInfo.info);
     sortedTargets.sort((a, b) => opInfo.info[a].o - opInfo.info[b].o);
@@ -92,46 +98,36 @@ class GameMachine extends Game1Tokens {
       const q = paramInfo.q;
       const active = q == 0;
 
-      if (div && active && !multiCount) {
-        div.classList?.add(this.classActiveSlot);
+      // simple case we select element (dom node) which is target of operation
+      if (div && active) {
+        div.classList.add(this.classActiveSlot);
         div.dataset.targetOpType = opInfo.type;
       }
 
+      // we also can have one addition way of selection (possibly)
       let altNode: HTMLElement;
-      if (opInfo.ui.replicate == true && div) {
-        const clone = div.cloneNode(true) as HTMLElement;
-        clone.id = div.id + "_temp";
-        $("selection_area").appendChild(clone);
-        clone.addEventListener("click", (event: Event) => this.onToken(event));
-        clone.classList.remove(this.classActiveSlot);
-        clone.classList.add(this.classActiveSlotHidden);
-        altNode = clone;
-        this.updateTooltip(div.id, clone);
-      } else if (opInfo.ui.buttons || !div) {
-        const color: any = paramInfo.color ?? (multiselect ? "secondary" : "primary");
-        const button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), (event: Event) => this.onToken(event), {
-          color: color,
-          disabled: !active,
-          id: "button_" + target
-        });
-        if (!active) {
-          button.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo);
-        } else {
-          if (paramInfo.tooltip) button.title = this.getTr(paramInfo.tooltip, paramInfo);
-        }
-        altNode = button;
+      if (opInfo.ui.replicate == true) {
+        altNode = this.replicateTargetOnToolbar(target, paramInfo);
+      }
+
+      if (!altNode && (opInfo.ui.buttons || (!div && active))) {
+        altNode = this.createTargetButton(target, paramInfo);
       }
 
       if (!altNode) continue;
+
+      this.updateTooltip(target, altNode);
       altNode.dataset.targetId = target;
       altNode.dataset.targetOpType = opInfo.type;
+      if (!active) {
+        altNode.title = this.getTr(paramInfo.err ?? _("Operation cannot be performed now"), paramInfo);
+        altNode.classList.add(this.classButtonDisabled);
+      }
 
-      if (multiselect) {
-        if (paramInfo.max !== undefined) {
-          altNode.dataset.max = String(paramInfo.max);
-        } else {
-          altNode.dataset.max = "1";
-        }
+      if (paramInfo.max !== undefined) {
+        altNode.dataset.max = String(paramInfo.max);
+      } else {
+        altNode.dataset.max = "1";
       }
     }
 
@@ -147,14 +143,15 @@ class GameMachine extends Game1Tokens {
         const color: any = paramInfo.color ?? "secondary";
         const call = (paramInfo as any).call ?? target;
         const button = this.statusBar.addActionButton(
-          this.getParamPresentation(target, paramInfo),
+          this.getTargetButtonName(target, paramInfo),
           () =>
             this.bga.actions.performAction(`action_${call}`, {
               data: JSON.stringify({ target })
             }),
           {
             color: color,
-            id: "button_" + target
+            id: "button_" + target,
+            confirm: this.getTr((paramInfo as any).confirm)
           }
         );
         button.dataset.targetId = target;
@@ -169,7 +166,33 @@ class GameMachine extends Game1Tokens {
     this.addUndoButton(this.bga.players.isCurrentPlayerActive() || opInfo.ui.undo);
   }
 
-  getParamPresentation(target: string, paramInfo: ParamInfo) {
+  createTargetButton(target: string, paramInfo: ParamInfo): HTMLElement | undefined {
+    const q = paramInfo.q;
+    const active = q == 0;
+    const color: any = paramInfo.color ?? this.opInfo.ui.color;
+    const button = this.statusBar.addActionButton(this.getTargetButtonName(target, paramInfo), (event: Event) => this.onToken(event), {
+      color: color,
+      disabled: !active,
+      id: "button_" + target
+    });
+    return button;
+  }
+  replicateTargetOnToolbar(target: string, paramInfo: ParamInfo): HTMLElement | undefined {
+    const div = $(target);
+    if (!div) return undefined;
+    const parent = document.createElement("div");
+    parent.classList.add("target_container");
+    const clone = div.cloneNode(true) as HTMLElement;
+    clone.id = div.id + "_temp";
+    parent.appendChild(clone);
+    $("selection_area").appendChild(parent);
+    clone.addEventListener("click", (event: Event) => this.onToken(event));
+    clone.classList.remove(this.classActiveSlot);
+    clone.classList.add(this.classActiveSlotHidden);
+
+    return clone;
+  }
+  getTargetButtonName(target: string, paramInfo: ParamInfo) {
     const div = $(target);
 
     let name = paramInfo.name;
@@ -185,7 +208,7 @@ class GameMachine extends Game1Tokens {
     return args.ttype == "token_count" || args.ttype == "token_array";
   }
   isMultiCountArgs(args: OpInfo) {
-    return args.ttype == "token_array";
+    return args.ttype == "token_count";
   }
 
   onLeavingState(stateName: string): void {
@@ -201,20 +224,10 @@ class GameMachine extends Game1Tokens {
     if (!fromMethod) fromMethod = "onToken";
     event.stopPropagation();
     event.preventDefault();
-    var methodName = fromMethod + "_" + this.getStateName();
-    let ret = this.callfn(methodName, id);
-    if (ret === undefined) return false;
-    return true;
-  }
-
-  onToken_PlayerTurn(tid: string) {
-    //debugger;
-    if (!tid) return false;
-
     const ttype = this.opInfo?.ttype;
     if (ttype) {
       var methodName = "onToken_" + ttype;
-      let ret = this.callfn(methodName, tid);
+      let ret = this.callfn(methodName, id, event.currentTarget as HTMLElement);
       if (ret === undefined) return false;
       return true;
     }
@@ -225,16 +238,15 @@ class GameMachine extends Game1Tokens {
   onToken_token(target: string) {
     if (!target) return false;
     this.resolveAction({ target });
+    return true;
   }
 
-  onToken_token_array(target: string) {
-    if (!target) return false;
-    this.onMultiCount(target, this.opInfo);
+  onToken_token_array(target: string, node: HTMLElement) {
+    return this.onMultiCount(target, this.opInfo, node);
   }
 
-  onToken_token_count(target: string) {
-    if (!target) return false;
-    this.onMultiCount(target, this.opInfo);
+  onToken_token_count(target: string, node: HTMLElement) {
+    return this.onMultiCount(target, this.opInfo, node);
   }
 
   activateMultiSelectPrompt(opInfo: OpInfo) {
@@ -283,9 +295,9 @@ class GameMachine extends Game1Tokens {
 
     this.onMultiSelectionUpdate(opInfo);
 
-    this[`onToken_${ttype}`] = (tid: string) => {
-      return this.onMultiCount(tid, opInfo);
-    };
+    // this[`onToken_${ttype}`] = (tid: string, o: OpInfo, node: HTMLElement) => {
+    //   return this.onMultiCount(tid, opInfo, node);
+    // };
   }
 
   onUpdateActionButtons_PlayerTurnConfirm(args: any) {
@@ -331,8 +343,11 @@ class GameMachine extends Game1Tokens {
     this.removeAllClasses(selectedAlt);
     let totalCount = 0;
     allSel.forEach((node: any) => {
-      const altnode = document.querySelector(`[data-target-id="${node.id}"]`);
-      if (altnode) {
+      let altnode = document.querySelector(`[data-target-id="${node.id}"]`);
+      // if (!altnode) {
+      //   altnode = $(node.dataset.targetId);
+      // }
+      if (altnode && altnode != node) {
         altnode.classList.add(selectedAlt);
       }
       const cnode = altnode ?? node;
@@ -344,24 +359,30 @@ class GameMachine extends Game1Tokens {
     return totalCount;
   }
 
-  onMultiCount(tid: string, opInfo: OpInfo) {
-    let node = $(tid);
-    const altnode: HTMLElement = document.querySelector(`[data-target-id="${tid}"]`);
+  onMultiCount(tid: string, opInfo: OpInfo, clicknode: HTMLElement | undefined) {
+    if (!tid) return false;
+    let node = clicknode ?? $(tid);
+    let altnode: HTMLElement;
+    if (clicknode) {
+      altnode = $(clicknode.dataset.primaryId);
+    }
+    if (!altnode) altnode = document.querySelector(`[data-target-id="${tid}"]`);
+
     const cnode = altnode ?? node;
     const count = Number(cnode.dataset.count ?? 0);
     cnode.dataset.count = String(count + 1);
     const max = Number(cnode.dataset.max ?? 1);
+
+    const selNode = cnode;
     if (count + 1 > max) {
       cnode.dataset.count = "0";
-      if (node) node.classList.remove(this.classSelected);
-      else cnode.classList.remove(this.classSelected);
+      selNode.classList.remove(this.classSelected);
     } else {
-      if (node) node.classList.add(this.classSelected);
-      else cnode.classList.add(this.classSelected);
+      selNode.classList.add(this.classSelected);
     }
 
     this.onMultiSelectionUpdate(opInfo);
-    return;
+    return true;
   }
 
   onMultiSelectionUpdate(opInfo: OpInfo) {
@@ -454,8 +475,13 @@ class GameMachine extends Game1Tokens {
       if (opInfo.info.skip && !opInfo.info.skip.name) {
         opInfo.info.skip.name = _("Skip");
       }
-
-      if (opInfo.ui.buttons === undefined) {
+      if (this.isMultiSelectArgs(opInfo)) {
+        opInfo.ui.replicate = true;
+        opInfo.ui.color ??= "secondary";
+      } else {
+        opInfo.ui.color ??= "primary";
+      }
+      if (opInfo.ui.buttons === undefined && !opInfo.ui.replicate) {
         opInfo.ui.buttons = true;
       }
     } catch (e) {

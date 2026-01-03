@@ -891,15 +891,19 @@
   height: 50px;
 }
 
-.storage .wooden {
+.storage .wooden,
+.storage .tracker.slider {
   filter: drop-shadow(2px 2px 3px black);
 }
 
 .tracker.slider {
   background-image: url(img/SliderBGA.png);
   background-size: cover;
-  aspect-ratio: 209/634;
-  filter: drop-shadow(2px 2px 3px black);
+  aspect-ratio: 198/634;
+}
+.action-button .tracker.slider {
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .pboard .tracker.slider {
@@ -1248,14 +1252,17 @@ a.bgabutton_white {
   pointer-events: unset;
 }
 
+.gg_selected,
+.gg_selected_alt {
+  box-shadow: 0px 0px 5px 5px #3f51b5;
+}
+
 .active_slot {
   cursor: pointer;
   outline: 4px dashed #19bedb;
 }
-
-.gg_selected,
-.gg_selected_alt {
-  box-shadow: 0px 0px 5px 5px #3f51b5 !important;
+.active_slot.gg_selected, .active_slot.gg_selected_alt {
+  outline: 4px dashed #3f51b5;
 }
 
 .gg_selected_alt.segment {
@@ -1263,6 +1270,55 @@ a.bgabutton_white {
 }
 .gg_selected_alt.target_container_card {
   margin-top: 0em !important;
+}
+
+.selection_area .disabled {
+  filter: opacity(0.3);
+}
+
+.target_container {
+  position: relative;
+  border-radius: 5%;
+  min-width: 64px;
+  border: 1px solid white;
+}
+.target_container > * {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.target_container > *::after {
+  content: attr(data-count);
+  z-index: 10;
+  position: absolute;
+  width: 100%;
+  top: 25%;
+  left: 0em;
+  font-size: large;
+  color: white;
+  text-shadow: -1px -1px rgba(0, 0, 0, 0.267), 1px 1px rgba(0, 0, 0, 0.267), -1px 1px rgba(0, 0, 0, 0.267), 1px -1px rgba(0, 0, 0, 0.267);
+}
+.target_container .tracker {
+  color: white;
+  text-shadow: -1px -1px rgba(0, 0, 0, 0.267), 1px 1px rgba(0, 0, 0, 0.267), -1px 1px rgba(0, 0, 0, 0.267), 1px -1px rgba(0, 0, 0, 0.267);
+  font-size: large;
+}
+html[data-theme=dark] .target_container .tracker {
+  color: black;
+  text-shadow: #fff -1px -1px, #fff 1px 1px, #fff -1px 1px, #fff 1px -1px;
+}
+.target_container .tracker:after {
+  position: absolute;
+  text-align: center;
+  left: 0;
+  top: 28%;
+  width: 100%;
+}
+.target_container .tracker[data-sign="-"]::after {
+  left: 5%;
+}
+.target_container.withcount {
+  padding-left: 1.5em;
 }
 
 /*
@@ -1279,7 +1335,7 @@ a.bgabutton_white {
   content: " x " attr(data-count);
 }
 
-#page-title .action-button {
+.action-button {
   min-width: 4em;
   line-height: 24px;
 }

@@ -43,5 +43,17 @@
         "value": 1
       }
     ]
+  },
+  "102": {
+    "name": "Simultaneous Play (Experimental)",
+    "values": {
+      "0": {
+        "name": "Off"
+      },
+      "1": {
+        "name": "On"
+      }
+    },
+    "default": 0
   }
 }

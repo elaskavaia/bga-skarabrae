@@ -409,7 +409,7 @@ class OpMachine {
     }
 
     function isMultiplayerSupported() {
-        return false;
+        return $this->game->isSimultanousPlay();
     }
 
     /** Debug functions */

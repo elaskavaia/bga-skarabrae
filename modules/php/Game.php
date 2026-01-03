@@ -41,6 +41,7 @@ class Game extends Base {
         self::initGameStateLabels([
             "variant_draft_num" => 100,
             "variant_solo_dif" => 101,
+            "variant_multi" => 102,
         ]);
 
         $this->material = new Material();
@@ -420,6 +421,10 @@ class Game extends Base {
         return $n;
     }
 
+    function isSimultanousPlay() {
+        return ((int) $this->getGameStateValue("variant_multi")) ? 1 : 0;
+    }
+
     function getVariantDraftNum() {
         return (int) $this->getGameStateValue("variant_draft_num") ?: 2;
     }
@@ -748,6 +753,9 @@ class Game extends Base {
 
     function debug_q() {
         $this->machine->multiplayerDistpatchContinue();
+    }
+    function debug_game_variant(string $type = "variant_multi", int $value = 1) {
+        $this->setGameStateValue($type, $value);
     }
     /**
      * Example of debug function.

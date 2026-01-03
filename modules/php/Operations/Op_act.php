@@ -103,12 +103,18 @@ class Op_act extends Operation {
 
         return $res;
     }
-    function getSkipName() {
+
+    function getSkipArgs() {
+        $res = parent::getSkipArgs();
         $count = $this->getArgs()["count_workers"] ?? "?";
         if ($count) {
-            return clienttranslate("Skip placing workers");
+            $name = clienttranslate("Skip placing workers");
+            $res["confirm"] = clienttranslate("You will forfeit placing all remaining worker. This is not a good idea in general");
+        } else {
+            $name = clienttranslate("Skip");
         }
-        return clienttranslate("Skip");
+        $res["name"] = $name;
+        return $res;
     }
     function isTaskAvailable() {
         $owner = $this->getOwner();

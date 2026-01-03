@@ -62,6 +62,7 @@ class Game0Basics extends GameGui<any> {
 
   onUpdateActionButtons(stateName: string, args: any) {
     // Call appropriate method
+    console.log("onUpdateActionButtons", stateName, this.debugStateInfo());
     const privates = args._private;
     let nargs = args;
     if (privates) {
@@ -196,10 +197,10 @@ class Game0Basics extends GameGui<any> {
     return res;
   }
 
-  callfn(methodName: string, args: any) {
+  callfn(methodName: string, ...args: any) {
     if (this[methodName] !== undefined) {
       console.log("Calling " + methodName, args);
-      return this[methodName](args);
+      return this[methodName](...args);
     }
     return undefined;
   }

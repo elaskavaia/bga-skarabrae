@@ -187,12 +187,6 @@ class GameXBody extends GameMachine {
   onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
   }
-  onToken_MultiPlayerTurnPrivate(tid: string) {
-    this.onToken_PlayerTurn(tid);
-  }
-  onToken_MultiPlayerMaster(tid: string) {
-    this.onToken_PlayerTurn(tid);
-  }
 
   onEnteringState_MultiPlayerMaster(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
@@ -283,6 +277,7 @@ class GameXBody extends GameMachine {
     } else if (tokenId.startsWith("tracker_slider")) {
       const color = getPart(location, 1);
       result.location = `pboard_${color}`;
+      result.onClick = (x) => this.onToken(x);
     } else if (tokenId.startsWith("tracker")) {
       if (this.getRulesFor(tokenId, "s") == 1) {
         result.onStart = async () => {
@@ -327,6 +322,7 @@ class GameXBody extends GameMachine {
         div.id = item;
         this.updateToken(div, { key: tokenId, location: placeFrom, state: 0 });
         div.title = this.getTokenName(tokenId);
+        div.addEventListener("click", (event: Event) => this.onToken(event));
         if (this.gameAnimationsActive()) {
           $(placeFrom).appendChild(div);
           promisses.push(this.slideAndPlace(item, targetLoc, 500, i * 100));
@@ -350,6 +346,55 @@ class GameXBody extends GameMachine {
       i++;
     }
     await Promise.allSettled(promisses);
+  }
+
+  replicateTargetOnToolbar(target: string, paramInfo: ParamInfo): HTMLElement | undefined {
+    if (!this.isMultiCountArgs(this.opInfo)) {
+      return super.replicateTargetOnToolbar(target, paramInfo);
+    }
+    const redirectTarget = paramInfo.target ?? target;
+
+    if (this.getRulesFor(redirectTarget, "s") == 1) {
+      // resource trackers
+      const owner = getPart(redirectTarget, 2);
+      $(redirectTarget).classList.remove(this.classActiveSlot);
+      const button = super.createTargetButton(target, paramInfo);
+      $("selection_area").appendChild(button);
+
+      const q = paramInfo.q;
+      const active = q == 0;
+      if (!active) return null;
+      button.dataset.count = "0";
+      const max = String(paramInfo.max) ?? "1";
+      const maxi = parseInt(max);
+
+      const storage = $(`storage_${owner}`);
+      const elems = storage.querySelectorAll(`.${redirectTarget}`);
+
+      let i = 0;
+      let len = elems.length;
+
+      elems.forEach((node: HTMLElement) => {
+        i++;
+        if (i - 1 < len - maxi) return;
+        if (!node) return;
+
+        node.classList.add(this.classActiveSlot);
+
+        //node.dataset.targetId = target;
+        node.dataset.targetOpType = this.opInfo.type;
+        node.dataset.primaryId = button.id;
+      });
+
+      return button;
+    }
+
+    if (target.startsWith("tracker_slider")) {
+      const button = super.createTargetButton(target, paramInfo);
+      $("selection_area").appendChild(button);
+      return button;
+    }
+    return super.replicateTargetOnToolbar(target, paramInfo);
   }
 
   gameAnimationsActive() {

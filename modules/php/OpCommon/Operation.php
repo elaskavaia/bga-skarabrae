@@ -375,13 +375,7 @@ abstract class Operation {
         $res["subtitle"] = $this->getSubTitle();
 
         if ($this->canSkip()) {
-            $res["info"]["skip"] = [
-                "name" => $this->getSkipName(),
-                "o" => 1000,
-                "sec" => true,
-                "q" => 0,
-                "color" => "alert",
-            ];
+            $res["info"]["skip"] = $this->getSkipArgs();
         }
 
         $res["ui"] = $this->getUiArgs();
@@ -397,6 +391,16 @@ abstract class Operation {
         }
 
         return $res;
+    }
+
+    function getSkipArgs() {
+        return [
+            "name" => $this->getSkipName(),
+            "o" => 1000,
+            "sec" => true,
+            "q" => 0,
+            "color" => "alert",
+        ];
     }
 
     function getSkipName() {

@@ -55,6 +55,7 @@ class Op_village extends Operation {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $maxpass = $this->game->getMaxTurnMarkerPosition(2);
+        $this->game->machine->push("turnpick", OpMachine::GAME_MULTI_COLOR);
         if ($owner === OpMachine::GAME_MULTI_COLOR) {
             $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('neutral player discards ${token_name}'));
         } else {
@@ -66,7 +67,7 @@ class Op_village extends Operation {
         }
 
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
-        $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
+
         return;
     }
 }

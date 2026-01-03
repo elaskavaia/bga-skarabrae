@@ -80,6 +80,7 @@ var Game0Basics = /** @class */ (function (_super) {
     };
     Game0Basics.prototype.onUpdateActionButtons = function (stateName, args) {
         // Call appropriate method
+        console.log("onUpdateActionButtons", stateName, this.debugStateInfo());
         var privates = args._private;
         var nargs = args;
         if (privates) {
@@ -219,10 +220,14 @@ var Game0Basics = /** @class */ (function (_super) {
         };
         return res;
     };
-    Game0Basics.prototype.callfn = function (methodName, args) {
+    Game0Basics.prototype.callfn = function (methodName) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         if (this[methodName] !== undefined) {
             console.log("Calling " + methodName, args);
-            return this[methodName](args);
+            return this[methodName].apply(this, args);
         }
         return undefined;
     };
@@ -614,8 +619,11 @@ var Game1Tokens = /** @class */ (function (_super) {
         (_a = tokenNode.classList).add.apply(_a, classes);
         if (displayInfo.name)
             tokenNode.dataset.name = this.getTr(displayInfo.name);
-        if (!tokenNode.getAttribute("_lis") && placeInfo.onClick) {
-            tokenNode.addEventListener("click", placeInfo.onClick);
+        this.addListenerWithGuard(tokenNode, placeInfo.onClick);
+    };
+    Game1Tokens.prototype.addListenerWithGuard = function (tokenNode, handler) {
+        if (!tokenNode.getAttribute("_lis") && handler) {
+            tokenNode.addEventListener("click", handler);
             tokenNode.setAttribute("_lis", "1");
         }
     };
@@ -1136,7 +1144,6 @@ var Game1Tokens = /** @class */ (function (_super) {
                     name_1 = args.name;
                     value = args.value;
                     node = $(name_1);
-                    console.log("** notif counter " + args.counter_name + " -> " + args.counter_value);
                     if (node && this.gamedatas.tokens[name_1]) {
                         args.nop = true; // no move animation
                         return [2 /*return*/, this.placeTokenServer(name_1, this.gamedatas.tokens[name_1].location, value, args)];
@@ -1172,7 +1179,7 @@ var GameMachine = /** @class */ (function (_super) {
     }
     GameMachine.prototype.onEnteringState_PlayerTurn = function (opInfo) {
         var _this = this;
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d;
         if (!this.bga.players.isCurrentPlayerActive()) {
             if (opInfo === null || opInfo === void 0 ? void 0 : opInfo.description)
                 this.statusBar.setTitle(opInfo.description, opInfo);
@@ -1193,7 +1200,6 @@ var GameMachine = /** @class */ (function (_super) {
             });
         }
         var multiselect = this.isMultiSelectArgs(opInfo);
-        var multiCount = this.isMultiCountArgs(opInfo);
         var sortedTargets = Object.keys(opInfo.info);
         sortedTargets.sort(function (a, b) { return opInfo.info[a].o - opInfo.info[b].o; });
         for (var _i = 0, sortedTargets_1 = sortedTargets; _i < sortedTargets_1.length; _i++) {
@@ -1205,48 +1211,33 @@ var GameMachine = /** @class */ (function (_super) {
             var div = $(target);
             var q = paramInfo.q;
             var active = q == 0;
-            if (div && active && !multiCount) {
-                (_b = div.classList) === null || _b === void 0 ? void 0 : _b.add(this.classActiveSlot);
+            // simple case we select element (dom node) which is target of operation
+            if (div && active) {
+                div.classList.add(this.classActiveSlot);
                 div.dataset.targetOpType = opInfo.type;
             }
+            // we also can have one addition way of selection (possibly)
             var altNode = void 0;
-            if (opInfo.ui.replicate == true && div) {
-                var clone = div.cloneNode(true);
-                clone.id = div.id + "_temp";
-                $("selection_area").appendChild(clone);
-                clone.addEventListener("click", function (event) { return _this.onToken(event); });
-                clone.classList.remove(this.classActiveSlot);
-                clone.classList.add(this.classActiveSlotHidden);
-                altNode = clone;
-                this.updateTooltip(div.id, clone);
+            if (opInfo.ui.replicate == true) {
+                altNode = this.replicateTargetOnToolbar(target, paramInfo);
             }
-            else if (opInfo.ui.buttons || !div) {
-                var color = (_c = paramInfo.color) !== null && _c !== void 0 ? _c : (multiselect ? "secondary" : "primary");
-                var button = this.statusBar.addActionButton(this.getParamPresentation(target, paramInfo), function (event) { return _this.onToken(event); }, {
-                    color: color,
-                    disabled: !active,
-                    id: "button_" + target
-                });
-                if (!active) {
-                    button.title = this.getTr((_d = paramInfo.err) !== null && _d !== void 0 ? _d : _("Operation cannot be performed now"), paramInfo);
-                }
-                else {
-                    if (paramInfo.tooltip)
-                        button.title = this.getTr(paramInfo.tooltip, paramInfo);
-                }
-                altNode = button;
+            if (!altNode && (opInfo.ui.buttons || (!div && active))) {
+                altNode = this.createTargetButton(target, paramInfo);
             }
             if (!altNode)
                 continue;
+            this.updateTooltip(target, altNode);
             altNode.dataset.targetId = target;
             altNode.dataset.targetOpType = opInfo.type;
-            if (multiselect) {
-                if (paramInfo.max !== undefined) {
-                    altNode.dataset.max = String(paramInfo.max);
-                }
-                else {
-                    altNode.dataset.max = "1";
-                }
+            if (!active) {
+                altNode.title = this.getTr((_b = paramInfo.err) !== null && _b !== void 0 ? _b : _("Operation cannot be performed now"), paramInfo);
+                altNode.classList.add(this.classButtonDisabled);
+            }
+            if (paramInfo.max !== undefined) {
+                altNode.dataset.max = String(paramInfo.max);
+            }
+            else {
+                altNode.dataset.max = "1";
             }
         }
         if (opInfo.ui.buttons == false || opInfo.ui.replicate) {
@@ -1256,23 +1247,24 @@ var GameMachine = /** @class */ (function (_super) {
             var paramInfo = opInfo.info[target];
             if (paramInfo.sec) {
                 // skip, whatever TODO: anytime
-                var color = (_e = paramInfo.color) !== null && _e !== void 0 ? _e : "secondary";
-                var call_1 = (_f = paramInfo.call) !== null && _f !== void 0 ? _f : target;
-                var button = this_1.statusBar.addActionButton(this_1.getParamPresentation(target, paramInfo), function () {
+                var color = (_c = paramInfo.color) !== null && _c !== void 0 ? _c : "secondary";
+                var call_1 = (_d = paramInfo.call) !== null && _d !== void 0 ? _d : target;
+                var button = this_1.statusBar.addActionButton(this_1.getTargetButtonName(target, paramInfo), function () {
                     return _this.bga.actions.performAction("action_".concat(call_1), {
                         data: JSON.stringify({ target: target })
                     });
                 }, {
                     color: color,
-                    id: "button_" + target
+                    id: "button_" + target,
+                    confirm: this_1.getTr(paramInfo.confirm)
                 });
                 button.dataset.targetId = target;
             }
         };
         var this_1 = this;
         // secondary buttons
-        for (var _g = 0, sortedTargets_2 = sortedTargets; _g < sortedTargets_2.length; _g++) {
-            var target = sortedTargets_2[_g];
+        for (var _e = 0, sortedTargets_2 = sortedTargets; _e < sortedTargets_2.length; _e++) {
+            var target = sortedTargets_2[_e];
             _loop_1(target);
         }
         if (multiselect) {
@@ -1281,7 +1273,36 @@ var GameMachine = /** @class */ (function (_super) {
         // need a global condition when this can be added
         this.addUndoButton(this.bga.players.isCurrentPlayerActive() || opInfo.ui.undo);
     };
-    GameMachine.prototype.getParamPresentation = function (target, paramInfo) {
+    GameMachine.prototype.createTargetButton = function (target, paramInfo) {
+        var _this = this;
+        var _a;
+        var q = paramInfo.q;
+        var active = q == 0;
+        var color = (_a = paramInfo.color) !== null && _a !== void 0 ? _a : this.opInfo.ui.color;
+        var button = this.statusBar.addActionButton(this.getTargetButtonName(target, paramInfo), function (event) { return _this.onToken(event); }, {
+            color: color,
+            disabled: !active,
+            id: "button_" + target
+        });
+        return button;
+    };
+    GameMachine.prototype.replicateTargetOnToolbar = function (target, paramInfo) {
+        var _this = this;
+        var div = $(target);
+        if (!div)
+            return undefined;
+        var parent = document.createElement("div");
+        parent.classList.add("target_container");
+        var clone = div.cloneNode(true);
+        clone.id = div.id + "_temp";
+        parent.appendChild(clone);
+        $("selection_area").appendChild(parent);
+        clone.addEventListener("click", function (event) { return _this.onToken(event); });
+        clone.classList.remove(this.classActiveSlot);
+        clone.classList.add(this.classActiveSlotHidden);
+        return clone;
+    };
+    GameMachine.prototype.getTargetButtonName = function (target, paramInfo) {
         var _a;
         var div = $(target);
         var name = paramInfo.name;
@@ -1296,7 +1317,7 @@ var GameMachine = /** @class */ (function (_super) {
         return args.ttype == "token_count" || args.ttype == "token_array";
     };
     GameMachine.prototype.isMultiCountArgs = function (args) {
-        return args.ttype == "token_array";
+        return args.ttype == "token_count";
     };
     GameMachine.prototype.onLeavingState = function (stateName) {
         var _a;
@@ -1305,6 +1326,7 @@ var GameMachine = /** @class */ (function (_super) {
     };
     /** default click processor */
     GameMachine.prototype.onToken = function (event, fromMethod) {
+        var _a;
         console.log(event);
         var id = this.onClickSanity(event);
         if (!id)
@@ -1313,21 +1335,10 @@ var GameMachine = /** @class */ (function (_super) {
             fromMethod = "onToken";
         event.stopPropagation();
         event.preventDefault();
-        var methodName = fromMethod + "_" + this.getStateName();
-        var ret = this.callfn(methodName, id);
-        if (ret === undefined)
-            return false;
-        return true;
-    };
-    GameMachine.prototype.onToken_PlayerTurn = function (tid) {
-        var _a;
-        //debugger;
-        if (!tid)
-            return false;
         var ttype = (_a = this.opInfo) === null || _a === void 0 ? void 0 : _a.ttype;
         if (ttype) {
             var methodName = "onToken_" + ttype;
-            var ret = this.callfn(methodName, tid);
+            var ret = this.callfn(methodName, id, event.currentTarget);
             if (ret === undefined)
                 return false;
             return true;
@@ -1339,16 +1350,13 @@ var GameMachine = /** @class */ (function (_super) {
         if (!target)
             return false;
         this.resolveAction({ target: target });
+        return true;
     };
-    GameMachine.prototype.onToken_token_array = function (target) {
-        if (!target)
-            return false;
-        this.onMultiCount(target, this.opInfo);
+    GameMachine.prototype.onToken_token_array = function (target, node) {
+        return this.onMultiCount(target, this.opInfo, node);
     };
-    GameMachine.prototype.onToken_token_count = function (target) {
-        if (!target)
-            return false;
-        this.onMultiCount(target, this.opInfo);
+    GameMachine.prototype.onToken_token_count = function (target, node) {
+        return this.onMultiCount(target, this.opInfo, node);
     };
     GameMachine.prototype.activateMultiSelectPrompt = function (opInfo) {
         var _this = this;
@@ -1384,9 +1392,9 @@ var GameMachine = /** @class */ (function (_super) {
         //   return this.onMultiCount(target, opInfo);
         // });
         this.onMultiSelectionUpdate(opInfo);
-        this["onToken_".concat(ttype)] = function (tid) {
-            return _this.onMultiCount(tid, opInfo);
-        };
+        // this[`onToken_${ttype}`] = (tid: string, o: OpInfo, node: HTMLElement) => {
+        //   return this.onMultiCount(tid, opInfo, node);
+        // };
     };
     GameMachine.prototype.onUpdateActionButtons_PlayerTurnConfirm = function (args) {
         var _this = this;
@@ -1431,7 +1439,10 @@ var GameMachine = /** @class */ (function (_super) {
         allSel.forEach(function (node) {
             var _a;
             var altnode = document.querySelector("[data-target-id=\"".concat(node.id, "\"]"));
-            if (altnode) {
+            // if (!altnode) {
+            //   altnode = $(node.dataset.targetId);
+            // }
+            if (altnode && altnode != node) {
                 altnode.classList.add(selectedAlt);
             }
             var cnode = altnode !== null && altnode !== void 0 ? altnode : node;
@@ -1442,29 +1453,31 @@ var GameMachine = /** @class */ (function (_super) {
         });
         return totalCount;
     };
-    GameMachine.prototype.onMultiCount = function (tid, opInfo) {
+    GameMachine.prototype.onMultiCount = function (tid, opInfo, clicknode) {
         var _a, _b;
-        var node = $(tid);
-        var altnode = document.querySelector("[data-target-id=\"".concat(tid, "\"]"));
+        if (!tid)
+            return false;
+        var node = clicknode !== null && clicknode !== void 0 ? clicknode : $(tid);
+        var altnode;
+        if (clicknode) {
+            altnode = $(clicknode.dataset.primaryId);
+        }
+        if (!altnode)
+            altnode = document.querySelector("[data-target-id=\"".concat(tid, "\"]"));
         var cnode = altnode !== null && altnode !== void 0 ? altnode : node;
         var count = Number((_a = cnode.dataset.count) !== null && _a !== void 0 ? _a : 0);
         cnode.dataset.count = String(count + 1);
         var max = Number((_b = cnode.dataset.max) !== null && _b !== void 0 ? _b : 1);
+        var selNode = cnode;
         if (count + 1 > max) {
             cnode.dataset.count = "0";
-            if (node)
-                node.classList.remove(this.classSelected);
-            else
-                cnode.classList.remove(this.classSelected);
+            selNode.classList.remove(this.classSelected);
         }
         else {
-            if (node)
-                node.classList.add(this.classSelected);
-            else
-                cnode.classList.add(this.classSelected);
+            selNode.classList.add(this.classSelected);
         }
         this.onMultiSelectionUpdate(opInfo);
-        return;
+        return true;
     };
     GameMachine.prototype.onMultiSelectionUpdate = function (opInfo) {
         var _a, _b;
@@ -1518,7 +1531,8 @@ var GameMachine = /** @class */ (function (_super) {
         }, 100);
     };
     GameMachine.prototype.completeOpInfo = function (opInfo) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e;
+        var _f, _g;
         try {
             // server may skip sending some data, this will feel all omitted fields
             if (((_a = opInfo.data) === null || _a === void 0 ? void 0 : _a.count) !== undefined && opInfo.count === undefined)
@@ -1548,8 +1562,8 @@ var GameMachine = /** @class */ (function (_super) {
             }
             // set default order
             var i = 1;
-            for (var _i = 0, _d = opInfo.target; _i < _d.length; _i++) {
-                var target = _d[_i];
+            for (var _i = 0, _h = opInfo.target; _i < _h.length; _i++) {
+                var target = _h[_i];
                 var paramInfo = opInfo.info[target];
                 if (!paramInfo.o)
                     paramInfo.o = i;
@@ -1561,7 +1575,14 @@ var GameMachine = /** @class */ (function (_super) {
             if (opInfo.info.skip && !opInfo.info.skip.name) {
                 opInfo.info.skip.name = _("Skip");
             }
-            if (opInfo.ui.buttons === undefined) {
+            if (this.isMultiSelectArgs(opInfo)) {
+                opInfo.ui.replicate = true;
+                (_d = (_f = opInfo.ui).color) !== null && _d !== void 0 ? _d : (_f.color = "secondary");
+            }
+            else {
+                (_e = (_g = opInfo.ui).color) !== null && _e !== void 0 ? _e : (_g.color = "primary");
+            }
+            if (opInfo.ui.buttons === undefined && !opInfo.ui.replicate) {
                 opInfo.ui.buttons = true;
             }
         }
@@ -1704,12 +1725,6 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
     };
-    GameXBody.prototype.onToken_MultiPlayerTurnPrivate = function (tid) {
-        this.onToken_PlayerTurn(tid);
-    };
-    GameXBody.prototype.onToken_MultiPlayerMaster = function (tid) {
-        this.onToken_PlayerTurn(tid);
-    };
     GameXBody.prototype.onEnteringState_MultiPlayerMaster = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
     };
@@ -1813,6 +1828,7 @@ var GameXBody = /** @class */ (function (_super) {
         else if (tokenId.startsWith("tracker_slider")) {
             var color = getPart(location, 1);
             result.location = "pboard_".concat(color);
+            result.onClick = function (x) { return _this.onToken(x); };
         }
         else if (tokenId.startsWith("tracker")) {
             if (this.getRulesFor(tokenId, "s") == 1) {
@@ -1840,6 +1856,7 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.syncStorage = function (result) {
         return __awaiter(this, void 0, void 0, function () {
             var tokenId, tokenNode, count, color, promisses, placeFrom, i_1, item, itemNode, targetLoc, div, i, _loop_2, this_2;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1866,6 +1883,7 @@ var GameXBody = /** @class */ (function (_super) {
                                 div.id = item;
                                 this.updateToken(div, { key: tokenId, location: placeFrom, state: 0 });
                                 div.title = this.getTokenName(tokenId);
+                                div.addEventListener("click", function (event) { return _this.onToken(event); });
                                 if (this.gameAnimationsActive()) {
                                     $(placeFrom).appendChild(div);
                                     promisses.push(this.slideAndPlace(item, targetLoc, 500, i_1 * 100));
@@ -1900,6 +1918,50 @@ var GameXBody = /** @class */ (function (_super) {
                 }
             });
         });
+    };
+    GameXBody.prototype.replicateTargetOnToolbar = function (target, paramInfo) {
+        var _this = this;
+        var _a, _b;
+        if (!this.isMultiCountArgs(this.opInfo)) {
+            return _super.prototype.replicateTargetOnToolbar.call(this, target, paramInfo);
+        }
+        var redirectTarget = (_a = paramInfo.target) !== null && _a !== void 0 ? _a : target;
+        if (this.getRulesFor(redirectTarget, "s") == 1) {
+            // resource trackers
+            var owner = getPart(redirectTarget, 2);
+            $(redirectTarget).classList.remove(this.classActiveSlot);
+            var button_1 = _super.prototype.createTargetButton.call(this, target, paramInfo);
+            $("selection_area").appendChild(button_1);
+            var q = paramInfo.q;
+            var active = q == 0;
+            if (!active)
+                return null;
+            button_1.dataset.count = "0";
+            var max = (_b = String(paramInfo.max)) !== null && _b !== void 0 ? _b : "1";
+            var maxi_1 = parseInt(max);
+            var storage = $("storage_".concat(owner));
+            var elems = storage.querySelectorAll(".".concat(redirectTarget));
+            var i_2 = 0;
+            var len_1 = elems.length;
+            elems.forEach(function (node) {
+                i_2++;
+                if (i_2 - 1 < len_1 - maxi_1)
+                    return;
+                if (!node)
+                    return;
+                node.classList.add(_this.classActiveSlot);
+                //node.dataset.targetId = target;
+                node.dataset.targetOpType = _this.opInfo.type;
+                node.dataset.primaryId = button_1.id;
+            });
+            return button_1;
+        }
+        if (target.startsWith("tracker_slider")) {
+            var button = _super.prototype.createTargetButton.call(this, target, paramInfo);
+            $("selection_area").appendChild(button);
+            return button;
+        }
+        return _super.prototype.replicateTargetOnToolbar.call(this, target, paramInfo);
     };
     GameXBody.prototype.gameAnimationsActive = function () {
         return gameui.bgaAnimationsActive() && !this.inSetup;
