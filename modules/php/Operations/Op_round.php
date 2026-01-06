@@ -22,6 +22,7 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Game;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 
 class Op_round extends Operation {
     function resolve(): void {
@@ -51,15 +52,15 @@ class Op_round extends Operation {
         $num = $this->game->getPlayersNumber();
         $cardsNum = $num == 4 ? 5 : 4;
         for ($i = 1; $i <= 3; $i++) {
-            $cards = $this->game->tokens->tokens->pickTokensForLocation($num == 1 ? 5 - $i : $cardsNum, "deck_village", "cardset_$i");
+            $cards = $this->game->tokens->db->pickTokensForLocation($num == 1 ? 5 - $i : $cardsNum, "deck_village", "cardset_$i");
             $state = 0;
             if ($this->game->isSolo() && $i > 1) {
                 $state = 1;
             }
             $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", $state, "", ["place_from" => "deck_village"]);
-            $this->queue("turnall", null, ["num" => $i]);
+            $this->queue("turnall", OpMachine::GAME_BARIER_COLOR, ["num" => $i]);
         }
 
-        $this->queue("endOfRound", null);
+        $this->queue("endOfRound", OpMachine::GAME_BARIER_COLOR);
     }
 }

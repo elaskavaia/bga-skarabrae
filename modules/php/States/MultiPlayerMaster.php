@@ -28,10 +28,11 @@ class MultiPlayerMaster extends GameState {
         // Send playable card ids of the active player privately
         // $this->game->systemAssert("getArgs MultiPlayerMaster");
         //return [];
+        $ops = $this->game->machine->db->getOperations(null, "draft");
         $res = [
             "description" => $args["description"] ?? "",
             "_private" => [],
-            "ui" => ["undo" => true],
+            "ui" => ["undo" => count($ops) > 0],
         ];
         // $ids = $this->game->gamestate->getActivePlayerList();
         // foreach ($ids as $player_id) {

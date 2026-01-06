@@ -139,6 +139,7 @@ class DbMachine {
      */
     function hide($list) {
         $ids = $this->getIdsWhereExpr($list);
+        $this->game->DbQuery("UPDATE machine SET rank = rank - 1 WHERE rank < 0");
         $sql = "UPDATE machine SET rank = -1 WHERE $ids";
         $this->game->DbQuery($sql);
     }
@@ -238,8 +239,17 @@ class DbMachine {
         return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 $andowner $andtype ORDER BY rank ASC");
     }
 
-    function getOperationsNoOwner() {
-        return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank >= 0 AND owner IS NULL ORDER BY rank ASC");
+    function getHistoricalOperations($owner = null, $type = null) {
+        $andowner = "";
+        $andtype = "";
+        if ($owner !== null) {
+            $andowner = " AND owner = '$owner'";
+        }
+        if ($type !== null) {
+            $andtype = " AND type = '$type'";
+        }
+
+        return $this->game->getCollectionFromDB("SELECT * from machine WHERE rank < 0 $andowner $andtype ORDER BY rank ASC");
     }
 
     function createRow($type, $owner = null, $data = null) {

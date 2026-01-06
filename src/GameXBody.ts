@@ -24,7 +24,7 @@ class GameXBody extends GameMachine {
 <div id='selection_area' class='selection_area'></div>
 <div id="game-score-sheet"></div>
 <div id='tasks_area' class='tasks_area'></div>
-<div id="players_panels"></div>
+<div id="current_player_panel"></div>
 <div id="mainarea">
  <div id="turnover" class="turnover">
     <div id="turndisk" class="turndisk"></div>
@@ -34,7 +34,8 @@ class GameXBody extends GameMachine {
  <div id="cardset_2" class="cardset cardset_2"></div>
  <div id="cardset_3" class="cardset cardset_3"></div>
  </div>
- <div id="supply">
+<div id="players_panels"></div>
+<div id="supply">
  <div id="discard_village" class="discard village"></div>
  <div id="deck_village" class="deck village"></div>
  <div id="deck_roof" class="deck roof"></div>
@@ -87,47 +88,77 @@ class GameXBody extends GameMachine {
   }
   setupPlayer(playerInfo: any) {
     console.log("player info " + playerInfo.id, playerInfo);
-    const pp = `player_panel_content_${playerInfo.color}`;
+    const pcolor = playerInfo.color;
+    const pp = `player_panel_content_${pcolor}`;
     document.querySelectorAll(`#${pp}>.miniboard`).forEach((node) => node.remove());
-    placeHtml(`<div id='miniboard_${playerInfo.color}' class='miniboard'></div>`, pp);
+
+    placeHtml(
+      `<div id='miniboard_${pcolor}' class='miniboard'>
+         <div id="counter_setl_${pcolor}" data-state="0" class="counter counter_setl counter_setl_${pcolor} color_${pcolor}"></div>
+         <div id="counter_roof_${pcolor}"  data-state="0" class="counter counter_roof counter_roof_${pcolor} color_${pcolor}"></div>
+         <div id="tracker_hearth_${pcolor}" class="tracker wooden hearth tracker_hearth_${pcolor} color_${pcolor}"></div>
+
+      <div class='restrackers'>
+         <div id="tracker_midden_${pcolor}" class="tracker wooden midden tracker_midden_${pcolor} tracker_midden color_${pcolor} withtooltip" ></div>
+         <div id="tracker_food_${pcolor}" class="tracker wooden food tracker_food_${pcolor} tracker_food color_${pcolor} withtooltip" ></div>
+         <div id="tracker_skaill_${pcolor}" class="tracker wooden skaill tracker_skaill_${pcolor} tracker_skaill color_${pcolor} withtooltip" ></div>
+         <div id="tracker_bone_${pcolor}" class="tracker wooden bone tracker_bone_${pcolor} tracker_bone color_${pcolor} withtooltip" ></div>
+         <div id="tracker_shell_${pcolor}" class="tracker wooden shell tracker_shell_${pcolor} tracker_shell color_${pcolor} withtooltip" ></div>
+
+   <div id="tracker_barley_${pcolor}" class="tracker wooden barley tracker_barley_${pcolor} tracker_barley color_${pcolor} withtooltip" ></div>
+   <div id="tracker_boar_${pcolor}" class="tracker wooden boar tracker_boar_${pcolor} tracker_boar color_${pcolor} withtooltip" ></div>
+   <div id="tracker_cow_${pcolor}" class="tracker wooden cow tracker_cow_${pcolor} tracker_cow color_${pcolor} withtooltip" ></div>
+   <div id="tracker_deer_${pcolor}" class="tracker wooden deer tracker_deer_${pcolor} tracker_deer color_${pcolor} withtooltip" ></div>
+   <div id="tracker_sheep_${pcolor}" class="tracker wooden sheep tracker_sheep_${pcolor} tracker_sheep color_${pcolor} withtooltip" ></div>
+
+   <div id="tracker_fish_${pcolor}" class="tracker wooden fish tracker_fish_${pcolor} tracker_fish color_${pcolor} withtooltip" ></div>
+   <div id="tracker_rabbit_${pcolor}" class="tracker wooden rabbit tracker_rabbit_${pcolor} tracker_rabbit color_${pcolor} withtooltip" ></div>
+
+   <div id="tracker_seaweed_${pcolor}" class="tracker wooden seaweed tracker_seaweed_${pcolor} tracker_seaweed color_${pcolor} withtooltip" ></div>
+   <div id="tracker_hide_${pcolor}" class="tracker wooden hide tracker_hide_${pcolor} tracker_hide color_${pcolor} withtooltip" ></div>
+   <div id="tracker_stone_${pcolor}" class="tracker wooden stone tracker_stone_${pcolor} tracker_stone color_${pcolor} withtooltip" ></div>
+   <div id="tracker_wood_${pcolor}" class="tracker wooden wood tracker_wood_${pcolor} tracker_wood color_${pcolor} withtooltip" ></div>
+   <div id="tracker_wool_${pcolor}" class="tracker wooden wool tracker_wool_${pcolor} tracker_wool color_${pcolor} withtooltip" ></div>
+ </div>
+      </div>`,
+      pp
+    );
+    let parent = this.player_color == pcolor ? "current_player_panel" : "players_panels";
     placeHtml(
       `
-      <div id='tableau_${playerInfo.color}' class='tableau' data-player-name='${playerInfo.name}' style='--player-color: #${playerInfo.color}'>
+      <div id='tableau_${pcolor}' class='tableau' data-player-name='${playerInfo.name}' style='--player-color: #${pcolor}'>
         <div class='pboard_area'>
-           <div id='pboard_${playerInfo.color}' class='pboard'>
-                 <div id='track_furnish_${playerInfo.color}' class='track_furnish track'></div>
-                 <div id='track_trade_${playerInfo.color}' class='track_trade track'></div>
-                 <div id='breakroom_${playerInfo.color}' class='breakroom'></div>
-                 <div id='storage_${playerInfo.color}' class='storage'></div>
+           <div id='pboard_${pcolor}' class='pboard'>
+                 <div id='track_furnish_${pcolor}' class='track_furnish track'></div>
+                 <div id='track_trade_${pcolor}' class='track_trade track'></div>
+                 <div id='breakroom_${pcolor}' class='breakroom'></div>
+                 <div id='storage_${pcolor}' class='storage'></div>
            </div>
-           <div id='cards_area_${playerInfo.color}' class='cards_area'>
+           <div id='cards_area_${pcolor}' class='cards_area'>
            </div>
          </div>
          <div class='village_area'>
-            <div id='action_area_${playerInfo.color}' class='action_area'></div>
-            <div id='settlers_area_${playerInfo.color}' class='settlers_area'>
-               <div id='settlers_col_${playerInfo.color}_1' class='settlers_col_1'></div>
-               <div id='settlers_col_${playerInfo.color}_2' class='settlers_col_2'></div>
-               <div id='settlers_col_${playerInfo.color}_3' class='settlers_col_3'></div>
-               <div id='settlers_col_${playerInfo.color}_4' class='settlers_col_4'></div>
+            <div id='action_area_${pcolor}' class='action_area'></div>
+            <div id='settlers_area_${pcolor}' class='settlers_area'>
+               <div id='settlers_col_${pcolor}_1' class='settlers_col_1'></div>
+               <div id='settlers_col_${pcolor}_2' class='settlers_col_2'></div>
+               <div id='settlers_col_${pcolor}_3' class='settlers_col_3'></div>
+               <div id='settlers_col_${pcolor}_4' class='settlers_col_4'></div>
             </div>
          </div>
       </div>`,
-      "players_panels"
+      parent
     );
 
     for (let i = 0; i <= 6; i++) {
-      placeHtml(
-        `<div id='slot_furnish_${i}_${playerInfo.color}' class='slot_furnish slot_furnish_${i}'></div>`,
-        `track_furnish_${playerInfo.color}`
-      );
+      placeHtml(`<div id='slot_furnish_${i}_${pcolor}' class='slot_furnish slot_furnish_${i}'></div>`, `track_furnish_${pcolor}`);
     }
     for (let i = 0; i <= 7; i++) {
-      placeHtml(
-        `<div id='slot_trade_${i}_${playerInfo.color}' class='slot_trade slot_trade_${i}'></div>`,
-        `track_trade_${playerInfo.color}`
-      );
+      placeHtml(`<div id='slot_trade_${i}_${pcolor}' class='slot_trade slot_trade_${i}'></div>`, `track_trade_${pcolor}`);
     }
+
+    this.updateTooltip(`counter_setl_${pcolor}`);
+    this.updateTooltip(`counter_roof_${pcolor}`);
   }
 
   setupScoreSheet() {
@@ -182,7 +213,7 @@ class GameXBody extends GameMachine {
   }
   onUpdateActionButtons_MultiPlayerTurnPrivate(opInfo: OpInfo) {
     // this.onEnteringState_PlayerTurn(opInfo);
-    console.log("onUpdateActionButtons_MultiPlayerTurnPrivate", opInfo);
+    //console.log("onUpdateActionButtons_MultiPlayerTurnPrivate", opInfo);
   }
   onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
@@ -195,7 +226,14 @@ class GameXBody extends GameMachine {
     super.onEnteringState_PlayerTurn(opInfo);
     switch (opInfo.type) {
       case "turn":
-        $("selection_area").appendChild($("mainarea"));
+        // $("selection_area").insertAdjacentElement("afterend", $("mainarea"));
+
+        const firstTarget = document.querySelector("." + this.classActiveSlot);
+        if (!firstTarget) return;
+        $(firstTarget).scrollIntoView({
+          behavior: "smooth",
+          block: "nearest" // Scrolls the minimum amount to bring the element into view vertically
+        });
         break;
       case "act":
         //if ((opInfo as any).turn == 3) this.bga.gameArea.addLastTurnBanner(_("This is the last turn before you need to feed the settlers"));
@@ -206,7 +244,9 @@ class GameXBody extends GameMachine {
   onLeavingState(stateName: string): void {
     super.onLeavingState(stateName);
     const opInfo = this.opInfo;
-    if (opInfo?.type == "turn") $("thething").appendChild($("mainarea"));
+    if (opInfo?.type == "turn") {
+      // $("thething").appendChild($("mainarea"));
+    }
     if (opInfo?.ui?.replicate) {
       $("selection_area")
         .querySelectorAll("& > *")
@@ -247,27 +287,53 @@ class GameXBody extends GameMachine {
       result.location = `selection_area`;
       result.onClick = (x) => this.onToken(x);
     } else if (tokenId.startsWith("card")) {
+      // cards
       result.onClick = (x) => this.onToken(x);
       if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         const t = this.getRulesFor(tokenId, "t");
         result.location = `settlers_col_${color}_${t}`;
+        result.onEnd = () => {
+          const counter = $(`counter_setl_${color}`);
+          const count = $(location).querySelectorAll(".card.setl").length;
+          counter.dataset.state = `${count}`;
+
+          // sort
+          const parentNode = $(result.location);
+          const children = Array.from(parentNode.children);
+          children.sort((a: HTMLElement, b: HTMLElement) => Number(a.dataset.state) - Number(b.dataset.state));
+          children.forEach((node) => {
+            parentNode.appendChild(node);
+          });
+        };
       } else if ((tokenId.startsWith("card_task") || tokenId.startsWith("card_goal")) && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `tasks_area`;
         result.onClick = (x) => this.onToken(x);
       } else if (location.startsWith("hand")) {
         const color = getPart(location, 1);
-        result.location = `selection_area`;
-        result.onClick = (x) => this.onToken(x);
+        if (color != this.player_color) result.nop = true;
+        else {
+          result.location = `selection_area`;
+          result.onClick = (x) => this.onToken(x);
+        }
       } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `cards_area_${color}`;
+        const mid = getPart(tokenId, 1);
+        if (mid.startsWith("roof")) {
+          result.onEnd = () => {
+            const counter = $(`counter_roof_${color}`);
+            const count = $(location).querySelectorAll(".card.roof,.card.roofi").length;
+            counter.dataset.state = `${count}`;
+          };
+        }
+      } else if (location.startsWith("discard")) {
+        result.location = `discard_village`;
+        //result.onEnd = (node) => this.hideCard(node);
+      } else if (location.startsWith("deck")) {
+        result.onEnd = (node) => this.hideCard(node);
       }
-    } else if (location.startsWith("discard")) {
-      //result.onEnd = (node) => this.hideCard(node);
-    } else if (location.startsWith("deck")) {
-      result.onEnd = (node) => this.hideCard(node);
     } else if (tokenId.startsWith("tableau")) {
       result.nop = true;
     } else if (tokenId.startsWith("hand")) {
@@ -278,8 +344,11 @@ class GameXBody extends GameMachine {
       const color = getPart(location, 1);
       result.location = `pboard_${color}`;
       result.onClick = (x) => this.onToken(x);
+    } else if (tokenId.startsWith("tracker_hearth")) {
+      result.nop = true;
     } else if (tokenId.startsWith("tracker")) {
       if (this.getRulesFor(tokenId, "s") == 1) {
+        result.nop = true; // do not move
         result.onStart = async () => {
           return this.syncStorage(result);
         };
@@ -352,7 +421,7 @@ class GameXBody extends GameMachine {
     if (!this.isMultiCountArgs(this.opInfo)) {
       return super.replicateTargetOnToolbar(target, paramInfo);
     }
-    const redirectTarget = paramInfo.target ?? target;
+    const redirectTarget = paramInfo.token_id ?? target;
 
     if (this.getRulesFor(redirectTarget, "s") == 1) {
       // resource trackers
@@ -470,6 +539,15 @@ class GameXBody extends GameMachine {
         tokenInfo.tooltip = _("Village Deck contains village cards");
         //tokenInfo.name = "XXX";
         return;
+
+      case "counter":
+        const tokenId = tokenInfo.key;
+        // XXX tooltip
+        if (tokenId.startsWith("tracker_hearth")) {
+          tokenInfo.tooltip = _("Hearth Tracker shows how much food you can cook (total weight of all food items)");
+        }
+
+        return;
     }
   }
 
@@ -503,13 +581,20 @@ class GameXBody extends GameMachine {
 
       logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
       //handlers: [this, this.tokens],
-      onStart: (notifName, msg, args) => this.setSubPrompt(msg, args)
+      onStart: (notifName, msg, args) => {
+        if (msg) this.setSubPrompt(msg, args);
+      }
       // onEnd: (notifName, msg, args) => this.setSubPrompt("", args)
     });
   }
   async notif_message(args: any) {
     //console.log("notif", args);
-    return this.wait(10);
+    return this.wait(1);
+  }
+
+  async notif_undoMove(args: any) {
+    console.log("notif", args);
+    return this.wait(1);
   }
 
   async notif_endScores(args: any) {

@@ -76,10 +76,10 @@ class MachineInMem extends DbMachine {
         return $res;
     }
 
-    function getOperationsNoOwner() {
+    function getHistoricalOperations($owner = null, $type = null) {
         $arr = $this->xtable;
-        $res = array_filter($arr, function ($elem) {
-            return $elem["rank"] >= 0 && $elem["owner"] === null;
+        $res = array_filter($arr, function ($elem) use ($owner, $type) {
+            return $elem["rank"] < 0 && ($owner === null || $elem["owner"] === $owner) && ($type === null || $elem["type"] === $type);
         });
         uasort($res, function ($a, $b) {
             return $a["rank"] <=> $b["rank"];

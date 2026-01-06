@@ -21,16 +21,17 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\States\GameDispatchForced;
 
-/** Special operation that act as barrier for all multi player operations */
-class Op_barrier extends Operation {
-    function onEnteringGameState() {
-        // XXX destroy all undo
-        $this->destroy();
-        $this->game->customUndoSavepoint(0, 1);
-        $this->game->debugLog("barrier");
+class Op_savepoint extends Operation {
+    function auto(): bool {
+        $player_id = $this->getPlayerId();
 
-        return GameDispatchForced::class;
+        if ($player_id) {
+            $barrier = (int) $this->getDataField("barrier", 0);
+            $label = $this->getDataField("label", $this->getType());
+            $this->destroy(); // have to remove first
+            $this->game->customUndoSavepoint($player_id, $barrier, $label);
+        }
+        return true;
     }
 }

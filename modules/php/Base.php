@@ -576,9 +576,6 @@ class Base extends Table {
     ////////////
     protected $undoSaveOnMoveEndDup = false;
 
-    public function customUndoSavepoint(): void {
-        // $this->undoSavepoint();
-    }
     /*
      * @Override
      * - have to override to track second copy of var flag as original one is private
@@ -749,7 +746,7 @@ class Base extends Table {
             } else {
                 $copy = $prefix . $table;
                 $this->DbQuery("DELETE FROM $copy");
-                $fields = $this->dbGetFieldList($table);
+                $fields = $this->dbGetFieldListAsString($table);
                 $this->DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
             }
         }

@@ -67,6 +67,9 @@
   position: relative;
   display: block;
   min-width: calc(2 * 125px);
+  &:empty {
+    min-width: unset;
+  }
   padding-left: 20px;
   & > * {
     display: inline-block;
@@ -249,10 +252,6 @@
       }
     }
   }
-}
-
-.discard_village > .card {
-  display: none;
 }
 
 .track_furnish {

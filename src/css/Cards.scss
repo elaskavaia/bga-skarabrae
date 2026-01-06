@@ -149,10 +149,10 @@
 }
 
 .deck > * {
-  display: none;
+  visibility: hidden;
 }
 .discard > * {
-  display: block;
+  visibility: hidden;
   position: absolute;
 }
 .cardset .card[data-state="1"] {

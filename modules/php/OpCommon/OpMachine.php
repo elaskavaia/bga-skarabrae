@@ -32,7 +32,7 @@ class OpMachine {
     const GAME_BARIER_COLOR = "";
     protected Game $game;
 
-    public function __construct(protected DbMachine $db = new DbMachine()) {
+    public function __construct(public DbMachine $db = new DbMachine()) {
         $this->game = Game::$instance;
     }
 
@@ -237,7 +237,7 @@ class OpMachine {
 
     /** This only runs when state first entered, after that every action has to run personal dispatch */
     function multiplayerDistpatch() {
-        $this->game->debugLog("multiplayerDistpatch", array_values($this->getAllOperationsMulti()));
+        //$this->game->debugLog("multiplayerDistpatch", array_values($this->getAllOperationsMulti()));
         if (!$this->isMultiplayerOperationMode()) {
             // fall out of multiplayer state
             $this->game->gamestate->unsetPrivateStateForAllPlayers();
@@ -249,7 +249,7 @@ class OpMachine {
     }
 
     function multiplayerDistpatchContinue(int $n = OpMachine::MA_GAME_DISPATCH_MAX) {
-        $this->game->debugLog("multiplayerDistpatchContinue");
+        //$this->game->debugLog("multiplayerDistpatchContinue");
         $results = [
             OpMachine::GAME_MULTI_COLOR => [
                 "instate" => 0,
@@ -275,7 +275,7 @@ class OpMachine {
             $isMulti = count($operations) > 0;
             if (!$isMulti) {
                 // fall out of multiplayer state
-                $this->game->debugLog("- MULTI $i: FALL OUT");
+                //$this->game->debugLog("- MULTI $i: FALL OUT");
                 $this->game->gamestate->unsetPrivateStateForAllPlayers();
                 return GameDispatchForced::class;
             }
@@ -289,7 +289,7 @@ class OpMachine {
             $results[OpMachine::GAME_MULTI_COLOR]["hit"] = false;
             $playersloop = true;
 
-            $this->game->debugLog("- MULTI $i: RESET machine top", $operations);
+            //$this->game->debugLog("- MULTI $i: RESET machine top", $operations);
             while (count($operations) > 0 && $playersloop) {
                 $dop = array_shift($operations);
                 $op = $this->instanciateOperationFromDbRow($dop);
@@ -307,7 +307,7 @@ class OpMachine {
                 $prevresult["opcode"] = $op->getId();
                 $state = $op->onEnteringGameState();
                 $type = $op->getType();
-                $this->game->debugLog("- MULTI $i: switching state $color: $type => $state");
+                //$this->game->debugLog("- MULTI $i: switching state $color: $type => $state");
                 if ($state === null) {
                     $state = MultiPlayerWaitPrivate::class;
                     $playersloop = false; // have to reset
@@ -341,7 +341,7 @@ class OpMachine {
             $prevresult = &$results[$color];
 
             $state = $prevresult["finalstate"];
-            $this->game->debugLog("- MULTI FINAL  $color switching state => $state");
+            //$this->game->debugLog("- MULTI FINAL  $color switching state => $state");
             if ($prevresult["changestate"] != $state) {
                 $this->game->gamestate->setPrivateState($player_id, StateConstants::STATE_MULTI_PLAYER_WAIT_PRIVATE);
             }
@@ -383,7 +383,7 @@ class OpMachine {
         return $changedState;
     }
     function multiplayerDistpatchAfterAction(int $player_id, int $n = OpMachine::MA_GAME_DISPATCH_MAX) {
-        $this->game->debugLog("multiplayerDistpatchAfterAction");
+        //$this->game->debugLog("multiplayerDistpatchAfterAction");
         //$this->game->gamestate->setPlayerNonMultiactive($player_id, "loopback");
         $this->game->gamestate->setPrivateState($player_id, StateConstants::STATE_MULTI_PLAYER_WAIT_PRIVATE);
         return $this->multiplayerDistpatchContinue();
@@ -452,19 +452,20 @@ class OpMachine {
 
     function action_undo(int $player_id, int $move_id = 0) {
         if ($this->game->gamestate->isMultiactiveState()) {
+            $color = $this->game->getPlayerColorById($player_id);
             if (!$this->game->gamestate->isPlayerActive($player_id)) {
                 $this->game->gamestate->setPlayersMultiactive([$player_id], "");
                 $this->game->gamestate->initializePrivateState($player_id);
-
-                // XXX Game specific code
-                $color = $this->game->getPlayerColorById($player_id);
-                $ops = $this->db->getOperations(null, "draft");
-                if (count($ops) > 0) {
-                    $this->instanciateOperation("draft", $color)->undo();
-                    return $this->multiplayerDistpatchAfterAction($player_id);
-                }
-                $this->game->systemAssert("Cannot find draft?");
+                $ops = $this->db->getHistoricalOperations($color);
+            } else {
+                $ops = $this->db->getOperations($color);
             }
+            if (count($ops) > 0) {
+                $op = array_shift($ops);
+                $this->instanciateOperationFromDbRow($op)->undo();
+                return $this->multiplayerDistpatchAfterAction($player_id);
+            }
+            $this->game->userAssert("Nothing to undo");
 
             throw new BgaSystemException("Undo in multi active state is not supported yet $player_id is active");
         } else {

@@ -22,6 +22,7 @@ namespace Bga\Games\skarabrae;
 
 use Bga\GameFramework\NotificationMessage;
 use Bga\Games\skarabrae\Common\PGameTokens;
+use Bga\Games\skarabrae\Db\DbMultiUndo;
 use Bga\Games\skarabrae\Db\DbTokens;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\OpCommon\OpMachine;
@@ -34,6 +35,7 @@ class Game extends Base {
     public OpMachine $machine;
     public Material $material;
     public PGameTokens $tokens;
+    public DbMultiUndo $dbMultiUndo;
 
     function __construct() {
         Game::$instance = $this;
@@ -48,6 +50,7 @@ class Game extends Base {
         $this->machine = new OpMachine();
         $tokens = new DbTokens($this);
         $this->tokens = new PGameTokens($this, $tokens);
+        $this->dbMultiUndo = new DbMultiUndo($this, "restorePlayerTables");
 
         $this->notify->addDecorator(function (string $message, array $args) {
             if (str_contains($message, '${reason}') && !isset($args["reason"])) {
@@ -65,7 +68,7 @@ class Game extends Base {
     */
     protected function setupGameTables() {
         $this->tokens->createTokens();
-        $tokens = $this->tokens->tokens;
+        $tokens = $this->tokens->db;
         // setup
 
         /* 
@@ -84,7 +87,7 @@ class Game extends Base {
         //5. Each player takes 2 Skaill Knives from the Main Supply, placing them to the left of the Slider on their Player Board (each in a separate space of the Storage Area).
         foreach ($players as $player_id => $player) {
             $color = $player["player_color"];
-            $this->tokens->tokens->setTokenState("tracker_slider_$color", 1);
+            $this->tokens->db->setTokenState("tracker_slider_$color", 1);
             $this->effect_incCount($color, "skaill", 2, "setup");
         }
         //6. Place the Turn Order Tile within reach of all players.
@@ -120,7 +123,7 @@ class Game extends Base {
             $n = 3;
         } elseif ($dnum == 4) {
             //max possible
-            $x = 8; //$this->tokens->tokens->countTokensInLocation("deck_action");
+            $x = 8; //$this->tokens->db->countTokensInLocation("deck_action");
             $n = floor($x / $pnum);
         }
 
@@ -217,6 +220,19 @@ class Game extends Base {
         $isGameEnded = $this->isEndOfGame();
         $result["gameEnded"] = $isGameEnded;
         $result["endScores"] = $isGameEnded ? $this->getEndScores() : null;
+
+        //tracker_hearth
+        $players = $this->loadPlayersBasicInfosWithBots();
+
+        foreach ($players as $player) {
+            $color = $player["player_color"];
+            $key = "tracker_hearth_$color";
+            $result["tokens"][$key] = [
+                "key" => $key,
+                "state" => $this->getHearthLimit($color),
+                "location" => "miniboard_{$color}",
+            ];
+        }
         return $result;
     }
 
@@ -231,8 +247,8 @@ class Game extends Base {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $round = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
-        $turn = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
+        $round = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
+        $turn = $this->tokens->db->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         if ($round == 0) {
             return 0;
         }
@@ -243,7 +259,7 @@ class Game extends Base {
     }
 
     function isEndOfGame() {
-        $num = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
+        $num = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $num >= 5;
     }
 
@@ -341,7 +357,7 @@ class Game extends Base {
         unset($args["message"]);
         $from = "deck_$type";
         $location = "tableau_{$color}";
-        $tokens = $this->tokens->tokens->pickTokensForLocation($inc, $from, $location);
+        $tokens = $this->tokens->db->pickTokensForLocation($inc, $from, $location);
 
         $this->tokens->dbSetTokensLocation(
             $tokens,
@@ -412,12 +428,12 @@ class Game extends Base {
     }
 
     function getRoundNumber() {
-        $n = $this->tokens->tokens->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
+        $n = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $n;
     }
 
     function getTurnNumber() {
-        $n = $this->tokens->tokens->getTokenState(Game::TURNS_NUMBER_GLOBAL);
+        $n = $this->tokens->db->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         return $n;
     }
 
@@ -434,7 +450,7 @@ class Game extends Base {
     }
 
     function getTurnMarkerPosition(string $owner) {
-        return $this->tokens->tokens->getTokenState("turnmarker_$owner", 0);
+        return $this->tokens->db->getTokenState("turnmarker_$owner", 0);
     }
     function setTurnMarkerPosition(string $owner, int $pos) {
         return $this->tokens->dbSetTokenState("turnmarker_$owner", $pos, "");
@@ -473,7 +489,7 @@ class Game extends Base {
     }
 
     function getActionTileSide(string $action_tile) {
-        $state = $this->tokens->tokens->getTokenState($action_tile, 0);
+        $state = $this->tokens->db->getTokenState($action_tile, 0);
         return $state;
     }
 
@@ -737,6 +753,68 @@ class Game extends Base {
         $count += $this->tokens->getTrackerValue($color, "midden");
         return $count;
     }
+    public function customUndoSavepoint(int $player_id, int $barrier = 0, string $label = "undo"): void {
+        $this->debugLog("customUndoSavepoint $player_id bar= $barrier");
+        if ($this->isMultiActive()) {
+            $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
+        } else {
+            $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
+            $this->undoSavepoint();
+        }
+    }
+
+    function restorePlayerTables($table, $saved_data, $meta) {
+        $player_id = (int) $meta["player_id"];
+        $owner = $this->getPlayerColorById($player_id);
+        if ($table == "token") {
+            // filter the data
+            $curtokens = $this->tokens->db->getTokensOfTypeInLocation(null, "%_{$owner}%");
+            $saved_data = array_filter($saved_data, function ($row) use ($owner, $curtokens) {
+                return str_contains($row["token_location"], $owner) ||
+                    str_contains($row["token_key"], $owner) ||
+                    array_key_exists($row["token_key"], $curtokens);
+            });
+            $keys = array_map(fn($row) => $row["token_key"], $saved_data);
+            $this->notifyMessage(clienttranslate('${player_name} undoes their turn'), [], $player_id);
+            $this->tokens->db->dbReplaceValues($saved_data);
+            foreach ($keys as $token_id) {
+                $info = $this->tokens->db->getTokenInfo($token_id);
+                $this->tokens->dbSetTokenLocation($token_id, $info["location"], $info["state"], "", [], $player_id);
+            }
+
+            //return true;
+        } elseif ($table == "machine") {
+            $multi = $this->game->machine->getAllOperationsMulti();
+            foreach ($multi as $dop) {
+                if ($dop["owner"] == $owner) {
+                    $this->game->machine->hide((int) $dop["id"]);
+                }
+            }
+            $this->game->machine->db->normalize();
+            $saved_data = array_filter($saved_data, function ($row) use ($owner) {
+                return $row["owner"] == $owner && $row["rank"] >= 0;
+            });
+            uasort($saved_data, function ($a, $b) {
+                return $a["rank"] <=> $b["rank"];
+            });
+            $rank = 1;
+            foreach ($saved_data as $dop) {
+                $dop["rank"] = $rank++;
+            }
+            $this->game->machine->db->interrupt(count($saved_data));
+            $this->game->machine->db->insertList(null, $saved_data);
+            //return true;
+        }
+        return false;
+    }
+
+    function multiPlayerUndo($owner) {
+        if ($this->game->isMultiActive()) {
+            $this->dbMultiUndo->undoRestorePoint(0, true);
+        } else {
+            throw new BgaSystemException("Not implemented");
+        }
+    }
 
     function debug_op(string $type) {
         $color = $this->getCurrentPlayerColor();
@@ -752,7 +830,7 @@ class Game extends Base {
     }
 
     function debug_q() {
-        $this->machine->multiplayerDistpatchContinue();
+        $this->customUndoSavepoint((int) $this->getCurrentPlayerId(), 0);
     }
     function debug_game_variant(string $type = "variant_multi", int $value = 1) {
         $this->setGameStateValue($type, $value);

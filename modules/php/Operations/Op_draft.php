@@ -75,7 +75,7 @@ class Op_draft extends Operation {
 
     public function undo() {
         $owner = $this->getOwner();
-        $card = $this->game->tokens->tokens->getTokensOfTypeInLocationSingleKey("action_special", "tableau_{$owner}");
+        $card = $this->game->tokens->db->getTokensOfTypeInLocationSingleKey("action_special", "tableau_{$owner}");
         $this->game->systemAssert("missing card", $card);
         $this->game->tokens->dbSetTokenLocation($card, "hand_{$owner}", 0, "*", ["_private" => true], $this->getPlayerId());
         $this->game->machine->push($this->getType(), $owner);

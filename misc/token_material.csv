@@ -64,4 +64,8 @@ game_vp_goals|VP penalty from goals
 game_vp_total|VP total
 
 
+#counters
+counter_setl|Number of Settlers
+counter_roof|Number of Roofs
+
 

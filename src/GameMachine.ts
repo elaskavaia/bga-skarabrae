@@ -22,7 +22,7 @@ interface BasicParamInfo {
   color?: string; // button color
   confirm?: string; // extra confirmation dialog before submitting
 
-  target?: string; // representation item
+  token_id?: string; // representation item
   args?: any;
 
   info?: ParamInfoArray; // param info for next argument
@@ -307,9 +307,16 @@ class GameMachine extends Game1Tokens {
   }
 
   resolveAction(args: any = {}) {
-    this.bga.actions.performAction("action_resolve", {
-      data: JSON.stringify(args)
-    });
+    this.bga.actions
+      .performAction("action_resolve", {
+        data: JSON.stringify(args)
+      })
+      ?.then((x) => {
+        console.log("action complete", x);
+      })
+      .catch((e: Error) => {
+        this.setSubPrompt(e.message);
+      });
   }
 
   addUndoButton(cond: boolean = true) {
@@ -317,9 +324,13 @@ class GameMachine extends Game1Tokens {
       const div = this.statusBar.addActionButton(
         _("Undo"),
         () =>
-          this.bga.actions.performAction("action_undo", [], {
-            checkAction: false
-          }),
+          this.bga.actions
+            .performAction("action_undo", [], {
+              checkAction: false
+            })
+            ?.catch((e: Error) => {
+              this.setSubPrompt(e.message);
+            }),
         {
           color: "alert",
           id: "button_undo"

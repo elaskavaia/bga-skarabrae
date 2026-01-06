@@ -43,7 +43,8 @@ class Op_gain extends CountableOperation {
     }
 
     public function getExtraArgs() {
-        return parent::getExtraArgs() + ["token_div" => $this->game->tokens->getTrackerId($this->getOwner(), $this->getType())];
+        $tracker_id = $this->game->tokens->getTrackerId($this->getOwner(), $this->getType());
+        return parent::getExtraArgs() + ["token_div" => $tracker_id, "token_id" => $tracker_id];
     }
 
     function getButtonName() {

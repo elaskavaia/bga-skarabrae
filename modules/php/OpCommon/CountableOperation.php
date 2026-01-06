@@ -54,7 +54,7 @@ abstract class CountableOperation extends Operation {
     }
 
     public function getExtraArgs() {
-        return ["count" => $this->getCount(), "name" => $this->getOpName()];
+        return ["count" => $this->getCount(), "mcount" => $this->getMinCount(), "name" => $this->getOpName()];
     }
 
     function getCount() {

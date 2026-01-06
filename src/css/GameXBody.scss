@@ -59,7 +59,7 @@ latin
 }
 
 #gameaction_status_wrap {
-  display: block !important;
+  display: block !important; // prevent flickering of top bar
 
   img {
     display: none;

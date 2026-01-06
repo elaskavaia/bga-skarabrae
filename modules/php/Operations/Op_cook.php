@@ -72,7 +72,7 @@ class Op_cook extends Operation {
             $list[$recipe_token] = [
                 "q" => 0,
                 "name" => '${token_div}',
-                "target" => "tracker_{$item}_{$owner}",
+                "token_id" => "tracker_{$item}_{$owner}",
                 "w" => $weight,
                 "max" => min(floor($limit / $weight), $this->game->tokens->getTrackerValue($owner, $item)),
                 "args" => [
@@ -108,6 +108,10 @@ class Op_cook extends Operation {
         if ($this->getWeight() == 0) {
             return false;
         }
+        return true;
+    }
+
+    public function requireConfirmation() {
         return true;
     }
 }

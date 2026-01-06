@@ -384,6 +384,8 @@ class Game1Tokens extends Game0Basics {
 
       if (placeInfo.onStart) await placeInfo.onStart(tokenNode);
       if (!placeInfo.nop) await this.slideAndPlace(tokenNode, placeInfo.location, animTime, 0, undefined, placeInfo.onEnd);
+      else placeInfo.onEnd?.(tokenNode);
+
       //if (animTime == 0) $(location).appendChild(tokenNode);
       //else void this.animationManager.slideAndAttach(tokenNode, $(location));
     } catch (e) {

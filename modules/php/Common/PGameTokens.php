@@ -15,8 +15,8 @@ use function Bga\Games\skarabrae\toJson;
  */
 
 class PGameTokens {
-    public function __construct(private Game $game, public DbTokens &$tokens) {
-        $this->tokens->autoreshuffle_trigger = ["obj" => $this, "method" => "autoreshuffleHandler"];
+    public function __construct(private Game $game, public DbTokens &$db) {
+        $this->db->autoreshuffle_trigger = ["obj" => $this, "method" => "autoreshuffleHandler"];
     }
 
     protected function setCounter(&$array, $key, $value) {
@@ -74,7 +74,7 @@ class PGameTokens {
         $result["token_types"] = $token_types;
         $result["tokens"] = [];
         $result["counters"] = $this->getDefaultCounters();
-        $locs = $this->tokens->countTokensInLocations();
+        $locs = $this->db->countTokensInLocations();
         //$color = $this->getPlayerColor($current_player_id);
         foreach ($locs as $location => $count) {
             $sort = $this->getRulesFor($location, "sort", null);
@@ -87,14 +87,14 @@ class PGameTokens {
                 continue;
             }
             if ($content === true) {
-                $tokens = $this->tokens->getTokensOfTypeInLocation(null, $location, null, $sort);
+                $tokens = $this->db->getTokensOfTypeInLocation(null, $location, null, $sort);
                 $this->fillTokensFromArray($result["tokens"], $tokens);
             } else {
                 $num = floor($content);
                 if ($count < $num) {
                     $num = $count;
                 }
-                $tokens = $this->tokens->getTokensOnTop($num, $location);
+                $tokens = $this->db->getTokensOnTop($num, $location);
                 $this->fillTokensFromArray($result["tokens"], $tokens);
             }
         }
@@ -213,16 +213,16 @@ class PGameTokens {
             $state = array_get($info, "state", 0);
             $start = array_get($info, "start", 1);
             if (strpos($token_id, "{COLOR}") === false) {
-                $this->tokens->createTokensPack($token_id, $location, $count, $start, null, $state);
+                $this->db->createTokensPack($token_id, $location, $count, $start, null, $state);
             } else {
-                $this->tokens->createTokensPack($token_id, $location, $count, $start, $this->game->getPlayerColors(), $state);
+                $this->db->createTokensPack($token_id, $location, $count, $start, $this->game->getPlayerColors(), $state);
             }
         } catch (\Exception $e) {
             $this->game->systemAssert("Failed to create tokens in location $token_id $location x $count ");
         }
     }
     function createCounterToken($token) {
-        $info = $this->tokens->getTokenInfo($token);
+        $info = $this->db->getTokenInfo($token);
         if ($info != null) {
             return $info;
         }
@@ -291,14 +291,14 @@ class PGameTokens {
             $notif = clienttranslate('${player_name} moves ${token_name} into ${place_name} ${reason}');
         }
         if ($state === null) {
-            $state = $this->tokens->getTokenState($token_id) ?? 0;
+            $state = $this->db->getTokenState($token_id) ?? 0;
         }
-        $place_from = $this->tokens->getTokenLocation($token_id) ?? "limbo";
+        $place_from = $this->db->getTokenLocation($token_id) ?? "limbo";
         $this->game->systemAssert("token_id does not exists, create first: $token_id", $place_from);
         if ($place_id === null) {
             $place_id = $place_from;
         }
-        $this->tokens->moveToken($token_id, $place_id, $state);
+        $this->db->moveToken($token_id, $place_id, $state);
 
         $notifyArgs = [
             "token_id" => $token_id,
@@ -349,7 +349,7 @@ class PGameTokens {
      * @param array $args
      */
     function dbSetTokensLocation($token_arr, $place_id, $state = null, $notif = "*", $args = [], $player_id = 0) {
-        $type = $this->tokens->checkListOrTokenArray($token_arr);
+        $type = $this->db->checkListOrTokenArray($token_arr);
         if ($type == 0) {
             return;
         }
@@ -376,7 +376,7 @@ class PGameTokens {
             }
             $keys[] = $token_id;
         }
-        $this->tokens->moveTokens($keys, $place_id, $state);
+        $this->db->moveTokens($keys, $place_id, $state);
         $notifyArgs = [
             "list" => $keys, //
             "place_id" => $place_id, //
@@ -438,10 +438,10 @@ class PGameTokens {
      *            is gain or where it "goes" when its paid, used in client for animation
      */
     function dbResourceInc($token_id, $num, $message = "*", $args = [], $player_id = null) {
-        $current = $this->tokens->getTokenState($token_id, 0);
+        $current = $this->db->getTokenState($token_id, 0);
         $value = $current + $num;
 
-        $this->tokens->setTokenState($token_id, $value);
+        $this->db->setTokenState($token_id, $value);
 
         if ($message == "*") {
             if ($num <= 0) {
@@ -463,7 +463,7 @@ class PGameTokens {
 
     function notifyCounterChanged($location, $notifyArgs = null) {
         $key = $this->counterNameOf($location);
-        $value = $this->tokens->countTokensInLocation($location);
+        $value = $this->db->countTokensInLocation($location);
         $this->notifyCounterDirect($key, $value, "", $notifyArgs);
     }
 
@@ -476,12 +476,12 @@ class PGameTokens {
     }
 
     function getTrackerValue(?string $color, string $type): int {
-        $value = (int) $this->tokens->getTokenState($this->getTrackerId($color, $type));
+        $value = (int) $this->db->getTokenState($this->getTrackerId($color, $type));
         return $value;
     }
     function getTrackerIdAndValue(?string $color, string $type, ?array &$arr = null) {
         $id = $this->getTrackerId($color, $type);
-        $value = (int) $this->tokens->getTokenState($id);
+        $value = (int) $this->db->getTokenState($id);
         if ($arr) {
             $arr[$id] = $value;
         }
@@ -509,6 +509,6 @@ class PGameTokens {
     }
 
     function getTokensOfTypeInLocation($type, $location = null, $state = null, $order_by = null) {
-        return $this->tokens->getTokensOfTypeInLocation($type, $location, $state, $order_by);
+        return $this->db->getTokensOfTypeInLocation($type, $location, $state, $order_by);
     }
 }

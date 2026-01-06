@@ -78,7 +78,9 @@ class Op_craft extends Operation {
     }
 
     function isPaid() {
-        return $this->getDataField("paid", false) || $this->getParams() == "paid" || $this->getReason() == "action_special_2";
+        return $this->getDataField("paid", false) ||
+            $this->getParams() == "paid" ||
+            str_starts_with($this->getReason(), "action_special_2");
     }
     function getCard() {
         return $this->getDataField("card", false);
@@ -106,7 +108,13 @@ class Op_craft extends Operation {
         if ($this->isPaid()) {
             $card = $this->getCheckedArg();
             $this->game->systemAssert("Cannot determine card", $card);
-            $this->game->tokens->dbSetTokenState($card, 1, clienttranslate('${player_name} crafts ${token_name}'));
+            $this->game->tokens->dbSetTokenState(
+                $card,
+                1,
+                clienttranslate('${player_name} crafts ${token_name}'),
+                [],
+                $this->getPlayerId()
+            );
             if ($this->getReason() == "action_special_2" && $this->game->getActionTileSide("action_special_2")) {
                 $this->queue("?(n_food:activate($card))", $this->getOwner(), null, $this->getReason());
             }

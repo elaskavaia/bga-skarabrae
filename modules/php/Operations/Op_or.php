@@ -87,13 +87,15 @@ class Op_or extends ComplexOperation {
 
             $totalLimit += $max;
 
+            $args = $sub->getExtraArgs();
             $res["choice_$i"] = [
                 "name" => $sub->getButtonName(),
-                "args" => $sub->getExtraArgs(),
+                "args" => $args,
                 "err" => $err,
                 "r" => $sub->getTypeFullExpr(),
                 "q" => $q,
                 "max" => $max,
+                "token_id" => $args["token_id"] ?? null,
             ];
         }
         if ($totalLimit < $this->getMinCount()) {

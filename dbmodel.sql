@@ -39,5 +39,5 @@ CREATE TABLE IF NOT EXISTS `multiundo` (
   `player_id` int(10) NOT NULL,
   `data` JSON NOT NULL,
   `meta` JSON NOT NULL,
-  PRIMARY KEY (`move_id`)
+  PRIMARY KEY (`move_id`,`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

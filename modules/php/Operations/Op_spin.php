@@ -27,7 +27,7 @@ class Op_spin extends Operation {
     function resolve(): void {
         $color = $this->getOwner();
         $from = "deck_spin";
-        $card = $this->game->tokens->tokens->getTokenOnTop($from);
+        $card = $this->game->tokens->db->getTokenOnTop($from);
         $this->game->systemAssert("no more cards", $card);
         $side = $this->game->getActionTileSide("action_special_1");
         if ($side) {

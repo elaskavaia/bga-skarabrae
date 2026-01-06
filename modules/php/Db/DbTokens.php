@@ -17,7 +17,8 @@
  *
  */
 namespace Bga\Games\skarabrae\Db;
-use Bga\GameFramework\Table;
+
+use Bga\Games\skarabrae\Game;
 use Exception;
 use feException;
 
@@ -31,8 +32,8 @@ class DbTokens {
     private $custom_fields;
     protected $keyindex = []; // cache
 
-    public Table $game; // game ref
-    function __construct(Table $game) {
+    public Game $game; // game ref
+    function __construct(Game $game) {
         $this->game = $game;
         $this->table = "token";
         $this->custom_fields = [];
@@ -530,6 +531,16 @@ class DbTokens {
         // return mysql_fetch_assoc($dbres);
     }
 
+    function getTokensInfo($tokens) {
+        self::checkTokenKeyArray($tokens);
+        $this->init_cache();
+        $res = [];
+        foreach ($tokens as $id) {
+            $res[$id] = $this->keyindex[$id] ?? null;
+        }
+        return $res;
+    }
+
     function countTokensInLocation($location, $state = null) {
         self::checkLocation($location, true);
         self::checkState($state, true);
@@ -783,5 +794,35 @@ class DbTokens {
     function setCustomFields($fields_array) {
         $this->checkTokenKeyArray($fields_array);
         $this->custom_fields = $fields_array;
+    }
+
+    function dbReplaceValues($values) {
+        if (count($values) == 0) {
+            return;
+        }
+        $this->clear_cache();
+        $fields_list = $this->game->dbGetFieldList($this->table);
+        $key = array_shift($fields_list);
+        $table = $this->table;
+        foreach ($values as $row) {
+            $quoted = [];
+            foreach ($fields_list as $field) {
+                $value = $row[$field] ?? null;
+
+                if ($value === null) {
+                    $quoted[] = "$field = NULL";
+                } elseif (is_numeric($value)) {
+                    $quoted[] = "$field = $value";
+                } else {
+                    $value = $this->game->escapeStringForDB($value);
+                    $quoted[] = "$field = '$value'";
+                }
+            }
+            $setValues = implode(",", $quoted);
+            $keyValue = $row[$key];
+            $sql = "UPDATE $table SET $setValues WHERE $key = '$keyValue'";
+
+            $this->game->DbQuery($sql);
+        }
     }
 }

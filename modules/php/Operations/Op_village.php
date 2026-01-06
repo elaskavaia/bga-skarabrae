@@ -67,6 +67,10 @@ class Op_village extends Operation {
         }
 
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
+        if ($this->game->isMultiActive() && $owner !== OpMachine::GAME_MULTI_COLOR) {
+            $this->destroy(); // have to remove current op from stack before saving
+            $this->game->customUndoSavepoint($this->getPlayerId(), 1);
+        }
 
         return;
     }

@@ -55,6 +55,10 @@ class Op_n_midden extends CountableOperation {
         ];
     }
 
+    function getMinCount() {
+        return 0;
+    }
+
     function canSkip() {
         return true;
     }

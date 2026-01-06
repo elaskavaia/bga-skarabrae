@@ -27,8 +27,9 @@ class Op_turn extends Operation {
         $player_id = $this->getPlayerId();
         $this->game->switchActivePlayer($player_id);
 
-        $this->game->customUndoSavepoint();
-
+        if (!$this->game->isMultiActive() && $player_id) {
+            $this->game->customUndoSavepoint($player_id, 1);
+        }
         return parent::auto();
     }
 

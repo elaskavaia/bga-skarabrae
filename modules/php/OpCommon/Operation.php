@@ -654,7 +654,7 @@ abstract class Operation {
     }
 
     function undo() {
-        throw new BgaSystemException("Not implemented");
+        $this->game->multiPlayerUndo($this->getOwner());
     }
 
     function action_whatever() {

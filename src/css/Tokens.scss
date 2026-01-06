@@ -13,23 +13,56 @@
   }
 }
 
-.miniboard {
+.miniboard,
+.restrackers {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
 
-  .tracker {
-    margin-left: 14px;
+  // numbers on the left
+  // .tracker {
+  //   margin-left: 14px;
+  //   &::after {
+  //     content: attr(data-state);
+  //     position: relative;
+  //     left: -10px;
+  //     top: 5px;
+  //   }
+  // }
+  // overlapping numbers with shadow
+  .tracker,
+  .counter {
+    color: black;
+    text-shadow: v.$textShadowWhite;
+
+    html[data-theme="dark"] & {
+      color: white;
+      text-shadow: v.$textShadowBlack;
+    }
+
     &::after {
       content: attr(data-state);
       position: relative;
-      left: -10px;
-      top: 5px;
+      left: 12px;
+      top: 9px;
     }
   }
 }
-
+.counter_setl {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+  background-position: 86% 66%;
+  height: 32px;
+  aspect-ratio: 1/1;
+}
+.counter_roof {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+  background-position: 76.5% 66%;
+  height: 32px;
+  aspect-ratio: 1/1;
+}
 .wooden {
   background-image: url(img/tokens.png);
   background-size: auto 453%;

@@ -379,11 +379,11 @@
 }
 
 .deck > * {
-  display: none;
+  visibility: hidden;
 }
 
 .discard > * {
-  display: block;
+  visibility: hidden;
   position: absolute;
 }
 
@@ -458,6 +458,9 @@
   display: block;
   min-width: 250px;
   padding-left: 20px;
+}
+.cardset:empty {
+  min-width: unset;
 }
 .cardset > * {
   display: inline-block;
@@ -692,10 +695,6 @@
   top: 50%;
 }
 
-.discard_village > .card {
-  display: none;
-}
-
 .track_furnish {
   position: absolute;
   left: 5%;
@@ -748,20 +747,51 @@
   line-height: 24px;
 }
 
-.miniboard {
+.miniboard,
+.restrackers {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
 }
-.miniboard .tracker {
-  margin-left: 14px;
+.miniboard .tracker,
+.miniboard .counter,
+.restrackers .tracker,
+.restrackers .counter {
+  color: black;
+  text-shadow: #fff -1px -1px, #fff 1px 1px, #fff -1px 1px, #fff 1px -1px;
 }
-.miniboard .tracker::after {
+html[data-theme=dark] .miniboard .tracker,
+html[data-theme=dark] .miniboard .counter,
+html[data-theme=dark] .restrackers .tracker,
+html[data-theme=dark] .restrackers .counter {
+  color: white;
+  text-shadow: -1px -1px rgba(0, 0, 0, 0.267), 1px 1px rgba(0, 0, 0, 0.267), -1px 1px rgba(0, 0, 0, 0.267), 1px -1px rgba(0, 0, 0, 0.267);
+}
+.miniboard .tracker::after,
+.miniboard .counter::after,
+.restrackers .tracker::after,
+.restrackers .counter::after {
   content: attr(data-state);
   position: relative;
-  left: -10px;
-  top: 5px;
+  left: 12px;
+  top: 9px;
+}
+
+.counter_setl {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+  background-position: 86% 66%;
+  height: 32px;
+  aspect-ratio: 1/1;
+}
+
+.counter_roof {
+  background-image: url(img/tokens.png);
+  background-size: auto 453%;
+  background-position: 76.5% 66%;
+  height: 32px;
+  aspect-ratio: 1/1;
 }
 
 .wooden {

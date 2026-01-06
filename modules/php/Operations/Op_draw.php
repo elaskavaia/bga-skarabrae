@@ -20,8 +20,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_draw extends CountableOperation {
@@ -37,7 +35,7 @@ class Op_draw extends CountableOperation {
         $this->getCheckedArg();
         $owner = $this->getOwner();
         $this->game->systemAssert("Count?", $this->getCount() > 0);
-        $cards = $this->game->tokens->tokens->pickTokensForLocation($this->getCount(), "deck_village", "hand_{$owner}");
+        $cards = $this->game->tokens->db->pickTokensForLocation($this->getCount(), "deck_village", "hand_{$owner}");
         $this->game->tokens->dbSetTokensLocation(
             $cards,
             "hand_{$owner}",
@@ -52,6 +50,6 @@ class Op_draw extends CountableOperation {
         $this->notifyMessage(clienttranslate('${player_name} draws ${count} card/s ${reason}'), [
             "count" => count($cards),
         ]);
-        $this->game->customUndoSavepoint();
+        $this->queue("savepoint");
     }
 }

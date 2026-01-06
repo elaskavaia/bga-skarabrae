@@ -54,7 +54,7 @@ class Game0Basics extends GameGui<any> {
   }
 
   onLeavingState(stateName: string) {
-    console.log("onLeavingState", stateName, this.debugStateInfo());
+    //console.log("onLeavingState", stateName, this.debugStateInfo());
 
     const methodName = "onLeavingState_" + stateName;
     this.callfn(methodName, {});
@@ -100,9 +100,15 @@ class Game0Basics extends GameGui<any> {
     this.updatePageTitle(this.gamedatas.gamestate);
   }
 
+  /**
+   * Function overriden to prevent format error on reset
+   * @Override
+   * @param state
+   * @returns
+   */
   updatePageTitle(state = null) {
     //debugger;
-    console.log("updatePageTitle", state);
+    //console.log("updatePageTitle", state);
     if ((this as any).prevent_error_rentry === undefined) (this as any).prevent_error_rentry = 11; // XXX hack to prevent popin up formatter error
     try {
       return this.inherited(arguments);
@@ -110,6 +116,19 @@ class Game0Basics extends GameGui<any> {
       console.error("updatePageTitle", e);
     } finally {
       (this as any).prevent_error_rentry = undefined;
+    }
+  }
+  /**
+   * Function overriden to prevent interface lock of other player
+   * @Override
+   * @param state
+   * @returns
+   */
+  onLockInterface(lock) {
+    if (lock.status == "queued") {
+      // hack: do not hide the buttons when locking call comes from another player
+    } else {
+      this.inherited(arguments);
     }
   }
 
@@ -258,6 +277,40 @@ class Game0Basics extends GameGui<any> {
 
   isSolo() {
     return this.gamedatas.playerorder.length == 1;
+  }
+
+  protected lastMoveId = 0;
+  private prevLogId = 0;
+  addTooltipToLogItems(log_id: number) {
+    // override
+  }
+
+  addMoveToLog(log_id: number, move_id) {
+    this.inherited(arguments);
+    if (move_id) this.lastMoveId = move_id;
+    if (this.prevLogId + 1 < log_id) {
+      // we skip over some logs, but we need to look at them also
+      for (let i = this.prevLogId + 1; i < log_id; i++) {
+        this.addTooltipToLogItems(i);
+      }
+    }
+
+    this.addTooltipToLogItems(log_id);
+
+    // add move #
+    var prevmove = document.querySelector('[data-move-id="' + move_id + '"]');
+    if (prevmove) {
+      // ?
+    } else if (move_id) {
+      const tsnode = document.createElement("div");
+      tsnode.classList.add("movestamp");
+      tsnode.innerHTML = _("Move #") + move_id;
+      const lognode = $("log_" + log_id);
+      lognode.appendChild(tsnode);
+
+      tsnode.setAttribute("data-move-id", move_id);
+    }
+    this.prevLogId = log_id;
   }
 
   notif_log(args: any) {
