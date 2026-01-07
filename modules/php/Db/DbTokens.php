@@ -476,7 +476,7 @@ class DbTokens {
             $sql .= " AND token_state $op '$state'";
         }
         if ($order_by !== null) {
-            $sql .= " ORDER BY $order_by";
+            $sql .= " ORDER BY $order_by ASC";
         }
 
         if ($order_by !== null) {

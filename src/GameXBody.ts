@@ -39,6 +39,7 @@ class GameXBody extends GameMachine {
  <div id="discard_village" class="discard village"></div>
  <div id="deck_village" class="deck village"></div>
  <div id="deck_roof" class="deck roof"></div>
+ <div id="deck_spin" class="deck spin"></div>
 </div>
 
 
@@ -302,7 +303,7 @@ class GameXBody extends GameMachine {
           const parentNode = $(result.location);
           const children = Array.from(parentNode.children);
           children.sort((a: HTMLElement, b: HTMLElement) => Number(a.dataset.state) - Number(b.dataset.state));
-          children.forEach((node) => {
+          children.forEach((node: HTMLElement) => {
             parentNode.appendChild(node);
           });
         };
@@ -337,6 +338,8 @@ class GameXBody extends GameMachine {
     } else if (tokenId.startsWith("tableau")) {
       result.nop = true;
     } else if (tokenId.startsWith("hand")) {
+      result.nop = true;
+    } else if (tokenId.startsWith("deck") || tokenId.startsWith("discard")) {
       result.nop = true;
     } else if (tokenId.startsWith("slot") || tokenId == "round_banner") {
       result.nop = true; // do not move slots
@@ -515,13 +518,16 @@ class GameXBody extends GameMachine {
           } else if (tokenId.startsWith("card_ball")) {
             tokenInfo.tooltip = _("Gain skaill knife for each Stone Ball you have");
           } else if (tokenId.startsWith("card_spin")) {
-            tokenInfo.tooltip = _("Gain wool for each Spindle you have");
+            tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain wool for each Spindle you have"));
+            tokenInfo.tooltip += this.ttSection(_("VP"), "1");
           } else if (tokenId.startsWith("card_roof")) {
-            tokenInfo.tooltip = _(
-              "No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one"
-            );
+            tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("None"));
+            tokenInfo.tooltip += this.ttSection(_("VP"), this.getRulesFor(tokenId, "vp"));
+            tokenInfo.tooltip += _("Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one");
           } else if (tokenId.startsWith("card_util")) {
-            tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
+            tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain Hide"));
+            tokenInfo.tooltip += this.ttSection(_("VP"), this.getRulesFor(tokenId, "vp"));
+            tokenInfo.tooltip += _("Increase your Hearth by one. Decrease you Midden production by one");
           } else if (tokenId.startsWith("card_goal")) {
             tokenInfo.tooltip += this.ttSection(
               undefined,
@@ -534,11 +540,20 @@ class GameXBody extends GameMachine {
         tokenInfo.showtooltip = false;
         return;
 
-      case "deck":
+      case "deck": {
+        const tokenId = tokenInfo.key;
         tokenInfo.showtooltip = true;
-        tokenInfo.tooltip = _("Village Deck contains village cards");
-        //tokenInfo.name = "XXX";
+        if (tokenId.startsWith("deck_village")) {
+          tokenInfo.tooltip = _("Village Deck contains village cards");
+        } else if (tokenId.startsWith("deck_spin")) {
+          const x = this.getTokenDisplayInfo("card_spin");
+          tokenInfo.tooltip = x.tooltip;
+        } else if (tokenId.startsWith("deck_roof")) {
+          const x = this.getTokenDisplayInfo("card_roofi");
+          tokenInfo.tooltip = x.tooltip;
+        }
         return;
+      }
 
       case "counter":
         const tokenId = tokenInfo.key;

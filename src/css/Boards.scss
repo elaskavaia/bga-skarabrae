@@ -177,11 +177,20 @@
     gap: 2px;
   }
 
-  @for $num from 1 through 9 {
+  @for $num from 1 through 25 {
     $pos: calc(30 + $num);
     .storage > *:nth-child(#{$pos}) {
       position: absolute;
       bottom: -17%;
+      left: calc(($num - 1) * 4%);
+    }
+  }
+
+  @for $num from 1 through 25 {
+    $pos: calc(30 + 25 + $num);
+    .storage > *:nth-child(#{$pos}) {
+      position: absolute;
+      top: -21%;
       left: calc(($num - 1) * 4%);
     }
   }
@@ -208,6 +217,12 @@
         margin-top: -130%;
       }
     }
+    @for $num from 1 through 12 {
+      .card[data-state="#{$num}"] {
+        position: relative;
+        z-index: $num;
+      }
+    }
   }
 
   .cards_area {
@@ -218,7 +233,7 @@
       display: inline-block;
     }
     .card ~ .card {
-      margin-left: -20%;
+      margin-left: -19%;
     }
   }
   .action_area {

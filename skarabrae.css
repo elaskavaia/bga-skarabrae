@@ -361,7 +361,8 @@
 }
 
 .card.spin,
-.deck.spin {
+.deck.spin,
+.deck_spin {
   background-image: url(img/nset_cards.jpg);
   background-position: 85.7142857143% 0;
   background-size: 800% auto;
@@ -610,6 +611,211 @@
   bottom: -17%;
   left: 32%;
 }
+.tableau .storage > *:nth-child(40) {
+  position: absolute;
+  bottom: -17%;
+  left: 36%;
+}
+.tableau .storage > *:nth-child(41) {
+  position: absolute;
+  bottom: -17%;
+  left: 40%;
+}
+.tableau .storage > *:nth-child(42) {
+  position: absolute;
+  bottom: -17%;
+  left: 44%;
+}
+.tableau .storage > *:nth-child(43) {
+  position: absolute;
+  bottom: -17%;
+  left: 48%;
+}
+.tableau .storage > *:nth-child(44) {
+  position: absolute;
+  bottom: -17%;
+  left: 52%;
+}
+.tableau .storage > *:nth-child(45) {
+  position: absolute;
+  bottom: -17%;
+  left: 56%;
+}
+.tableau .storage > *:nth-child(46) {
+  position: absolute;
+  bottom: -17%;
+  left: 60%;
+}
+.tableau .storage > *:nth-child(47) {
+  position: absolute;
+  bottom: -17%;
+  left: 64%;
+}
+.tableau .storage > *:nth-child(48) {
+  position: absolute;
+  bottom: -17%;
+  left: 68%;
+}
+.tableau .storage > *:nth-child(49) {
+  position: absolute;
+  bottom: -17%;
+  left: 72%;
+}
+.tableau .storage > *:nth-child(50) {
+  position: absolute;
+  bottom: -17%;
+  left: 76%;
+}
+.tableau .storage > *:nth-child(51) {
+  position: absolute;
+  bottom: -17%;
+  left: 80%;
+}
+.tableau .storage > *:nth-child(52) {
+  position: absolute;
+  bottom: -17%;
+  left: 84%;
+}
+.tableau .storage > *:nth-child(53) {
+  position: absolute;
+  bottom: -17%;
+  left: 88%;
+}
+.tableau .storage > *:nth-child(54) {
+  position: absolute;
+  bottom: -17%;
+  left: 92%;
+}
+.tableau .storage > *:nth-child(55) {
+  position: absolute;
+  bottom: -17%;
+  left: 96%;
+}
+.tableau .storage > *:nth-child(56) {
+  position: absolute;
+  top: -21%;
+  left: 0%;
+}
+.tableau .storage > *:nth-child(57) {
+  position: absolute;
+  top: -21%;
+  left: 4%;
+}
+.tableau .storage > *:nth-child(58) {
+  position: absolute;
+  top: -21%;
+  left: 8%;
+}
+.tableau .storage > *:nth-child(59) {
+  position: absolute;
+  top: -21%;
+  left: 12%;
+}
+.tableau .storage > *:nth-child(60) {
+  position: absolute;
+  top: -21%;
+  left: 16%;
+}
+.tableau .storage > *:nth-child(61) {
+  position: absolute;
+  top: -21%;
+  left: 20%;
+}
+.tableau .storage > *:nth-child(62) {
+  position: absolute;
+  top: -21%;
+  left: 24%;
+}
+.tableau .storage > *:nth-child(63) {
+  position: absolute;
+  top: -21%;
+  left: 28%;
+}
+.tableau .storage > *:nth-child(64) {
+  position: absolute;
+  top: -21%;
+  left: 32%;
+}
+.tableau .storage > *:nth-child(65) {
+  position: absolute;
+  top: -21%;
+  left: 36%;
+}
+.tableau .storage > *:nth-child(66) {
+  position: absolute;
+  top: -21%;
+  left: 40%;
+}
+.tableau .storage > *:nth-child(67) {
+  position: absolute;
+  top: -21%;
+  left: 44%;
+}
+.tableau .storage > *:nth-child(68) {
+  position: absolute;
+  top: -21%;
+  left: 48%;
+}
+.tableau .storage > *:nth-child(69) {
+  position: absolute;
+  top: -21%;
+  left: 52%;
+}
+.tableau .storage > *:nth-child(70) {
+  position: absolute;
+  top: -21%;
+  left: 56%;
+}
+.tableau .storage > *:nth-child(71) {
+  position: absolute;
+  top: -21%;
+  left: 60%;
+}
+.tableau .storage > *:nth-child(72) {
+  position: absolute;
+  top: -21%;
+  left: 64%;
+}
+.tableau .storage > *:nth-child(73) {
+  position: absolute;
+  top: -21%;
+  left: 68%;
+}
+.tableau .storage > *:nth-child(74) {
+  position: absolute;
+  top: -21%;
+  left: 72%;
+}
+.tableau .storage > *:nth-child(75) {
+  position: absolute;
+  top: -21%;
+  left: 76%;
+}
+.tableau .storage > *:nth-child(76) {
+  position: absolute;
+  top: -21%;
+  left: 80%;
+}
+.tableau .storage > *:nth-child(77) {
+  position: absolute;
+  top: -21%;
+  left: 84%;
+}
+.tableau .storage > *:nth-child(78) {
+  position: absolute;
+  top: -21%;
+  left: 88%;
+}
+.tableau .storage > *:nth-child(79) {
+  position: absolute;
+  top: -21%;
+  left: 92%;
+}
+.tableau .storage > *:nth-child(80) {
+  position: absolute;
+  top: -21%;
+  left: 96%;
+}
 .tableau .village_area > *,
 .tableau .pboard_area > * {
   position: relative;
@@ -631,6 +837,54 @@
   position: relative;
   margin-top: -130%;
 }
+.tableau .settlers_area .card[data-state="1"] {
+  position: relative;
+  z-index: 1;
+}
+.tableau .settlers_area .card[data-state="2"] {
+  position: relative;
+  z-index: 2;
+}
+.tableau .settlers_area .card[data-state="3"] {
+  position: relative;
+  z-index: 3;
+}
+.tableau .settlers_area .card[data-state="4"] {
+  position: relative;
+  z-index: 4;
+}
+.tableau .settlers_area .card[data-state="5"] {
+  position: relative;
+  z-index: 5;
+}
+.tableau .settlers_area .card[data-state="6"] {
+  position: relative;
+  z-index: 6;
+}
+.tableau .settlers_area .card[data-state="7"] {
+  position: relative;
+  z-index: 7;
+}
+.tableau .settlers_area .card[data-state="8"] {
+  position: relative;
+  z-index: 8;
+}
+.tableau .settlers_area .card[data-state="9"] {
+  position: relative;
+  z-index: 9;
+}
+.tableau .settlers_area .card[data-state="10"] {
+  position: relative;
+  z-index: 10;
+}
+.tableau .settlers_area .card[data-state="11"] {
+  position: relative;
+  z-index: 11;
+}
+.tableau .settlers_area .card[data-state="12"] {
+  position: relative;
+  z-index: 12;
+}
 .tableau .cards_area {
   position: relative;
   max-width: 486px;
@@ -640,7 +894,7 @@
   display: inline-block;
 }
 .tableau .cards_area .card ~ .card {
-  margin-left: -20%;
+  margin-left: -19%;
 }
 .tableau .action_area {
   aspect-ratio: 25/16;
@@ -921,8 +1175,8 @@ html[data-theme=dark] .restrackers .counter {
   height: 50px;
 }
 
-.storage .wooden,
-.storage .tracker.slider {
+.tableau .wooden,
+.tableau .slider {
   filter: drop-shadow(2px 2px 3px black);
 }
 
@@ -1255,6 +1509,7 @@ latin
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+  font-family: "Caesar Dressing";
 }
 
 .bgabutton_orange {
@@ -1398,7 +1653,7 @@ html {
   background-color: #f8f8f8;
 }
 
-[data-theme=light] #game_play_area_background {
+#game_play_area_background {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -1412,6 +1667,7 @@ html {
 
 [data-theme=dark] #game_play_area_background {
   background-image: url(img/stonex.jpg);
+  background-size: unset;
 }
 
 #round_banner {
@@ -1430,11 +1686,9 @@ html {
   content: "";
   position: absolute;
   width: 100%;
-  height: 5%;
+  height: 60px;
   z-index: -1;
-  background-image: url("img/topBanner.png");
-  background-size: 100% auto;
-  background-repeat: no-repeat;
+  background-color: rgb(140, 89, 53);
 }
 
 .score-sheet {

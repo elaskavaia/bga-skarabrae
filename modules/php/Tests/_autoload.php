@@ -2,9 +2,6 @@
 define("APP_GAMEMODULE_PATH", getenv("APP_GAMEMODULE_PATH"));
 spl_autoload_register(function ($class_name) {
     switch ($class_name) {
-        case "APP_GameClass":
-        case "APP_DbObject":
-        case "APP_Object":
         case "Table":
         case "Notify":
         case "Bga\\GameFramework\\Notify":

@@ -95,8 +95,10 @@ class Op_or extends ComplexOperation {
                 "r" => $sub->getTypeFullExpr(),
                 "q" => $q,
                 "max" => $max,
-                "token_id" => $args["token_id"] ?? null,
             ];
+            if ($sub instanceof Op_pay) {
+                $res["choice_$i"]["token_id"] = $args["token_id"] ?? null;
+            }
         }
         if ($totalLimit < $this->getMinCount()) {
             return ["q" => Material::MA_ERR_COST];
@@ -116,6 +118,13 @@ class Op_or extends ComplexOperation {
             return clienttranslate('Choose one of the options ${name} (count: ${count})');
         }
         return clienttranslate('Choose one of the options ${name}');
+    }
+
+    public function getSubTitle() {
+        if ($this->getReason()) {
+            return $this->game->getTokenName($this->getReason());
+        }
+        return "";
     }
     function getDescription() {
         return clienttranslate('${actplayer} chooses one of the options');

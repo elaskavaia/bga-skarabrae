@@ -782,7 +782,7 @@ var Game1Tokens = /** @class */ (function (_super) {
                 tokenDbInfo = this.setTokenInfo(tokenId, tokenNode_1.parentElement.id, st, false);
             }
             else {
-                console.error("Cannot setup token for " + tokenId);
+                //console.error("Cannot setup token for " + tokenId);
                 tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
             }
         }
@@ -1673,7 +1673,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n</div>\n\n\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n <div id=\"deck_spin\" class=\"deck spin\"></div>\n</div>\n\n\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1925,6 +1925,9 @@ var GameXBody = /** @class */ (function (_super) {
         else if (tokenId.startsWith("hand")) {
             result.nop = true;
         }
+        else if (tokenId.startsWith("deck") || tokenId.startsWith("discard")) {
+            result.nop = true;
+        }
         else if (tokenId.startsWith("slot") || tokenId == "round_banner") {
             result.nop = true; // do not move slots
         }
@@ -2120,13 +2123,18 @@ var GameXBody = /** @class */ (function (_super) {
                         tokenInfo.tooltip = _("Gain skaill knife for each Stone Ball you have");
                     }
                     else if (tokenId_3.startsWith("card_spin")) {
-                        tokenInfo.tooltip = _("Gain wool for each Spindle you have");
+                        tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain wool for each Spindle you have"));
+                        tokenInfo.tooltip += this.ttSection(_("VP"), "1");
                     }
                     else if (tokenId_3.startsWith("card_roof")) {
-                        tokenInfo.tooltip = _("No immediate effect. Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one");
+                        tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("None"));
+                        tokenInfo.tooltip += this.ttSection(_("VP"), this.getRulesFor(tokenId_3, "vp"));
+                        tokenInfo.tooltip += _("Provides a Roof during end of round. Each roof reduces amount of food you need to pay by one");
                     }
                     else if (tokenId_3.startsWith("card_util")) {
-                        tokenInfo.tooltip = _("Gain Hide. Increase your Hearth by one. Decrease you Midden production by one");
+                        tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain Hide"));
+                        tokenInfo.tooltip += this.ttSection(_("VP"), this.getRulesFor(tokenId_3, "vp"));
+                        tokenInfo.tooltip += _("Increase your Hearth by one. Decrease you Midden production by one");
                     }
                     else if (tokenId_3.startsWith("card_goal")) {
                         tokenInfo.tooltip += this.ttSection(undefined, _("If you have NOT met the condition shown on the Focus Card, you lose 5VP. Condition evaluated at the end of the game"));
@@ -2136,11 +2144,22 @@ var GameXBody = /** @class */ (function (_super) {
             case "cardset":
                 tokenInfo.showtooltip = false;
                 return;
-            case "deck":
+            case "deck": {
+                var tokenId_4 = tokenInfo.key;
                 tokenInfo.showtooltip = true;
-                tokenInfo.tooltip = _("Village Deck contains village cards");
-                //tokenInfo.name = "XXX";
+                if (tokenId_4.startsWith("deck_village")) {
+                    tokenInfo.tooltip = _("Village Deck contains village cards");
+                }
+                else if (tokenId_4.startsWith("deck_spin")) {
+                    var x = this.getTokenDisplayInfo("card_spin");
+                    tokenInfo.tooltip = x.tooltip;
+                }
+                else if (tokenId_4.startsWith("deck_roof")) {
+                    var x = this.getTokenDisplayInfo("card_roofi");
+                    tokenInfo.tooltip = x.tooltip;
+                }
                 return;
+            }
             case "counter":
                 var tokenId = tokenInfo.key;
                 // XXX tooltip

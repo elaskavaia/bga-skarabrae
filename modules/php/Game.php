@@ -377,8 +377,6 @@ class Game extends Base {
 
         $location = "tableau_{$color}";
 
-        $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
-
         $type = getPart($card, 1);
         $owner = $color;
         $data = ["reason" => $card];
@@ -386,9 +384,17 @@ class Game extends Base {
             case "setl":
                 $t = $this->getTerrainNum($card);
                 $c = count($this->tokens->getTokensOfTypeInLocation("card_setl_$t", $location));
-                $this->tokens->dbSetTokenState($card, $c, "");
+
+                $this->tokens->dbSetTokenLocation(
+                    $card,
+                    $location,
+                    $c + 1,
+                    $message,
+                    $args + ["reason" => $reason],
+                    $this->getPlayerIdByColor($color)
+                );
                 $this->effect_settlerCard($owner, $card, $args["flags"] ?? 3);
-                break;
+                return;
             case "ball":
                 $r = $this->getRulesFor($card, "r");
                 $this->machine->push("cotag(5,$r)", $owner, $data);
@@ -404,6 +410,7 @@ class Game extends Base {
                 $this->machine->push("$r", $owner, $data);
                 break;
         }
+        $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
     }
     function effect_settlerCard(string $owner, string $card, int $flags = 3) {
         $data = ["reason" => $card];

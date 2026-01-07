@@ -2,13 +2,14 @@ id|name|location|scope|counter|content|php
 #set type=location
 #set showtooltip=0
 #set create=0
-deck_roof|Deck|supply|global|public|hidden|
-deck_spin|Deck|supply|global|public|hidden|
-discard|Deck|supply|global|public|public|
+deck_roof|Roof Cards|supply|global|public|hidden|
+deck_spin|Spindle Whorl Cards|supply|global|public|hidden|
+deck_goal|Deck|supply|global|hidden|hidden|
+deck_task|Deck|supply|global|hidden|hidden|
 deck_village|Village Deck|supply|global|public|hidden|
-discard_village|Village Discard|supply|global|public|public|
+discard_village|Village Discard|supply|global|public|hidden|
 limbo|Limbo||global|hidden|hidden|
-tableau|Player Area|players_panels|player|hidden|public|
+tableau|Player Area|players_panels|player|hidden|public|'sort'=>'token_state'
 hand|Player Hand|players_panels|player|hidden|private|
 supply|Deck|supply|global|public|public|
 

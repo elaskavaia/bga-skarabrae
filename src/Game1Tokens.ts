@@ -329,7 +329,7 @@ class Game1Tokens extends Game0Basics {
         const st = parseInt(tokenNode.dataset.state);
         tokenDbInfo = this.setTokenInfo(tokenId, tokenNode.parentElement.id, st, false);
       } else {
-        console.error("Cannot setup token for " + tokenId);
+        //console.error("Cannot setup token for " + tokenId);
         tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
       }
     }
