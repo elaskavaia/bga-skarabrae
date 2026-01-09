@@ -1673,7 +1673,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n <div id=\"discard_village\" class=\"discard village\"></div>\n <div id=\"deck_village\" class=\"deck village\"></div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n <div id=\"deck_spin\" class=\"deck spin\"></div>\n</div>\n\n\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n\n <div id=\"deck_village\" class=\"deck village\">\n  <div id=\"discard_village\" class=\"discard village\"></div>\n </div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n <div id=\"deck_spin\" class=\"deck spin\"></div>\n</div>\n\n\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {
@@ -1762,7 +1762,7 @@ var GameXBody = /** @class */ (function (_super) {
             { property: "game_vp_food", label: _("VP from food") },
             { property: "game_vp_skaill", label: _("VP from skaill knives") },
             { property: "game_vp_midden", label: _("VP penalty from midden") },
-            { property: "game_vp_slider", label: _("VP penlty from slider") },
+            { property: "game_vp_slider", label: _("VP penalty from slider") },
             { property: "game_vp_tasks", label: _("VP penalty from tasks") },
             { property: "game_vp_goals", label: _("VP penalty from goals") },
             { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }

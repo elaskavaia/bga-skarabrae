@@ -286,7 +286,7 @@ class Game extends Base {
                 $this->tokens->dbResourceInc(
                     "tracker_slider_$color",
                     $linc,
-                    clienttranslate('${player_name}\'s slider shifts ${inc} spaces to the right'),
+                    clienttranslate('${player_name} shifts slider ${inc} spaces to the right'),
                     $options,
                     $this->getPlayerIdByColor($color)
                 );
@@ -369,64 +369,6 @@ class Game extends Base {
         );
 
         return $tokens;
-    }
-
-    function effect_gainCard(string $color, string $card, string $reason = "", array $args = []) {
-        $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
-        unset($args["message"]);
-
-        $location = "tableau_{$color}";
-
-        $type = getPart($card, 1);
-        $owner = $color;
-        $data = ["reason" => $card];
-        switch ($type) {
-            case "setl":
-                $t = $this->getTerrainNum($card);
-                $c = count($this->tokens->getTokensOfTypeInLocation("card_setl_$t", $location));
-
-                $this->tokens->dbSetTokenLocation(
-                    $card,
-                    $location,
-                    $c + 1,
-                    $message,
-                    $args + ["reason" => $reason],
-                    $this->getPlayerIdByColor($color)
-                );
-                $this->effect_settlerCard($owner, $card, $args["flags"] ?? 3);
-                return;
-            case "ball":
-                $r = $this->getRulesFor($card, "r");
-                $this->machine->push("cotag(5,$r)", $owner, $data);
-                break;
-            case "spin":
-                $r = $this->getRulesFor($card, "r");
-                $this->machine->push("cotag(6,$r)", $owner, $data);
-                break;
-            case "roof":
-                break;
-            case "util":
-                $r = $this->getRulesFor($card, "r");
-                $this->machine->push("$r", $owner, $data);
-                break;
-        }
-        $this->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerIdByColor($color));
-    }
-    function effect_settlerCard(string $owner, string $card, int $flags = 3) {
-        $data = ["reason" => $card];
-        $r = $this->getRulesFor($card, "r");
-        $terr = $this->getTerrainNum($card);
-        $ac = $terr + 5;
-        $gain = $this->getRulesFor("action_main_$ac", "r"); // gathering
-        if ($flags == 1) {
-            $this->machine->push("cotag($terr,$gain)/($r)", $owner, $data);
-        } elseif ($flags == 3) {
-            $this->machine->push("?($r)", $owner, $data);
-            $this->machine->push("cotag($terr,$gain)", $owner, $data);
-        } elseif ($flags == 2) {
-            // bottom only
-            $this->machine->push("?($r)", $owner, $data);
-        }
     }
 
     function effect_cleanCards(mixed $n) {
@@ -762,7 +704,7 @@ class Game extends Base {
     }
     public function customUndoSavepoint(int $player_id, int $barrier = 0, string $label = "undo"): void {
         $this->debugLog("customUndoSavepoint $player_id bar= $barrier");
-        if ($this->isMultiActive()) {
+        if ($this->gamestate->isMultiactiveState()) {
             $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
         } else {
             $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
@@ -816,7 +758,7 @@ class Game extends Base {
     }
 
     function multiPlayerUndo($owner) {
-        if ($this->game->isMultiActive()) {
+        if ($this->game->gamestate->isMultiactiveState()) {
             $this->dbMultiUndo->undoRestorePoint(0, true);
         } else {
             throw new BgaSystemException("Not implemented");

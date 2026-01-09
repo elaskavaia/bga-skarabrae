@@ -20,10 +20,10 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
 
-use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\OpCommon\OpCard;
 
 // Spin wool
-class Op_spin extends Operation {
+class Op_spin extends OpCard {
     function resolve(): void {
         $color = $this->getOwner();
         $from = "deck_spin";
@@ -34,7 +34,7 @@ class Op_spin extends Operation {
             $this->queue("?(3n_wool:roof)");
         }
         // this will push on top
-        $this->game->effect_gainCard($color, $card["key"], $this->getReason(), [
+        $this->effect_gainCard($color, $card["key"], $this->getReason(), [
             "place_from" => $from,
         ]);
 

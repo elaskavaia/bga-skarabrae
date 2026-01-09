@@ -59,7 +59,7 @@ game_vp_cards|VP from cards
 game_vp_food|VP from food
 game_vp_skaill|VP from skaill knives
 game_vp_midden|VP penalty from midden
-game_vp_slider|VP penlty from slider
+game_vp_slider|VP penalty from slider
 game_vp_tasks|VP penalty from tasks
 game_vp_goals|VP penalty from goals
 game_vp_total|VP total

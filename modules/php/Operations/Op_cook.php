@@ -112,6 +112,9 @@ class Op_cook extends Operation {
     }
 
     public function requireConfirmation() {
+        if ($this->noValidTargets()) {
+            return false;
+        }
         return true;
     }
 }

@@ -21,13 +21,14 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
+use Bga\Games\skarabrae\OpCommon\OpMachine;
 
 class Op_turn extends Operation {
     function auto(): bool {
         $player_id = $this->getPlayerId();
         $this->game->switchActivePlayer($player_id);
 
-        if (!$this->game->isMultiActive() && $player_id) {
+        if (!$this->game->gamestate->isMultiactiveState() && $player_id) {
             $this->game->customUndoSavepoint($player_id, 1);
         }
         return parent::auto();
@@ -38,6 +39,9 @@ class Op_turn extends Operation {
 
         if ($card == "yield") {
             $this->queue("pass");
+            if (!$this->game->gamestate->isMultiactiveState()) {
+                $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
+            }
             return;
         }
         $this->queue("village", $this->getOwner(), ["card" => $card]);
@@ -46,6 +50,9 @@ class Op_turn extends Operation {
         $curturn = $this->game->getTurnNumber();
         if ($curturn == 3) {
             $this->queue("night", $this->getOwner());
+        }
+        if (!$this->game->gamestate->isMultiactiveState()) {
+            $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         }
     }
     public function getUiArgs() {

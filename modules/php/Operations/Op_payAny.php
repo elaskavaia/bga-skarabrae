@@ -55,6 +55,7 @@ class Op_payAny extends CountableOperation {
                 $list[$res]["q"] = 0;
                 $list[$res]["max"] = $resvalue;
                 $list[$res]["name"] = '${token_div}';
+                $list[$res]["token_id"] = "tracker_$res";
                 $list[$res]["args"] = ["token_div" => "tracker_$res"];
             }
         }

@@ -1,5 +1,6 @@
 <?php
 define("APP_GAMEMODULE_PATH", getenv("APP_GAMEMODULE_PATH"));
+
 spl_autoload_register(function ($class_name) {
     switch ($class_name) {
         case "Table":
@@ -8,7 +9,7 @@ spl_autoload_register(function ($class_name) {
         case "Bga\\GameFramework\\Table":
             //var_dump($class_name);
             //var_dump(APP_GAMEMODULE_PATH);
-            include APP_GAMEMODULE_PATH . "/module/table/table.game.php";
+            include APP_GAMEMODULE_PATH . "/module" . "/table/table.game.php";
             return;
         case "Deck":
             //var_dump($class_name);

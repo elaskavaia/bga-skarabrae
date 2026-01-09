@@ -42,7 +42,7 @@
     },
     "game_vp_slider": {
       "id": 19,
-      "name": "VP penlty from slider",
+      "name": "VP penlaty from slider",
       "type": "int"
     },
     "game_vp_tasks": {
@@ -62,7 +62,57 @@
     },
     "game_special_action": {
       "id": 30,
-      "name": "Special Action",
+      "name": "Special Action Name",
+      "type": "int"
+    },
+    "game_action_1": {
+      "id": 31,
+      "name": "Count of Action Furnish",
+      "type": "int"
+    },
+    "game_action_2": {
+      "id": 32,
+      "name": "Count of Action Cook",
+      "type": "int"
+    },
+    "game_action_3": {
+      "id": 33,
+      "name": "Count of Action Craft",
+      "type": "int"
+    },
+    "game_action_4": {
+      "id": 34,
+      "name": "Count of Action Clean",
+      "type": "int"
+    },
+    "game_action_5": {
+      "id": 35,
+      "name": "Count of Action Trade",
+      "type": "int"
+    },
+    "game_action_6": {
+      "id": 36,
+      "name": "Count of Action Gather on Shore",
+      "type": "int"
+    },
+    "game_action_7": {
+      "id": 37,
+      "name": "Count of Action Gather on Hills",
+      "type": "int"
+    },
+    "game_action_8": {
+      "id": 38,
+      "name": "Count of Action Gather on Thickets",
+      "type": "int"
+    },
+    "game_action_9": {
+      "id": 39,
+      "name": "Count of Action Gather on Fields",
+      "type": "int"
+    },
+    "game_action_10": {
+      "id": 40,
+      "name": "Count of Action Special",
       "type": "int"
     }
   },

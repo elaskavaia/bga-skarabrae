@@ -724,7 +724,7 @@ class Material {
         "name" => clienttranslate("VP penalty from midden"),
 ],
     "game_vp_slider" => [ 
-        "name" => clienttranslate("VP penlty from slider"),
+        "name" => clienttranslate("VP penalty from slider"),
 ],
     "game_vp_tasks" => [ 
         "name" => clienttranslate("VP penalty from tasks"),

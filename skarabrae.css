@@ -1171,7 +1171,7 @@ html[data-theme=dark] .restrackers .counter {
 }
 
 .worker.large {
-  width: 30px;
+  width: 38px;
   height: 50px;
 }
 
@@ -1657,17 +1657,12 @@ html {
   width: 100%;
   height: 100%;
   position: absolute;
-  display: block;
+  display: block !important;
   top: 0;
   left: 0;
   z-index: -1;
   background-image: url(img/bg11.jpg);
   background-size: auto 100%;
-}
-
-[data-theme=dark] #game_play_area_background {
-  background-image: url(img/stonex.jpg);
-  background-size: unset;
 }
 
 #round_banner {
@@ -1686,9 +1681,11 @@ html {
   content: "";
   position: absolute;
   width: 100%;
-  height: 60px;
+  height: 5%;
   z-index: -1;
-  background-color: rgb(140, 89, 53);
+  background-image: url("img/topBanner.png");
+  background-size: 100% auto;
+  background-repeat: no-repeat;
 }
 
 .score-sheet {

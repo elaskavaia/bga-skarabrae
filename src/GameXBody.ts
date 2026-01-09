@@ -36,8 +36,10 @@ class GameXBody extends GameMachine {
  </div>
 <div id="players_panels"></div>
 <div id="supply">
- <div id="discard_village" class="discard village"></div>
- <div id="deck_village" class="deck village"></div>
+
+ <div id="deck_village" class="deck village">
+  <div id="discard_village" class="discard village"></div>
+ </div>
  <div id="deck_roof" class="deck roof"></div>
  <div id="deck_spin" class="deck spin"></div>
 </div>
@@ -187,7 +189,7 @@ class GameXBody extends GameMachine {
       { property: "game_vp_food", label: _("VP from food") },
       { property: "game_vp_skaill", label: _("VP from skaill knives") },
       { property: "game_vp_midden", label: _("VP penalty from midden") },
-      { property: "game_vp_slider", label: _("VP penlty from slider") },
+      { property: "game_vp_slider", label: _("VP penalty from slider") },
       { property: "game_vp_tasks", label: _("VP penalty from tasks") },
       { property: "game_vp_goals", label: _("VP penalty from goals") },
       { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }

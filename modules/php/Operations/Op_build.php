@@ -28,6 +28,6 @@ class Op_build extends Operation {
         $card = "action_special_8";
         $state = $this->game->getActionTileSide($card);
         $dis = $state == 0 ? 2 : 3;
-        $this->queue("trade($dis)/furnish($dis)", $this->getOwner(), null, $card);
+        $this->queue("furnish($dis)/trade($dis)", $this->getOwner(), null, $card);
     }
 }

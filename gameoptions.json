@@ -27,7 +27,7 @@
     "name": "Solo Mode Difficulty",
     "values": {
       "1": {
-        "name": "Easy (45 vp)"
+        "name": "Standard (45 vp)"
       },
       "2": {
         "name": "Hard (55 vp)"

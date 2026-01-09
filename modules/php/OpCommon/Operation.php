@@ -227,7 +227,7 @@ abstract class Operation {
             $data["reason"] = $reason;
         }
         $this->game->machine->insert($type, $owner, $data, $this->queueRank);
-        //$this->game->debugConsole("queue $type");
+        //$this->game->debugConsole("queue $type " . $this->queueRank);
     }
     protected function getCheckedArg(bool $checkMaxCount = false, bool $checkMinCount = false) {
         if ($this->userArgs === null) {

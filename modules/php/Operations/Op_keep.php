@@ -21,13 +21,12 @@ declare(strict_types=1);
 namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
-use Bga\Games\skarabrae\Material;
-use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\OpCard;
 
 /**
  * Keep a village card, discard the rest
  */
-class Op_keep extends Operation {
+class Op_keep extends OpCard {
     function getArgType() {
         return Operation::TTYPE_TOKEN;
     }
@@ -61,7 +60,7 @@ class Op_keep extends Operation {
         $owner = $this->getOwner();
         $card = $this->getCheckedArg();
         $state = $this->game->getActionTileSide($this->getReason() ?: "action_special_6");
-        $this->game->effect_gainCard($owner, $card, $this->getReason(), ["flags" => $state ? 2 : 0]);
+        $this->effect_gainCard($owner, $card, $this->getReason(), ["flags" => $state ? 2 : 0]);
         $cards = $this->game->tokens->getTokensOfTypeInLocation("card", "hand_$owner");
         $this->game->tokens->dbSetTokensLocation($cards, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));
     }

@@ -275,7 +275,7 @@ class Base extends Table {
         return $this->getPlayersNumber() == 1;
     }
     function getMostlyActivePlayerId() {
-        if ($this->isMultiActive()) {
+        if ($this->gamestate->isMultiactiveState()) {
             $list = $this->gamestate->getActivePlayerList();
             if (count($list) > 0) {
                 return $list[0];
@@ -292,9 +292,6 @@ class Base extends Table {
             return "000000";
         }
         return $this->getPlayerColorById((int) $id);
-    }
-    public function isMultiActive() {
-        return $this->gamestate->isMultiactiveState();
     }
 
     function isRealPlayer($player_id) {
