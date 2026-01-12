@@ -24,7 +24,7 @@ use Bga\Games\skarabrae\OpCommon\CountableOperation;
 
 class Op_draw extends CountableOperation {
     public function getPrompt() {
-        return 'Confirm draw ${count} cards, this cannot be undone';
+        return clienttranslate('Confirm draw ${count} cards, this cannot be undone');
     }
 
     public function requireConfirmation() {

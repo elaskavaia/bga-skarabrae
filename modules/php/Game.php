@@ -580,7 +580,7 @@ class Game extends Base {
                 }
             }
             $score = $this->playerScore->get($player_id);
-            $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score]);
+            $this->notifyMessage(clienttranslate('${player_name} gets total score of ${points}'), ["points" => $score], $player_id);
             $this->playerStats->set("game_vp_total", $score, $player_id);
             if ($this->isSolo()) {
                 $var = $this->getVariantSoloDif();

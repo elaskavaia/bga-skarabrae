@@ -40,7 +40,22 @@ card_spin|Spindle Card|10|card spin|2|deck_spin|'vp'=>1,'r'=>'wool'
 #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
 #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5
 
-#create=0
+#set create=4
+#set location=stats
+game_action_1|
+game_action_2|
+game_action_3|
+game_action_4|
+game_action_5|
+game_action_6|
+game_action_7|
+game_action_8|
+game_action_9|
+game_action_10|
+
+
+#set create=0
+#set location=
 env_1|Shore
 env_2|Hills
 env_3|Thickets

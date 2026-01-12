@@ -66,7 +66,7 @@ class DbMultiUndo {
     }
 
     function doSaveUndoSnapshot(array $meta, int $player_id, bool $notify = false) {
-        $move_id = $this->getNextMoveId() - 1;
+        $move_id = $this->game->getNextMoveId() - 1;
 
         $barrier = array_get($meta, "barrier", 0);
 
@@ -171,9 +171,6 @@ class DbMultiUndo {
         return $moves;
     }
 
-    function getNextMoveId() {
-        return $this->game->getNextMoveId();
-    }
     function errorCannotUndo(int $move_id = 0) {
         if ($move_id == 0) {
             $message = $this->game->_("Nothing to undo");
@@ -185,11 +182,8 @@ class DbMultiUndo {
 
     /** Replace custom undo data of move_id into bga system undo tables */
     function doReplaceUndoSnapshot(int $move_id, int $player_id) {
-        $current = $this->getNextMoveId();
         //$this->warn("restoring to move $move_id ($current)|");
-        if ($move_id >= $current - 1) {
-            $this->errorCannotUndo($move_id);
-        }
+
         $tables = $this->game->getObjectListFromDB("SHOW TABLES", true);
         $prefix = "zz_savepoint_";
         $saved = $this->getMoveSnapshotDataJson($move_id, $player_id);
@@ -326,6 +320,10 @@ class DbMultiUndo {
         }
 
         //$this->game->not_a_move_notification = false;
+
+        if ($move_id >= $next - 1) {
+            $this->errorCannotUndo($move_id);
+        }
         $this->doReplaceUndoSnapshot($move_id, $player_id);
         if ($partial === false) {
             $this->game->bgaUndoRestorePoint();

@@ -31,7 +31,7 @@ class Op_feed extends CountableOperation {
         $req = $this->getRequiredFood();
         $rem = $req - $count;
         if ($rem > 0) {
-            $this->notifyMessage('${player_name} does not pay enough food and will discard settlers instead');
+            $this->notifyMessage(clienttranslate('${player_name} does not pay enough food and will discard settlers instead'));
             $this->queue("{$rem}discard", $this->getOwner(), null, $this->getOpName());
         }
         return;
@@ -39,9 +39,9 @@ class Op_feed extends CountableOperation {
 
     function skip() {
         if ($this->getCount() == 0) {
-            $this->notifyMessage('${player_name} does not need to spent food for feeding');
+            $this->notifyMessage(clienttranslate('${player_name} does not need to spend food for feeding'));
         } else {
-            $this->notifyMessage('${player_name} skips feeding and will discard settlers instead');
+            $this->notifyMessage(clienttranslate('${player_name} skips feeding and will discard settlers instead'));
         }
     }
 

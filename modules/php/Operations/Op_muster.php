@@ -22,8 +22,9 @@ namespace Bga\Games\skarabrae\Operations;
 
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\OpCommon\CountableOperation;
+use Bga\Games\skarabrae\OpCommon\OpCard;
 
-class Op_muster extends CountableOperation {
+class Op_muster extends OpCard {
     function getArgType() {
         return Operation::TTYPE_TOKEN;
     }
@@ -63,6 +64,6 @@ class Op_muster extends CountableOperation {
         $card = $this->getCheckedArg();
         $owner = $this->getOwner();
         $and = !!$this->game->getActionTileSide("action_special_5");
-        $this->game->effect_settlerCard($owner, $card, $and ? 3 : 1);
+        $this->effect_settlerCard($owner, $card, $and ? 3 : 1);
     }
 }

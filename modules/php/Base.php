@@ -459,7 +459,7 @@ class Base extends Table {
     }
 
     function dumpError($log) {
-        $move = $this->getNextMoveId();
+        $move = $this->getGameStateValue("next_move_id", 0);
         $this->error("Internal Error during move $move: $log.");
         $e = new Exception($log);
         $this->error($e->getTraceAsString());

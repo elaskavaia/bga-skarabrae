@@ -23,6 +23,8 @@ namespace Bga\Games\skarabrae\Operations;
 use Bga\Games\skarabrae\OpCommon\Operation;
 use Bga\Games\skarabrae\Material;
 
+use function Bga\Games\skarabrae\getPart;
+
 /** Standard action */
 class Op_act extends Operation {
     function getArgType() {
@@ -146,6 +148,17 @@ class Op_act extends Operation {
         $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
 
         $this->activateAction($action_tile);
+
+        if (str_starts_with($action_tile, "action_main")) {
+            $num = getPart($action_tile, 2);
+            $stat = "game_action_$num";
+        } else {
+            $stat = "game_action_10";
+        }
+
+        $val = 1 + (int) $this->game->tokens->db->getTokenState("{$stat}_{$owner}");
+        $this->game->tokens->db->createTokenIfNot("{$stat}_{$owner}", "stat", $val);
+        $this->game->playerStats->set($stat, $val, $this->getPlayerId());
 
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $worker = array_shift($workers);

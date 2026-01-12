@@ -64,7 +64,7 @@ class GameXBody extends GameMachine {
       this.setupScoreSheet();
       this.updateBanner();
 
-      document.rootElement?.classList.add("bgaext_cust_back");
+      document.documentElement?.classList.add("bgaext_cust_back");
     } catch (e) {
       console.error("Exception during game setup", e.stack);
     }

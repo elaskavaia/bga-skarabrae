@@ -32,7 +32,7 @@ class Op_keep extends OpCard {
     }
 
     public function getPrompt() {
-        return "Select a card to keep, rest will be discarded";
+        return clienttranslate("Select a card to keep, rest will be discarded");
     }
 
     function getPossibleMoves() {

@@ -1691,7 +1691,7 @@ var GameXBody = /** @class */ (function (_super) {
             this.setupNotifications();
             this.setupScoreSheet();
             this.updateBanner();
-            (_a = document.rootElement) === null || _a === void 0 ? void 0 : _a.classList.add("bgaext_cust_back");
+            (_a = document.documentElement) === null || _a === void 0 ? void 0 : _a.classList.add("bgaext_cust_back");
         }
         catch (e) {
             console.error("Exception during game setup", e.stack);
