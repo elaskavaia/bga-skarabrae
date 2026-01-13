@@ -465,7 +465,7 @@ class OpMachine {
                 $this->instanciateOperationFromDbRow($op)->undo();
                 return $this->multiplayerDistpatchAfterAction($player_id);
             }
-            $this->game->userAssert("Nothing to undo");
+            $this->game->userAssert(clienttranslate("Nothing to undo"));
 
             throw new BgaSystemException("Undo in multi active state is not supported yet $player_id is active");
         } else {

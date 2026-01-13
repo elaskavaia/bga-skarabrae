@@ -29,7 +29,7 @@ class Op_craft extends Operation {
     }
 
     public function getPrompt() {
-        return "Select an Action Tile to turn over";
+        return clienttranslate("Select an Action Tile to turn over");
     }
 
     function getPossibleMoves() {

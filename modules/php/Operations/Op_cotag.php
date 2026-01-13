@@ -30,9 +30,9 @@ class Op_cotag extends Operation {
     function getButtonName() {
         $args = $this->getArgs();
         if ($args["count_skaill"] > 0) {
-            return '${other_op} x ${mcount}..${count}';
+            return '${other_op} x ${mcount}..${count}'; // NOI18N
         }
-        return '${other_op} x ${mcount}';
+        return '${other_op} x ${mcount}'; // NOI18N
     }
 
     public function getExtraArgs() {

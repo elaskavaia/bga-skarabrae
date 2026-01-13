@@ -40,7 +40,7 @@ class Op_cook extends Operation {
             $this->queue("$c($recipe_rule)", $this->getOwner(), null, "action_main_2_$owner"); // cook action is the reason
             $prevWeight += $weight * $c;
             if ($prevWeight > $hearth_limit) {
-                $this->game->userAssert("Cannot cook that much stuff, if not sure select one thing at a time");
+                $this->game->userAssert(clienttranslate("Cannot cook that much stuff, if not sure select one thing at a time"));
             }
         }
 

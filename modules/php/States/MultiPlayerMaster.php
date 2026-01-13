@@ -18,7 +18,7 @@ class MultiPlayerMaster extends GameState {
             id: StateConstants::STATE_MULTI_PLAYER_MASTER,
             type: StateType::MULTIPLE_ACTIVE_PLAYER, // This state type means that one player is active and can do actions
             descriptionMyTurn: "",
-            description: "Other players making their choices",
+            description: clienttranslate("Other players making their choices"),
             transitions: ["loopback" => StateConstants::STATE_MULTI_PLAYER_MASTER],
             initialPrivate: StateConstants::STATE_MULTI_PLAYER_WAIT_PRIVATE
         );

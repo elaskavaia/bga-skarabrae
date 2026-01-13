@@ -28,7 +28,7 @@ class Op_pass extends Operation {
         $owner = $this->getOwner();
         $maxpass = $this->game->getMaxTurnMarkerPosition(1);
         $this->game->setTurnMarkerPosition($owner, $maxpass + 1);
-        $this->notifyMessage('${player_name} yelds');
+        $this->notifyMessage(clienttranslate('${player_name} yelds'));
         $this->queue("turnpick", $owner);
     }
 }

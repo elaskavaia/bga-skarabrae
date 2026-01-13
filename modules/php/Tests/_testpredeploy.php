@@ -41,4 +41,4 @@ function runClassTests(object $x) {
 
 runClassTests(new GameTest("GameTest"));
 
-echo "DONE, ALL GOOD\n";
+echo "DONE, ALL GOOD\n"; // NOI18N

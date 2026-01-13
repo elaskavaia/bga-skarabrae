@@ -33,7 +33,7 @@ class Op_draft extends Operation {
     }
 
     public function getPrompt() {
-        return "Select an action to keep, rest will be discarded";
+        return clienttranslate("Select an action to keep, rest will be discarded");
     }
 
     public function getDescription() {

@@ -828,7 +828,7 @@ class Game extends Base {
         $this->setupGameTables();
         //$newGameDatas = $this->getAllTableDatas(); // this is framework function
         //$this->notify->player($this->getActivePlayerId(), "resetInterfaceWithAllDatas", "", $newGameDatas); // this is notification to reset all data
-        $this->notify->all("message", "setup is done", []);
+        $this->notify->all("message", "setup is done", []); // NOI18N
         $this->notify->all("undoRestorePoint", "", []);
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
