@@ -11,6 +11,7 @@ use Bga\Games\skarabrae\StateConstants;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\GameState;
+use Exception;
 
 class PlayerTurn extends GameState {
     public function __construct(protected Game $game) {
@@ -56,6 +57,6 @@ class PlayerTurn extends GameState {
         return $this->game->machine->action_undo((int) $this->game->getCurrentPlayerId(), $move_id);
     }
     public function zombie(int $playerId) {
-        return $this->game->machine->action_whatever($playerId);
+        return $this->game->machine->action_whatever($playerId, false);
     }
 }

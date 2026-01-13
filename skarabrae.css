@@ -379,7 +379,22 @@
   background-position: 57.1428571429% 0;
 }
 
-.deck > * {
+.deck {
+  position: relative;
+  color: white;
+}
+.deck .counter {
+  position: absolute;
+  bottom: 1%;
+  right: 1%;
+}
+.deck .counter::after {
+  content: attr(data-state);
+  position: relative;
+}
+
+.deck > .card,
+.deck > .discard {
   visibility: hidden;
 }
 

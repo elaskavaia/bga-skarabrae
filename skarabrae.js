@@ -541,6 +541,7 @@ var Game1Tokens = /** @class */ (function (_super) {
         this.placeTokenSetup("limbo");
         placeHtml("<div id=\"oversurface\"></div>", this.getGameAreaElement());
         this.setupTokens();
+        this.updateCountersSafe(this.gamedatas.counters);
     };
     Game1Tokens.prototype.onLeavingState = function (stateName) {
         console.log("onLeavingState: " + stateName);
@@ -556,7 +557,22 @@ var Game1Tokens = /** @class */ (function (_super) {
         this.game.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
         this.game.removeAllClasses(this.classSelected, this.classSelectedAlt);
         //this.restoreServerData();
-        //this.updateCountersSafe(this.gamedatas.counters);
+        this.updateCountersSafe(this.gamedatas.counters);
+    };
+    Game1Tokens.prototype.updateCountersSafe = function (counters) {
+        //console.log(counters);
+        for (var key in counters) {
+            var node = $(key);
+            if (counters.hasOwnProperty(key) && node) {
+                if (node) {
+                    var value = counters[key].value;
+                    node.dataset.state = value;
+                }
+            }
+            else {
+                console.log("unknown counter " + key);
+            }
+        }
     };
     Game1Tokens.prototype.addShowMeButton = function (scroll) {
         var _this = this;
@@ -1673,7 +1689,7 @@ var GameXBody = /** @class */ (function (_super) {
     function GameXBody() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.inSetup = true;
-        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n\n <div id=\"deck_village\" class=\"deck village\">\n  <div id=\"discard_village\" class=\"discard village\"></div>\n </div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n <div id=\"deck_spin\" class=\"deck spin\"></div>\n</div>\n\n\n\n";
+        _this.gameTemplate = "\n<div id=\"thething\">\n\n<div id=\"round_banner\">\n  <span id='tracker_nrounds'> </span>\n  <span id='tracker_nturns'> </span>\n  <span id='round_banner_text'></span>\n</div>\n<div id='selection_area' class='selection_area'></div>\n<div id=\"game-score-sheet\"></div>\n<div id='tasks_area' class='tasks_area'></div>\n<div id=\"current_player_panel\"></div>\n<div id=\"mainarea\">\n <div id=\"turnover\" class=\"turnover\">\n    <div id=\"turndisk\" class=\"turndisk\"></div>\n </div>\n\n <div id=\"cardset_1\" class=\"cardset cardset_1\"></div>\n <div id=\"cardset_2\" class=\"cardset cardset_2\"></div>\n <div id=\"cardset_3\" class=\"cardset cardset_3\"></div>\n </div>\n<div id=\"players_panels\"></div>\n<div id=\"supply\">\n\n <div id=\"deck_village\" class=\"deck village\">\n  <div id=\"counter_deck_village\" class=\"counter counter_deck_village\"></div>\n  <div id=\"discard_village\" class=\"discard village\"></div>\n </div>\n <div id=\"deck_roof\" class=\"deck roof\"></div>\n <div id=\"deck_spin\" class=\"deck spin\"></div>\n</div>\n\n\n\n";
         return _this;
     }
     GameXBody.prototype.setup = function (gamedatas) {

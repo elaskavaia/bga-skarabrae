@@ -49,6 +49,11 @@ class Game extends Base {
         $this->material = new Material();
         $this->machine = new OpMachine();
         $tokens = new DbTokens($this);
+        $tokens->autoreshuffle = true;
+        $decks = ["deck_village"];
+        foreach ($decks as $deck) {
+            $tokens->autoreshuffle_custom[$deck] = "discard_" . getPart($deck, 1);
+        }
         $this->tokens = new PGameTokens($this, $tokens);
         $this->dbMultiUndo = new DbMultiUndo($this, "restorePlayerTables");
 

@@ -49,6 +49,12 @@ class Op_keep extends OpCard {
         }
         return $res;
     }
+    public function canSkip() {
+        if ($this->noValidTargets()) {
+            return true;
+        }
+        return parent::canSkip();
+    }
 
     public function requireConfirmation() {
         return true;

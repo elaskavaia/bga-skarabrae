@@ -86,6 +86,8 @@ class Game1Tokens extends Game0Basics {
     placeHtml(`<div id="oversurface"></div>`, this.getGameAreaElement());
 
     this.setupTokens();
+
+    this.updateCountersSafe(this.gamedatas.counters);
   }
 
   onLeavingState(stateName: string): void {
@@ -104,7 +106,23 @@ class Game1Tokens extends Game0Basics {
     this.game.removeAllClasses(this.classActiveSlot, this.classActiveSlotHidden);
     this.game.removeAllClasses(this.classSelected, this.classSelectedAlt);
     //this.restoreServerData();
-    //this.updateCountersSafe(this.gamedatas.counters);
+    this.updateCountersSafe(this.gamedatas.counters);
+  }
+
+  updateCountersSafe(counters: {}) {
+    //console.log(counters);
+
+    for (var key in counters) {
+      const node = $(key);
+      if (counters.hasOwnProperty(key) && node) {
+        if (node) {
+          const value = counters[key].value;
+          node.dataset.state = value;
+        }
+      } else {
+        console.log("unknown counter " + key);
+      }
+    }
   }
 
   addShowMeButton(scroll: boolean) {

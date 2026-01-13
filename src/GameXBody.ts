@@ -38,6 +38,7 @@ class GameXBody extends GameMachine {
 <div id="supply">
 
  <div id="deck_village" class="deck village">
+  <div id="counter_deck_village" class="counter counter_deck_village"></div>
   <div id="discard_village" class="discard village"></div>
  </div>
  <div id="deck_roof" class="deck roof"></div>

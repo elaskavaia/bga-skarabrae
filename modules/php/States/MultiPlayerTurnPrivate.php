@@ -10,6 +10,7 @@ use Bga\Games\skarabrae\StateConstants;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\GameState;
+use Exception;
 
 class MultiPlayerTurnPrivate extends GameState {
     public function __construct(protected Game $game) {
@@ -66,7 +67,7 @@ class MultiPlayerTurnPrivate extends GameState {
     }
     public function zombie(int $playerId) {
         $player_id = (int) $this->game->getCurrentPlayerId();
-        $this->game->machine->action_whatever($playerId);
+        $this->game->machine->action_whatever($playerId, false);
         return $this->game->machine->multiplayerDistpatchAfterAction($player_id);
     }
 }

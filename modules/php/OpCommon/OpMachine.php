@@ -445,9 +445,18 @@ class OpMachine {
         $op = $this->createTopOperationFromDb($player_id);
         return $op->action_skip();
     }
-    function action_whatever(int $player_id) {
+    function action_whatever(int $player_id, bool $throw = true) {
         $op = $this->createTopOperationFromDb($player_id);
-        return $op->action_whatever();
+
+        try {
+            return $op->action_whatever();
+        } catch (Exception $e) {
+            if ($throw) {
+                throw $e;
+            }
+            // if exception is throws fallback to just removing the op
+            return $op->destroy();
+        }
     }
 
     function action_undo(int $player_id, int $move_id = 0) {

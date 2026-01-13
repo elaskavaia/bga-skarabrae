@@ -149,7 +149,22 @@
   background-position: calc(4 * 100% / 7) 0;
 }
 
-.deck > * {
+.deck {
+  position: relative;
+  color: white;
+  .counter {
+    position: absolute;
+    bottom: 1%;
+    right: 1%;
+
+    &::after {
+      content: attr(data-state);
+      position: relative;
+    }
+  }
+}
+.deck > .card,
+.deck > .discard {
   visibility: hidden;
 }
 .discard > * {
