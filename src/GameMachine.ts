@@ -411,7 +411,7 @@ class GameMachine extends Game1Tokens {
     if (doneButton) {
       if ((count == 0 && skippable) || count < opInfo.mcount) {
         doneButton.classList.add(this.classButtonDisabled);
-        doneButton.title = _("Cannot use this action because insuffient amount of elements selected");
+        doneButton.title = _("Cannot use this action because insufficient amount of elements selected");
       } else if (count > opInfo.count) {
         doneButton.classList.add(this.classButtonDisabled);
         doneButton.title = _("Cannot use this action because superfluous amount of elements selected");

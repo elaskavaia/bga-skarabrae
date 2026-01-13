@@ -66,17 +66,17 @@ cardset_2|Turn 2 Cards
 cardset_3|Turn 3 Cards
 
 #names of the stats
-game_vp_setl_count|VP for settlers card (Furnish)
-game_vp_setl_sets|VP for settler sets (Furnish)
-game_vp_trade|VP from trade track
-game_vp_action_tiles|VP from action tiles (Craft)
-game_vp_cards|VP from cards
-game_vp_food|VP from food
-game_vp_skaill|VP from skaill knives
-game_vp_midden|VP penalty from midden
-game_vp_slider|VP penalty from slider
-game_vp_tasks|VP penalty from tasks
-game_vp_goals|VP penalty from goals
+game_vp_setl_count|VP for Settler Cards (Furnish)
+game_vp_setl_sets|VP for Settler Sets (Furnish)
+game_vp_trade|VP from Trade Track
+game_vp_action_tiles|VP from Action Tiles (Craft)
+game_vp_cards|VP from Cards
+game_vp_food|VP from Food
+game_vp_skaill|VP from Skaill Knives
+game_vp_midden|VP penalty from Midden
+game_vp_slider|VP penalty from Slider
+game_vp_tasks|VP penalty from Tasks
+game_vp_goals|VP penalty from Goals
 game_vp_total|VP total
 
 

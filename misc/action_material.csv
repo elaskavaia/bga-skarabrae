@@ -32,20 +32,19 @@ num|name|r|rb|craft|tooltip|php
 1|Spin Wool|2(n_bone/n_food):spin|||Gain 1 Spindle Whorl Card. These should be taken from those stored nearby the Player Board during Setup. Spindle Whorl Cards should be placed below the Player Board, much like Roofs, Stone Balls, and Utensils. After doing so, the player immediately gains 1 Wool per Spindle Whorl they have, including from the Card they just placed. Spindle Whorl Cards are worth 1VP at the game's end. Once flipped, after resolving the Spindle Whorl, a player may optionally spend 3 Wool to gain 1 Roof Card. This is resolved in the same way as gaining Roof Cards from the Clean Action Tile.
 4|Tend Land|2(n_bone/n_food):3tend|2(n_bone/n_food):(4tend)||Resolve up to 3 different Gather Action Tiles, just as if Workers had been placed there. Alternatively this player may forgo any of these Gather actions to instead clear 1 Midden. As with the Clean action, they may either discard 1 Midden from their Storage Area, or move their Slider 1 column to the left. For example, a player might decide to Gather from the Hills and Fields, and clear 1 Midden, or simply just clear 3 Midden. Once flipped, this action allows players to do this up to 4 times, instead of 3.
 
-
 #set type=recipe
 #set location=limbo
 #set id=recipe_{num}
 #set create=0
 #cooking Options
-1|Shell Chowder|n_shell:food||1
-2|Barley Mow|n_barley:food||1
-3|Fish Soup|n_fish:food,bone||2
-4|Rabbit Stew|n_rabbit:food,hide||2
-5|Sheep Kebobs|n_sheep:food,hide,wool,bone||3
-6|Deer Roast|n_deer:food,hide,2bone||3
-7|Beef Steak|n_cow:2food,hide,2bone||4
-8|Boar Bites|n_boar:2food,2hide,bone||3|Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide.
+1|Cook Shell|n_shell:food||1
+2|Cook Barley|n_barley:food||1
+3|Cook Fish|n_fish:food,bone||2
+4|Cook Rabbit|n_rabbit:food,hide||2
+5|Cook Sheep|n_sheep:food,hide,wool,bone||3
+6|Cook Deer|n_deer:food,hide,2bone||3
+7|Cook Cow|n_cow:2food,hide,2bone||4
+8|Cook Boar|n_boar:2food,2hide,bone||3|Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide.
 
 #set name=Trade level {num}
 #set id=slot_trade_{num}

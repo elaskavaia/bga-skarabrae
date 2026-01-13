@@ -3,66 +3,66 @@ num|name|r|t|tooltip
 #set type=card setl||||
 #set location=deck_village||||
 #set id=card_setl_1_{num}
-1|Angler|fish|1|Gain fish
-2|Angler|fish|1|Gain fish
-3|Angler|fish|1|Gain fish
-4|Angler|fish|1|Gain fish
-5|Angler|fish|1|Gain fish
-6|Angler|fish|1|Gain fish
-7|Angler|fish|1|Gain fish
-8|Angler|fish|1|Gain fish
-9|Fisherman|n_seaweed:2wood|1|Pay 1 seaweed to gain 2 wood
-10|Fisherman|n_seaweed:2barley|1|Pay 1 seaweed to gain 2 barley
-11|Fisherman|n_seaweed:2stone|1|Pay 1 seaweed to gain 2 stone
-12|Fisherman|n_seaweed:2wool|1|Pay 1 seaweed to gain 2 wool
-13|Birdkeeper|cotag(2,stone)|1|Gain stone for each Hills stone
-14|Giller|cotag(3,wood)|1|Gain wood for each Thickets stone
-15|Crab Farmer|cotag(4,barley)|1|Gain barley for each Fields stone
+1|Angler|fish|1|Gain 1 Fish
+2|Angler|fish|1|Gain 1 Fish
+3|Angler|fish|1|Gain 1 Fish
+4|Angler|fish|1|Gain 1 Fish
+5|Angler|fish|1|Gain 1 Fish
+6|Angler|fish|1|Gain 1 Fish
+7|Angler|fish|1|Gain 1 Fish
+8|Angler|fish|1|Gain 1 Fish
+9|Fisherman|n_seaweed:2wood|1|Pay 1 Seaweed to gain 2 Wood
+10|Fisherman|n_seaweed:2barley|1|Pay 1 Seaweed to gain 2 Barley
+11|Fisherman|n_seaweed:2stone|1|Pay 1 Seaweed to gain 2 Stone
+12|Fisherman|n_seaweed:2wool|1|Pay 1 Seaweed to gain 2 Wool
+13|Birdkeeper|cotag(2,stone)|1|Gain 1 Stone for each Hills Icon
+14|Giller|cotag(3,wood)|1|Gain 1 Wood for each Thickets Icon
+15|Crab Farmer|cotag(4,barley)|1|Gain 1 Barley for each Fields Icon
 #set id=card_setl_2_{num}||||
-16|Trapper|rabbit|2|Hunt rabbit
-17|Trapper|rabbit|2|Hunt rabbit
-18|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-19|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-20|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-21|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-22|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-23|Shepherd|2n_stone:sheep|2|Pay 2 stone to gain sheep
-24|Sage|n_stone:2shell|2|Pay 1 stone to gain 2 shell
-25|Sage|n_stone:2barley|2|Pay 1 stone to gain 2 barley
-26|Sage|n_stone:2wood|2|Pay 1 stone to gain 2 wood
-27|Sage|n_stone:2seaweed|2|Pay 1 stone to gain 2 seaweed
-28|Tracker|cotag(1,seaweed)|2|Gain seaweed for each Shore stone
-29|Slinger|cotag(3,wood)|2|Gain wood for each Thickets stone
-30|Mason|cotag(4,barley)|2|Gain barley for each Fields stone
+16|Trapper|rabbit|2|Gain 1 Rabbit
+17|Trapper|rabbit|2|Gain 1 Rabbit
+18|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+19|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+20|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+21|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+22|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+23|Shepherd|2n_stone:sheep|2|Pay 2 Stone to gain 1 Sheep
+24|Sage|n_stone:2shell|2|Pay 1 Stone to gain 2 Shells
+25|Sage|n_stone:2barley|2|Pay 1 Stone to gain 2 Barley
+26|Sage|n_stone:2wood|2|Pay 1 Stone to gain 2 Wood
+27|Sage|n_stone:2seaweed|2|Pay 1 Stone to gain 2 Seaweed
+28|Tracker|cotag(1,seaweed)|2|Gain 1 Seaweed for each Shore Icon
+29|Slinger|cotag(3,wood)|2|Gain 1 Wood for each Thickets Icon
+30|Mason|cotag(4,barley)|2|Gain 1 Barley for each Fields Icon
 #set id=card_setl_3_{num}||||
-31|Axeman|rabbit|3|Hunt rabbit
-32|Axeman|rabbit|3|Hunt rabbit
-33|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-34|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-35|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-36|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-37|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-38|Hunter|2n_wood:deer|3|Pay 2 wood to hunt deer
-39|Woodcutter|n_wood:2seaweed|3|Pay 1 wood to gain 2 seaweed
-40|Woodcutter|n_wood:2wool|3|Pay 1 wood to gain 2 wool
-41|Woodcutter|n_wood:2stone|3|Pay 1 wood to gain 2 stone
-42|Woodcutter|n_wood:2barley|3|Pay 1 wood to gain 2 barley
-43|Forester|cotag(1,shell)|3|Gain shell for each Shore stone
-44|Scout|cotag(2,stone)|3|Gain stone for each Hills stone
-45|Sawyer|cotag(4,barley)|3|Gain barley for each Fields stone
+31|Axeman|rabbit|3|Gain 1 Rabbit
+32|Axeman|rabbit|3|Gain 1 Rabbit
+33|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+34|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+35|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+36|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+37|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+38|Hunter|2n_wood:deer|3|Pay 2 Wood to gain 1 Deer
+39|Woodcutter|n_wood:2seaweed|3|Pay 1 Wood to gain 2 Seaweed
+40|Woodcutter|n_wood:2wool|3|Pay 1 Wood to gain 2 Wool
+41|Woodcutter|n_wood:2stone|3|Pay 1 Wood to gain 2 Stone
+42|Woodcutter|n_wood:2barley|3|Pay 1 Wood to gain 2 Barley
+43|Forester|cotag(1,shell)|3|Gain 1 Shell for each Shore Icon
+44|Scout|cotag(2,stone)|3|Gain 1 Stone for each Hills Icon
+45|Sawyer|cotag(4,barley)|3|Gain 1 Barley for each Fields Icon
 #set id=card_setl_4_{num}||||
-46|Watchman|rabbit|4|Hunt rabbit
-47|Watchman|rabbit|4|Hunt rabbit
-48|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-49|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-50|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-51|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-52|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-53|Herdsman|3n_barley:cow|4|Pay 3 barley to gain cow
-54|Harvester|n_barley:2stone|4|Pay 1 barley to gain 2 stone
-55|Harvester|n_barley:2wool|4|Pay 1 barley to gain 2 wool
-56|Harvester|n_barley:2wood|4|Pay 1 barley to gain 2 wood
-57|Harvester|n_barley:2shell|4|Pay 1 barley to gain 2 shell
-58|Baker|cotag(1,seaweed)|4|Gain seaweed for each Shore stone
-59|Reaper|cotag(2,wool)|4|Gain wool for each Hills stone
-60|Farmhand|cotag(3,wood)|4|Gain wood for each Thickets stone
+46|Watchman|rabbit|4|Gain 1 Rabbit
+47|Watchman|rabbit|4|Gain 1 Rabbit
+48|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+49|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+50|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+51|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+52|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+53|Herdsman|3n_barley:cow|4|Pay 3 Barley to gain 1 Cow
+54|Harvester|n_barley:2stone|4|Pay 1 Barley to gain 2 Stone
+55|Harvester|n_barley:2wool|4|Pay 1 Barley to gain 2 Wool
+56|Harvester|n_barley:2wood|4|Pay 1 Barley to gain 2 Wood
+57|Harvester|n_barley:2shell|4|Pay 1 Barley to gain 2 Shells
+58|Baker|cotag(1,seaweed)|4|Gain 1 Seaweed for each Shore Icon
+59|Reaper|cotag(2,wool)|4|Gain 1 Wool for each Hills Icon
+60|Farmhand|cotag(3,wood)|4|Gain 1 Wood for each Thickets Icon

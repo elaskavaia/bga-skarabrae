@@ -111,7 +111,7 @@ class Op_act extends Operation {
         $count = $this->getArgs()["count_workers"] ?? "?";
         if ($count) {
             $name = clienttranslate("Skip placing workers");
-            $res["confirm"] = clienttranslate("You will forfeit placing all remaining worker. This is not a good idea in general");
+            $res["confirm"] = clienttranslate("You will forfeit placing all remaining workers. This is not a good idea in general");
         } else {
             $name = clienttranslate("Skip");
         }

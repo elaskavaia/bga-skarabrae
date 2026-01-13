@@ -2,42 +2,42 @@
   "player": {
     "game_vp_setl_count": {
       "id": 11,
-      "name": "VP for settlers card (Furnish)",
+      "name": "VP for Settler Cards (Furnish)",
       "type": "int"
     },
     "game_vp_setl_sets": {
       "id": 12,
-      "name": "VP for settler sets (Furnish)",
+      "name": "VP for Settler Sets (Furnish)",
       "type": "int"
     },
     "game_vp_trade": {
       "id": 13,
-      "name": "VP from trade track",
+      "name": "VP from Trade Track",
       "type": "int"
     },
     "game_vp_action_tiles": {
       "id": 14,
-      "name": "VP from action tiles (Craft)",
+      "name": "VP from Action Tiles (Craft)",
       "type": "int"
     },
     "game_vp_cards": {
       "id": 15,
-      "name": "VP from cards",
+      "name": "VP from Cards",
       "type": "int"
     },
     "game_vp_food": {
       "id": 16,
-      "name": "VP from food",
+      "name": "VP from Food",
       "type": "int"
     },
     "game_vp_skaill": {
       "id": 17,
-      "name": "VP from skaill knives",
+      "name": "VP from Skaill Knives",
       "type": "int"
     },
     "game_vp_midden": {
       "id": 18,
-      "name": "VP penalty from midden",
+      "name": "VP penalty from Midden",
       "type": "int"
     },
     "game_vp_slider": {
@@ -47,12 +47,12 @@
     },
     "game_vp_tasks": {
       "id": 20,
-      "name": "VP penalty from tasks",
+      "name": "VP penalty from Tasks",
       "type": "int"
     },
     "game_vp_goals": {
       "id": 21,
-      "name": "VP penalty from goals",
+      "name": "VP penalty from Goals",
       "type": "int"
     },
     "game_vp_total": {

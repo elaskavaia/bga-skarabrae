@@ -78,9 +78,9 @@ class GameXBody extends GameMachine {
       $("round_banner_text").innerHTML = _("Game Over");
       //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
     } else if (this.gamedatas.tokens.tracker_nrounds.state == 4 && this.gamedatas.tokens.tracker_nturns.state == 3) {
-      $("round_banner_text").innerHTML = _("This is Last Turn of Last Round");
+      $("round_banner_text").innerHTML = _("This is the last Turn of the last Round");
     } else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
-      $("round_banner_text").innerHTML = _("This is Last Turn before End of Round");
+      $("round_banner_text").innerHTML = _("This is the last Turn before the end of Round");
     } else if (!this.bga.players.isCurrentPlayerSpectator()) {
       const room = $(`breakroom_${this.player_color}`);
       if (room) {
@@ -181,17 +181,17 @@ class GameXBody extends GameMachine {
     //   total: 24
     // };
     const entries = [
-      { property: "game_vp_setl_count", label: _("VP for settlers cards") },
-      { property: "game_vp_setl_sets", label: _("VP for settler sets") },
-      { property: "game_vp_trade", label: _("VP from trade track") },
-      { property: "game_vp_action_tiles", label: _("VP from action tiles") },
-      { property: "game_vp_cards", label: _("VP from cards") },
-      { property: "game_vp_food", label: _("VP from food") },
-      { property: "game_vp_skaill", label: _("VP from skaill knives") },
-      { property: "game_vp_midden", label: _("VP penalty from midden") },
-      { property: "game_vp_slider", label: _("VP penalty from slider") },
-      { property: "game_vp_tasks", label: _("VP penalty from tasks") },
-      { property: "game_vp_goals", label: _("VP penalty from goals") },
+      { property: "game_vp_setl_count", label: _("VP for Settler Cards") },
+      { property: "game_vp_setl_sets", label: _("VP for Settler Sets") },
+      { property: "game_vp_trade", label: _("VP from Trade Track") },
+      { property: "game_vp_action_tiles", label: _("VP from Action Tiles") },
+      { property: "game_vp_cards", label: _("VP from Cards") },
+      { property: "game_vp_food", label: _("VP from Food") },
+      { property: "game_vp_skaill", label: _("VP from Skaill Knives") },
+      { property: "game_vp_midden", label: _("VP penalty from Midden") },
+      { property: "game_vp_slider", label: _("VP penalty from Slider") },
+      { property: "game_vp_tasks", label: _("VP penalty from Tasks") },
+      { property: "game_vp_goals", label: _("VP penalty from Goals") },
       { property: "total", label: _("Total"), scoresClasses: "total", width: 80, height: 40 }
     ];
     if (!this.isSolo()) {
@@ -518,9 +518,9 @@ class GameXBody extends GameMachine {
             tokenInfo.tooltip += this.ttSection(_("Environment"), this.getTokenName(`env_${tokenInfo.t}`));
             tokenInfo.tooltip += this.ttSection(_("Bottom Effect"), tooltip as string);
           } else if (tokenId.startsWith("card_ball")) {
-            tokenInfo.tooltip = _("Gain skaill knife for each Stone Ball you have");
+            tokenInfo.tooltip = _("Gain 1 Skaill Knife for each Stone Ball you have");
           } else if (tokenId.startsWith("card_spin")) {
-            tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain wool for each Spindle you have"));
+            tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain 1 Wool for each Spindle you have"));
             tokenInfo.tooltip += this.ttSection(_("VP"), "1");
           } else if (tokenId.startsWith("card_roof")) {
             tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("None"));
@@ -529,7 +529,7 @@ class GameXBody extends GameMachine {
           } else if (tokenId.startsWith("card_util")) {
             tokenInfo.tooltip = this.ttSection(_("Immediate Effect"), _("Gain Hide"));
             tokenInfo.tooltip += this.ttSection(_("VP"), this.getRulesFor(tokenId, "vp"));
-            tokenInfo.tooltip += _("Increase your Hearth by one. Decrease you Midden production by one");
+            tokenInfo.tooltip += _("Increase your Hearth by one. Decrease your Midden production by one");
           } else if (tokenId.startsWith("card_goal")) {
             tokenInfo.tooltip += this.ttSection(
               undefined,
