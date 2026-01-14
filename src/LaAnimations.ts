@@ -140,6 +140,75 @@ class LaAnimations {
 
     return clone;
   }
+
+  cardFlip(mobileId: ElementOrId, newState: string, duration?: number, onEnd?: (node?: HTMLElement) => void) {
+    var mobileNode = $(mobileId) as HTMLElement;
+
+    if (!mobileNode) throw new Error(`Does not exists ${mobileId}`);
+
+    if (duration === undefined) duration = this.defaultAnimationDuration;
+    if (!duration || duration < 0) duration = 0;
+    const noanimation = duration <= 0 || !mobileNode.parentNode;
+    if (noanimation) {
+      mobileNode.dataset.state = newState;
+      setTimeout(() => {
+        if (onEnd) onEnd(mobileNode);
+      }, 0);
+      return;
+    }
+
+    const clone = this.projectOnto(mobileNode, "_temp");
+    clone.innerHTML = "";
+
+    mobileNode.dataset.state = newState;
+    mobileNode.offsetHeight; // recalc
+    const desti = this.projectOnto(mobileNode, "_temp2"); // invisible destination on top of new parent
+    desti.innerHTML = "";
+    mobileNode.style.opacity = "0"; // hide original
+    placeHtml(`<div id="card_temp"></div>`, "oversurface");
+    const group = $("card_temp");
+
+    group.style.left = clone.style.left;
+    group.style.top = clone.style.top;
+    group.style.transform = clone.style.transform;
+    group.style.width = clone.style.width;
+    group.style.height = clone.style.height;
+    group.style.position = "absolute";
+    group.style.transformStyle = "preserve-3d";
+    group.style.transitionProperty = "all";
+
+    group.appendChild(clone);
+    group.appendChild(desti);
+    delete clone.style.left;
+    delete clone.style.top;
+    delete desti.style.left;
+    delete desti.style.top;
+    desti.style.transform = "rotateY(180deg)";
+    desti.style.backfaceVisibility = "hidden";
+    clone.style.backfaceVisibility = "hidden";
+
+    try {
+      //setStyleAttributes(desti, mobileStyle);
+      group.style.transitionDuration = duration + "ms";
+
+      //group.style.visibility = "visible";
+      //group.style.opacity = "1";
+      // that will cause animation
+      //group.style.scale = "2.0";
+      group.style.animation = `flip ${duration}ms`;
+
+      setTimeout(() => {
+        mobileNode.style.removeProperty("opacity"); // restore visibility of original
+        group.remove();
+        if (onEnd) onEnd(mobileNode);
+      }, duration);
+    } catch (e) {
+      // if bad thing happen we have to clean up clones
+      console.error("ERR:C01:animation error", e);
+      group.remove();
+      if (onEnd) onEnd(mobileNode);
+    }
+  }
 }
 
 function setStyleAttributes(element: HTMLElement, attrs: { [key: string]: string }): void {

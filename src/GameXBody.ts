@@ -286,6 +286,16 @@ class GameXBody extends GameMachine {
       const color = getPart(location, 1);
       result.location = `action_area_${color}`;
       result.onClick = (x) => this.onToken(x);
+      const st = String(tokenInfo.state);
+      const node = $(tokenId);
+      if (node?.parentElement.id == result.location && node.dataset.state != st) {
+        result.nop = true;
+
+        result.onStart = async (x) => {
+          this.animationLa.cardFlip(tokenId, st, 1000);
+          return this.wait(1000);
+        };
+      }
     } else if (tokenId.startsWith("action") && location.startsWith("hand")) {
       const color = getPart(location, 1);
       result.location = `selection_area`;

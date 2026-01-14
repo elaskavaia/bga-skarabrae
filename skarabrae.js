@@ -1152,6 +1152,17 @@ var Game1Tokens = /** @class */ (function (_super) {
             });
         });
     };
+    Game1Tokens.prototype.notif_test = function (args) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var duration;
+            return __generator(this, function (_c) {
+                duration = 2000;
+                this.animationLa.cardFlip((_a = args.token_id) !== null && _a !== void 0 ? _a : "action_main_1_ff0000", (_b = args.state) !== null && _b !== void 0 ? _b : "1", duration);
+                return [2 /*return*/, this.wait(duration)];
+            });
+        });
+    };
     Game1Tokens.prototype.notif_tokenMovedAsync = function (args) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -1875,6 +1886,17 @@ var GameXBody = /** @class */ (function (_super) {
             var color = getPart(location, 1);
             result.location = "action_area_".concat(color);
             result.onClick = function (x) { return _this.onToken(x); };
+            var st_1 = String(tokenInfo.state);
+            var node = $(tokenId);
+            if ((node === null || node === void 0 ? void 0 : node.parentElement.id) == result.location && node.dataset.state != st_1) {
+                result.nop = true;
+                result.onStart = function (x) { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        this.animationLa.cardFlip(tokenId, st_1, 1000);
+                        return [2 /*return*/, this.wait(1000)];
+                    });
+                }); };
+            }
         }
         else if (tokenId.startsWith("action") && location.startsWith("hand")) {
             var color = getPart(location, 1);
@@ -2417,6 +2439,72 @@ var LaAnimations = /** @class */ (function () {
         clone.style.transform = fullmatrix;
         clone.style.transitionDuration = undefined;
         return clone;
+    };
+    LaAnimations.prototype.cardFlip = function (mobileId, newState, duration, onEnd) {
+        var mobileNode = $(mobileId);
+        if (!mobileNode)
+            throw new Error("Does not exists ".concat(mobileId));
+        if (duration === undefined)
+            duration = this.defaultAnimationDuration;
+        if (!duration || duration < 0)
+            duration = 0;
+        var noanimation = duration <= 0 || !mobileNode.parentNode;
+        if (noanimation) {
+            mobileNode.dataset.state = newState;
+            setTimeout(function () {
+                if (onEnd)
+                    onEnd(mobileNode);
+            }, 0);
+            return;
+        }
+        var clone = this.projectOnto(mobileNode, "_temp");
+        clone.innerHTML = "";
+        mobileNode.dataset.state = newState;
+        mobileNode.offsetHeight; // recalc
+        var desti = this.projectOnto(mobileNode, "_temp2"); // invisible destination on top of new parent
+        desti.innerHTML = "";
+        mobileNode.style.opacity = "0"; // hide original
+        placeHtml("<div id=\"card_temp\"></div>", "oversurface");
+        var group = $("card_temp");
+        group.style.left = clone.style.left;
+        group.style.top = clone.style.top;
+        group.style.transform = clone.style.transform;
+        group.style.width = clone.style.width;
+        group.style.height = clone.style.height;
+        group.style.position = "absolute";
+        group.style.transformStyle = "preserve-3d";
+        group.style.transitionProperty = "all";
+        group.appendChild(clone);
+        group.appendChild(desti);
+        delete clone.style.left;
+        delete clone.style.top;
+        delete desti.style.left;
+        delete desti.style.top;
+        desti.style.transform = "rotateY(180deg)";
+        desti.style.backfaceVisibility = "hidden";
+        clone.style.backfaceVisibility = "hidden";
+        try {
+            //setStyleAttributes(desti, mobileStyle);
+            group.style.transitionDuration = duration + "ms";
+            //group.style.visibility = "visible";
+            //group.style.opacity = "1";
+            // that will cause animation
+            //group.style.scale = "2.0";
+            group.style.animation = "flip ".concat(duration, "ms");
+            setTimeout(function () {
+                mobileNode.style.removeProperty("opacity"); // restore visibility of original
+                group.remove();
+                if (onEnd)
+                    onEnd(mobileNode);
+            }, duration);
+        }
+        catch (e) {
+            // if bad thing happen we have to clean up clones
+            console.error("ERR:C01:animation error", e);
+            group.remove();
+            if (onEnd)
+                onEnd(mobileNode);
+        }
     };
     return LaAnimations;
 }());

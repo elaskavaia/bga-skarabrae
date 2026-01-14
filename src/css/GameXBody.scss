@@ -58,6 +58,22 @@ latin
   }
 }
 
+.flip {
+  animation: flip 1000ms;
+}
+
+@keyframes flip {
+  0% {
+    transform: perspective(40em) rotateY(0deg);
+  }
+  50% {
+    scale: 2;
+  }
+  100% {
+    transform: perspective(40em) rotateY(-180deg);
+  }
+}
+
 #gameaction_status_wrap {
   display: block !important; // prevent flickering of top bar
 
@@ -99,7 +115,13 @@ latin
 .phantom {
   animation: pulse 500ms ease-in-out;
 }
-
+#card_temp {
+  & > * {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+  }
+}
 .limbo {
   display: none;
 }

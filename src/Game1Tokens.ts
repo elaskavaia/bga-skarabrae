@@ -692,6 +692,12 @@ class Game1Tokens extends Game0Basics {
     return this.game.wait(args.time ?? 1);
   }
 
+  async notif_test(args: any) {
+    const duration = 2000;
+    this.animationLa.cardFlip(args.token_id ?? "action_main_1_ff0000", args.state ?? "1", duration);
+    return this.wait(duration);
+  }
+
   async notif_tokenMovedAsync(args: any) {
     void this.notif_tokenMoved(args);
   }

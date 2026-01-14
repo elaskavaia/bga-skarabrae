@@ -392,6 +392,9 @@ class Game extends Base {
     }
 
     function isSimultanousPlay() {
+        if ($this->isSolo()) {
+            return false;
+        }
         return ((int) $this->getGameStateValue("variant_multi")) ? 1 : 0;
     }
 
@@ -784,7 +787,13 @@ class Game extends Base {
     }
 
     function debug_q() {
-        $this->customUndoSavepoint((int) $this->getCurrentPlayerId(), 0);
+        $this->notifyWithName("test", "flip", []);
+    }
+    function debug_flip0() {
+        $this->notifyWithName("test", "flip", ["state" => "0"]);
+    }
+    function debug_flip1() {
+        $this->notifyWithName("test", "flip", ["state" => "1"]);
     }
     function debug_game_variant(string $type = "variant_multi", int $value = 1) {
         $this->setGameStateValue($type, $value);

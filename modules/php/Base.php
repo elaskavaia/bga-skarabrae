@@ -721,8 +721,9 @@ class Base extends Table {
         // This may be paradoxal, but this way we ensure that the savepoint gets all the recent updates that was not concerned by the undo,
         // including the latest notifications "undoRestorePoint".
         // Also, it allows us to have a reliable undoIsCurrentlyOnSavepoint
-        //$this->game->undoSavepoint(); // UNDOX remove
+
         $this->game->notify->all("undoRestorePoint", "", []);
+        $this->game->undoSavepoint(); // UNDOX remove
     }
 
     function bgaDoUndoSavePoint() {
