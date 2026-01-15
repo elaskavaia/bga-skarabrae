@@ -309,13 +309,13 @@ a.bgabutton_white {
 
 html {
   background: none;
-  background-color: transparent;
+  background-color: #dbe8ec;
 }
 html:before {
   background-image: url(img/bg11.jpg);
   background-position: 50% 100%;
   background-repeat: no-repeat;
-  background-size: auto 100%;
+  background-size: cover;
   content: " ";
   display: block;
   height: 100%;
@@ -332,7 +332,7 @@ html:before {
 @media screen and (orientation: portrait) {
   html:before {
     background-image: url(img/bgTall.jpg);
-    background-size: 100% auto;
+
     background-position: 0% 100%;
   }
 }

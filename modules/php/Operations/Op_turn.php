@@ -39,9 +39,6 @@ class Op_turn extends Operation {
 
         if ($card == "yield") {
             $this->queue("pass");
-            if (!$this->game->gamestate->isMultiactiveState()) {
-                $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
-            }
             return;
         }
         $this->queue("village", $this->getOwner(), ["card" => $card]);
@@ -51,7 +48,7 @@ class Op_turn extends Operation {
         if ($curturn == 3) {
             $this->queue("night", $this->getOwner());
         }
-        if (!$this->game->gamestate->isMultiactiveState()) {
+        if (!$this->game->isSimultanousPlay()) {
             $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         }
     }

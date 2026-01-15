@@ -71,7 +71,7 @@ class Op_village extends OpCard {
             $this->destroy(); // have to remove current op from stack before saving
             $this->game->customUndoSavepoint($this->getPlayerId(), 1);
         }
-        if ($this->game->gamestate->isMultiactiveState()) {
+        if ($this->game->isSimultanousPlay() || $owner == OpMachine::GAME_MULTI_COLOR) {
             $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         }
 
