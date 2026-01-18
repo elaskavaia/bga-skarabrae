@@ -173,6 +173,7 @@ a.bgabutton_white {
   //box-shadow: 0px 0px 4px 2px v.$activeColor !important;
 
   outline: 4px dashed v.$activeColor;
+  outline-offset: -5px;
 
   &.gg_selected,
   &.gg_selected_alt {

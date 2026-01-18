@@ -646,7 +646,7 @@ class Material {
         "type" => "card village util",
         "create" => 2,
         "location" => "deck_village",
-        'vp'=>1,'r'=>'hide',
+        'vp'=>2,'r'=>'hide',
 ],
     "card_roofi" => [ 
         "name" => clienttranslate("Small Roof Card"),

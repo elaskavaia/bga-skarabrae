@@ -1582,6 +1582,7 @@ a.bgabutton_white {
 .active_slot {
   cursor: pointer;
   outline: 4px dashed #19bedb;
+  outline-offset: -5px;
 }
 .active_slot.gg_selected, .active_slot.gg_selected_alt {
   outline: 4px dashed #3f51b5;
