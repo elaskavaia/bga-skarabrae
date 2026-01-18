@@ -1746,6 +1746,7 @@ html.darkmode:before {
   background-size: cover;
   font-family: "Caesar Dressing";
   font-size: large;
+  z-index: 5;
 }
 .score-sheet table,
 .score-sheet td,
