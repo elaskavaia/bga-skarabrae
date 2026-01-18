@@ -79,11 +79,25 @@ class Op_act extends Operation {
                 }
 
                 if ($countw >= $workersPerAction - 1) {
-                    if (!$largeWorker) {
-                        $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
-                        continue;
+                    // Check if a large worker is already on this action
+                    $hasLargeOnAction = false;
+                    foreach ($occupied as $w) {
+                        if (str_starts_with($w, "worker_1")) {
+                            $hasLargeOnAction = true;
+                            break;
+                        }
                     }
-                    $res[$act]["worker"] = $largeWorker;
+                    if ($hasLargeOnAction) {
+                        // Large worker already placed, can use any worker
+                        $res[$act]["worker"] = $anyWorker;
+                    } else {
+                        // Need a large worker for the last slot
+                        if (!$largeWorker) {
+                            $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
+                            continue;
+                        }
+                        $res[$act]["worker"] = $largeWorker;
+                    }
                 } else {
                     $res[$act]["worker"] = $anyWorker;
                 }

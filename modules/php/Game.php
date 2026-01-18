@@ -168,7 +168,7 @@ class Game extends Base {
         }
 
         $this->machine->queue("draftdiscard");
-        $this->machine->queue("round", $this->getPlayerColorById($startingPlayer));
+        $this->machine->queue("round", $this->getPlayerColorById((int) $startingPlayer));
         return GameDispatch::class;
     }
 
@@ -769,7 +769,7 @@ class Game extends Base {
         if ($this->game->gamestate->isMultiactiveState()) {
             $this->dbMultiUndo->undoRestorePoint(0, true);
         } else {
-            throw new BgaSystemException("Not implemented");
+            throw new \BgaSystemException("Not implemented");
         }
     }
 
