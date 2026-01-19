@@ -36,11 +36,11 @@ class Op_furnishPay extends Operation {
 
     function getPossibleMoves() {
         $owner = $this->getOwner();
-        $cost = $this->getCost();
         $value = $this->game->tokens->getTrackerValue($owner, "furnish");
         if ($value >= 6) {
             return ["q" => Material::MA_ERR_MAX];
         }
+        $cost = $this->getCost();
         if ($this->game->machine->instanciateOperation($cost, $owner)->isVoid()) {
             return ["q" => Material::MA_ERR_COST];
         }
@@ -51,7 +51,7 @@ class Op_furnishPay extends Operation {
         $owner = $this->getOwner();
         $value = $this->game->tokens->getTrackerValue($owner, "furnish");
         $value += 1;
-        $multi = [0, 1, 2, 2, 2, 3, 3];
+        $multi = [0, 1, 2, 2, 2, 3, 3, 0];
         $coeff = $multi[$value];
         $coeff -= $this->getDiscount();
         if ($coeff <= 0) {
