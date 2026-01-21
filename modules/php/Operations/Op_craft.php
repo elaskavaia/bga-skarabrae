@@ -108,6 +108,11 @@ class Op_craft extends Operation {
         if ($this->isPaid()) {
             $card = $this->getCheckedArg();
             $this->game->systemAssert("Cannot determine card", $card);
+            $owner = $this->getOwner();
+            // queue innovate bonus before its flipped so it does not trigger on itself
+            if ($this->getReason() == "action_special_2" && $this->game->getActionTileSide("action_special_2")) {
+                $this->queue("?(n_food:activate($card))", $this->getOwner(), null, $this->getReason());
+            }
             $this->game->tokens->dbSetTokenState(
                 $card,
                 1,
@@ -115,9 +120,8 @@ class Op_craft extends Operation {
                 [],
                 $this->getPlayerId()
             );
-            if ($this->getReason() == "action_special_2" && $this->game->getActionTileSide("action_special_2")) {
-                $this->queue("?(n_food:activate($card))", $this->getOwner(), null, $this->getReason());
-            }
+
+            $this->game->tokens->notifyCounterDirect("tracker_hearth_$owner", $this->game->getHearthLimit($owner), "");
         } else {
             $card = $this->getCheckedArg();
             $cost = $this->game->getRulesFor($card, "craft", "");
