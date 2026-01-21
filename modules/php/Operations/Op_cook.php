@@ -101,9 +101,11 @@ class Op_cook extends Operation {
     }
 
     public function getPrompt() {
-        return clienttranslate('Select recipe to cook, you have ${count}/${hearth} ${token_div} left');
+        return clienttranslate('Select recipe to cook, you have ${count} ${token_div} left');
     }
-
+    public function getSubTitle() {
+        return clienttranslate("You can cook one thing at a time if you want");
+    }
     function canSkip() {
         if ($this->getWeight() == 0) {
             return false;
