@@ -77,9 +77,8 @@ class GameXBody extends GameMachine {
     $("round_banner_text").innerHTML = "";
     if (this.gamedatas.gameEnded) {
       $("round_banner_text").innerHTML = _("Game Over");
-      //this.bga.gameArea.addLastTurnBanner(_("Game is ended"));
     } else if (this.gamedatas.tokens.tracker_nrounds.state == 4 && this.gamedatas.tokens.tracker_nturns.state == 3) {
-      $("round_banner_text").innerHTML = _("This is the last Turn of the last Round");
+      $("round_banner_text").innerHTML = `<span class="last_banner">${_("This is the last Turn of the last Round")}</span>`;
     } else if (this.gamedatas.tokens.tracker_nturns.state == 3) {
       $("round_banner_text").innerHTML = _("This is the last Turn before the end of Round");
     } else if (!this.bga.players.isCurrentPlayerSpectator()) {

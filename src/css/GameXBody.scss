@@ -366,6 +366,14 @@ html.darkmode:before {
   background-repeat: no-repeat;
 }
 
+#round_banner .last_banner {
+  //font-weight: bold;
+  // color: red;
+  // text-shadow: v.$textShadowWhite;
+  color: white;
+  text-shadow: v.$textShadowRed;
+}
+
 .score-sheet {
   background-image: url(img/stonex.jpg);
   background-size: cover;

@@ -1742,6 +1742,11 @@ html.darkmode:before {
   background-repeat: no-repeat;
 }
 
+#round_banner .last_banner {
+  color: white;
+  text-shadow: #f00 -1px -1px, #f00 1px 1px, #f00 -1px 1px, #f00 1px -1px;
+}
+
 .score-sheet {
   background-image: url(img/stonex.jpg);
   background-size: cover;
