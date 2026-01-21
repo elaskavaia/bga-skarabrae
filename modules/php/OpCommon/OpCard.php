@@ -64,6 +64,10 @@ abstract class OpCard extends Operation {
                 break;
         }
         $this->game->tokens->dbSetTokenLocation($card, $location, 0, $message, $args + ["reason" => $reason], $this->getPlayerId());
+
+        if ($type == "util") {
+            $this->game->tokens->notifyCounterDirect("tracker_hearth_$owner", $this->game->getHearthLimit($owner), "");
+        }
     }
     function effect_settlerCard(string $owner, string $card, int $flags = 3) {
         $data = ["reason" => $card];
