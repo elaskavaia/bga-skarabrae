@@ -801,9 +801,16 @@ class DbTokens {
             return;
         }
         $this->clear_cache();
-        $fields_list = $this->game->dbGetFieldList($this->table);
-        $key = array_shift($fields_list);
         $table = $this->table;
+        return $this->dbReplaceValuesGeneric($table, $values);
+    }
+    function dbReplaceValuesGeneric(string $table, $values) {
+        if (count($values) == 0) {
+            return;
+        }
+        $fields_list = $this->game->dbGetFieldList($table);
+        $key = array_shift($fields_list);
+
         foreach ($values as $row) {
             $quoted = [];
             foreach ($fields_list as $field) {

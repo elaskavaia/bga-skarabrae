@@ -209,7 +209,7 @@ class DbMultiUndo {
     }
 
     function needsSaving(string $table) {
-        if ($table == "token" || $table == "machine") {
+        if ($table == "token" || $table == "machine" || $table == "stats") {
             return true;
         }
         return false;

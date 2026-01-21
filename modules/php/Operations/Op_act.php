@@ -177,9 +177,7 @@ class Op_act extends Operation {
             $stat = "game_action_10";
         }
 
-        $val = 1 + (int) $this->game->tokens->db->getTokenState("{$stat}_{$owner}");
-        $this->game->tokens->db->createTokenIfNot("{$stat}_{$owner}", "stat", $val);
-        $this->game->playerStats->set($stat, $val, $this->getPlayerId());
+        $this->game->playerStats->inc($stat, 1, $this->getPlayerId());
 
         $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
         $worker = array_shift($workers);

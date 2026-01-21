@@ -342,19 +342,6 @@ class Game extends Base {
         );
 
         $this->playerStats->inc($stat, $inc, $player_id);
-
-        $this->notifyWithName(
-            "score",
-            "",
-            [
-                "player_score" => $score,
-                "inc" => $inc,
-                "absImc" => abs((int) $inc),
-                "duration" => 500,
-                //"target" => $target,
-            ],
-            $player_id
-        );
     }
 
     function getPlayerIdByColor(?string $color): int {
@@ -812,6 +799,11 @@ class Game extends Base {
             $this->game->machine->db->insertList(null, $saved_data);
 
             //return true;
+        } elseif ($table == "stats") {
+            $saved_data = array_filter($saved_data, function ($row) use ($player_id) {
+                return $row["stats_player_id"] == $player_id;
+            });
+            $this->tokens->db->dbReplaceValuesGeneric("stats", $saved_data);
         }
         return false;
     }
