@@ -451,11 +451,8 @@ class Base extends Table {
         throw new BgaUserException("Internal Error. That should not have happened. Reload page and Retry" . " " . $log);
     }
 
-    /**
-     * This to make it public
-     */
-    public function _($text): string {
-        return parent::_($text);
+    public function tostranslate($text): string {
+        return $this->_($text);
     }
 
     function dumpError($log) {
@@ -463,14 +460,6 @@ class Base extends Table {
         $this->error("Internal Error during move $move: $log.");
         $e = new Exception($log);
         $this->error($e->getTraceAsString());
-    }
-
-    function getNextMoveId() {
-        //getGameStateValue does not work when dealing with undo, have to read directly from db
-        $next_move_index = 3;
-        $subsql = "SELECT global_value FROM global WHERE global_id='$next_move_index' ";
-        $move_id = $this->getUniqueValueFromDB($subsql);
-        return (int) $move_id;
     }
 
     // ------ NOTIFICATIONS ----------
@@ -595,6 +584,7 @@ class Base extends Table {
      * @Override
      * - I had to override this not fail in multiactive, it will just ignore it
      * - fixed resetting the save flag when its done
+     * - fixed bug where exception thrown by this function causing havoc
      */
     function doUndoSavePoint() {
         //$this->statelog("*** doUndoSavePoint *** " . $this->undoSaveOnMoveEndDup);
@@ -612,6 +602,22 @@ class Base extends Table {
         }
     }
 
+    /*
+     * @Override
+     * fixed bug where it does not save state if there is no notifications
+     * fixed bug where exception thrown by this function causing havoc
+     */
+    function sendNotifications() {
+        parent::sendNotifications();
+        if ($this->isUndoSavepoint()) {
+            try {
+                $this->doUndoSavePoint();
+            } catch (Exception $e) {
+                $this->error($e->getTraceAsString());
+            }
+        }
+    }
+
     function doCustomUndoSavePoint() {
         //$this->statelog("*** doCustomUndoSavePoint ***");
         if ($this->game->gamestate->isMultiactiveState()) {
@@ -621,23 +627,6 @@ class Base extends Table {
         $this->bgaDoUndoSavePoint();
     }
 
-    /*
-     * @Override
-     * fixed bug where it does not save state if there is no notifications
-     */
-    function sendNotifications() {
-        //$next = $this->getNextMoveId();
-        parent::sendNotifications();
-        if ($this->undoSaveOnMoveEndDup) {
-            try {
-                $this->doUndoSavePoint();
-                // $this->setGameStateValue('next_move_id', $next); // restore next move so it does not increase
-                // parent::sendNotifications(); // if any notif was produced by undo save point send them also
-            } catch (Exception $e) {
-                $this->error($e->getTraceAsString());
-            }
-        }
-    }
     function dbGetFieldList(string $table) {
         $result = [];
         $fields = $this->game->getObjectListFromDB("SHOW COLUMNS FROM $table");
@@ -651,9 +640,6 @@ class Base extends Table {
         $fields_list = $this->dbGetFieldList($table);
         $fields = "`" . implode("`,`", $fields_list) . "`";
         return $fields;
-    }
-    function undoRestorePoint(): void {
-        $this->bgaUndoRestorePoint();
     }
 
     function bgaUndoRestorePoint() {
@@ -728,7 +714,7 @@ class Base extends Table {
 
     function bgaDoUndoSavePoint() {
         $tables = $this->getObjectListFromDB("SHOW TABLES", true);
-        $this->setGameStateValue("undo_moves_player", $this->getActivePlayerId());
+        $this->setGameStateValue("undo_moves_player", (int) $this->getActivePlayerId());
         $prefix = "zz_savepoint_";
         foreach ($tables as $table) {
             if (str_starts_with($table, $prefix)) {

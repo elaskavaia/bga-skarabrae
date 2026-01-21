@@ -563,6 +563,9 @@ abstract class Operation {
         $isAuto = $this->auto();
 
         if (!$isAuto) {
+            if ($this->getPlayerId() > 10) {
+                $this->game->customUndoSavepoint($this->getPlayerId(), 0, $this->getOpId());
+            }
             // switch to player state
             if ($this->game->machine->isMultiplayerOperationMode()) {
                 return MultiPlayerTurnPrivate::class;
@@ -653,8 +656,8 @@ abstract class Operation {
         }
     }
 
-    function undo() {
-        $this->game->multiPlayerUndo($this->getOwner());
+    function unresolve(): bool {
+        return false;
     }
 
     function action_whatever() {

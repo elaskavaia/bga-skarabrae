@@ -185,9 +185,6 @@ var Game0Basics = /** @class */ (function (_super) {
     Game0Basics.prototype.getStateName = function () {
         return this.gamedatas.gamestate.name;
     };
-    Game0Basics.prototype.getServerStateName = function () {
-        return this.last_server_state.name;
-    };
     Game0Basics.prototype.getPlayerColor = function (playerId) {
         var _a, _b;
         return (_b = (_a = this.gamedatas.players[playerId]) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : "ffffff";
@@ -1401,15 +1398,16 @@ var GameMachine = /** @class */ (function (_super) {
         return args.ttype == "token_count";
     };
     GameMachine.prototype.onLeavingState = function (stateName) {
-        var _a;
+        var _a, _b;
         _super.prototype.onLeavingState.call(this, stateName);
-        (_a = $("button_undo")) === null || _a === void 0 ? void 0 : _a.remove();
+        if (!((_a = this.opInfo) === null || _a === void 0 ? void 0 : _a.ui.undo))
+            (_b = $("button_undo")) === null || _b === void 0 ? void 0 : _b.remove();
     };
     /** default click processor */
     GameMachine.prototype.onToken = function (event, fromMethod) {
         var _a;
         console.log(event);
-        var id = this.onClickSanity(event);
+        var id = this.onClickSanity(event, true);
         if (!id)
             return true;
         if (!fromMethod)
@@ -1480,7 +1478,7 @@ var GameMachine = /** @class */ (function (_super) {
     GameMachine.prototype.onUpdateActionButtons_PlayerTurnConfirm = function (args) {
         var _this = this;
         this.statusBar.addActionButton(_("Confirm"), function () { return _this.resolveAction(); });
-        this.addUndoButton();
+        this.addUndoButton(this.bga.players.isCurrentPlayerActive());
     };
     GameMachine.prototype.resolveAction = function (args) {
         var _this = this;
@@ -1495,30 +1493,51 @@ var GameMachine = /** @class */ (function (_super) {
             _this.setSubPrompt(e.message);
         });
     };
+    GameMachine.prototype.addActionButtonColor = function (buttonId, name, handler, buttonColor) {
+        var _this = this;
+        if (buttonColor === void 0) { buttonColor = "primary"; }
+        var buttonDiv = this.statusBar.addActionButton(_(name), function () {
+            var _a;
+            return (_a = handler()) === null || _a === void 0 ? void 0 : _a.catch(function (e) {
+                _this.setSubPrompt(e.message);
+            });
+        }, {
+            color: buttonColor,
+            id: buttonId
+        });
+        buttonDiv.classList.add("ma_button"); // to allow more styling if needed
+        return buttonDiv;
+    };
+    GameMachine.prototype.sendActionUndo = function (moveId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.bga.actions.performAction("action_undo", {
+                        move_id: moveId
+                    }, {
+                        checkAction: false
+                    })];
+            });
+        });
+    };
     GameMachine.prototype.addUndoButton = function (cond) {
         var _this = this;
-        var _a;
+        var _a, _b;
         if (cond === void 0) { cond = true; }
-        if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && cond) {
-            var div = this.statusBar.addActionButton(_("Undo"), function () {
-                var _a;
-                return (_a = _this.bga.actions
-                    .performAction("action_undo", [], {
-                    checkAction: false
-                })) === null || _a === void 0 ? void 0 : _a.catch(function (e) {
-                    _this.setSubPrompt(e.message);
-                });
-            }, {
-                color: "alert",
-                id: "button_undo"
-            });
+        if ($("button_undo"))
+            $("button_undo").remove();
+        if (!this.bga.players.isCurrentPlayerSpectator() && cond) {
+            var div = this.addActionButtonColor("button_undo", _("Undo Turn"), function () { return _this.sendActionUndo(0); }, "alert");
             div.classList.add("button_undo");
             div.title = _("Undo all possible steps");
             (_a = $("undoredo_wrap")) === null || _a === void 0 ? void 0 : _a.appendChild(div);
-            // const div2 = this.addActionButtonColor("button_undo_last", _("Undo"), () => this.sendActionUndo(-1), "red");
-            // div2.classList.add("button_undo");
-            // div2.title = _("Undo One Step");
-            // $("undoredo_wrap")?.appendChild(div2);
+        }
+        if ($("button_undo_last"))
+            $("button_undo_last").remove();
+        if (!this.bga.players.isCurrentPlayerSpectator() && cond) {
+            var div2 = this.addActionButtonColor("button_undo_last", _("Undo"), function () { return _this.sendActionUndo(-1); }, "alert");
+            div2.classList.add("button_undo");
+            div2.title = _("Undo One Step");
+            (_b = $("undoredo_wrap")) === null || _b === void 0 ? void 0 : _b.appendChild(div2);
         }
     };
     GameMachine.prototype.getMultiSelectCountAndSync = function (result) {
@@ -2234,7 +2253,7 @@ var GameXBody = /** @class */ (function (_super) {
         this.bga.notifications.setupPromiseNotifications({
             minDuration: 1,
             minDurationNoText: 1,
-            logger: console.log,
+            //logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
             //handlers: [this, this.tokens],
             onStart: function (notifName, msg, args) {
                 if (msg)
@@ -2254,7 +2273,7 @@ var GameXBody = /** @class */ (function (_super) {
     GameXBody.prototype.notif_undoMove = function (args) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                console.log("notif", args);
+                console.log("notifundo", args);
                 return [2 /*return*/, this.wait(1)];
             });
         });

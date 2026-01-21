@@ -25,6 +25,7 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 class Op_endOfRound extends Operation {
     function auto(): bool {
         $this->game->effect_cleanCards("%");
+        $this->game->customUndoSavepoint(0, 2, "round");
         $this->queue("round");
         return true;
     }

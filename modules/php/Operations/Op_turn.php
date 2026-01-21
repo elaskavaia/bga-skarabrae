@@ -28,9 +28,8 @@ class Op_turn extends Operation {
         $player_id = $this->getPlayerId();
         $this->game->switchActivePlayer($player_id);
 
-        if (!$this->game->gamestate->isMultiactiveState() && $player_id) {
-            $this->game->customUndoSavepoint($player_id, 1);
-        }
+        $this->game->customUndoSavepoint($player_id, 1);
+
         return parent::auto();
     }
 
@@ -42,6 +41,9 @@ class Op_turn extends Operation {
             return;
         }
         $this->queue("village", $this->getOwner(), ["card" => $card]);
+        if ($this->game->isSimultanousPlay()) {
+            $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
+        }
         $this->queue("act", $this->getOwner());
         $this->queue("recall", $this->getOwner());
         $curturn = $this->game->getTurnNumber();

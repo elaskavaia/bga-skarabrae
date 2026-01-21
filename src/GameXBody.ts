@@ -607,7 +607,7 @@ class GameXBody extends GameMachine {
       minDuration: 1,
       minDurationNoText: 1,
 
-      logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
+      //logger: console.log, // show notif debug informations on console. Could be console.warn or any custom debug function (default null = no logs)
       //handlers: [this, this.tokens],
       onStart: (notifName, msg, args) => {
         if (msg) this.setSubPrompt(msg, args);
@@ -621,7 +621,7 @@ class GameXBody extends GameMachine {
   }
 
   async notif_undoMove(args: any) {
-    console.log("notif", args);
+    console.log("notifundo", args);
     return this.wait(1);
   }
 

@@ -50,6 +50,6 @@ class Op_draw extends CountableOperation {
         $this->notifyMessage(clienttranslate('${player_name} draws ${count} card/s ${reason}'), [
             "count" => count($cards),
         ]);
-        $this->queue("savepoint");
+        $this->game->customUndoSavepoint($this->player_id, 1);
     }
 }

@@ -39,11 +39,16 @@ class Op_turnpick extends Operation {
             $color = getPart($token, 1);
             if ($color === OpMachine::GAME_MULTI_COLOR) {
                 $this->queue("village", $color);
+                $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
             } else {
                 $this->queue("turn", $color);
             }
         }
-
+        if ($this->game->isSimultanousPlay()) {
+            $this->game->customUndoSavepoint($this->getPlayerId(), 1);
+        } else {
+            $this->game->customUndoSavepoint($this->getPlayerId(), 0);
+        }
         return true;
     }
 }

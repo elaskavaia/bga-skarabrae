@@ -20,10 +20,6 @@ class MachineInMem extends DbMachine {
         }
     }
 
-    function _($text) {
-        return $text;
-    }
-
     function escapeStringForDB($string) {
         return $string;
     }

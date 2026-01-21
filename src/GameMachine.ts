@@ -213,13 +213,13 @@ class GameMachine extends Game1Tokens {
 
   onLeavingState(stateName: string): void {
     super.onLeavingState(stateName);
-    $("button_undo")?.remove();
+    if (!this.opInfo?.ui.undo) $("button_undo")?.remove();
   }
 
   /** default click processor */
   onToken(event: Event, fromMethod?: string) {
     console.log(event);
-    let id: string = this.onClickSanity(event);
+    let id: string = this.onClickSanity(event, true);
     if (!id) return true;
     if (!fromMethod) fromMethod = "onToken";
     event.stopPropagation();
@@ -303,7 +303,7 @@ class GameMachine extends Game1Tokens {
   onUpdateActionButtons_PlayerTurnConfirm(args: any) {
     this.statusBar.addActionButton(_("Confirm"), () => this.resolveAction());
 
-    this.addUndoButton();
+    this.addUndoButton(this.bga.players.isCurrentPlayerActive());
   }
 
   resolveAction(args: any = {}) {
@@ -319,31 +319,56 @@ class GameMachine extends Game1Tokens {
       });
   }
 
+  addActionButtonColor(
+    buttonId: string,
+    name: string,
+    handler: () => Promise<void>,
+    buttonColor: "primary" | "secondary" | "alert" = "primary"
+  ) {
+    const buttonDiv = this.statusBar.addActionButton(
+      _(name),
+      () =>
+        handler()?.catch((e: Error) => {
+          this.setSubPrompt(e.message);
+        }),
+      {
+        color: buttonColor,
+        id: buttonId
+      }
+    );
+
+    buttonDiv.classList.add("ma_button"); // to allow more styling if needed
+
+    return buttonDiv;
+  }
+
+  async sendActionUndo(moveId: number) {
+    return this.bga.actions.performAction(
+      "action_undo",
+      {
+        move_id: moveId
+      },
+      {
+        checkAction: false
+      }
+    );
+  }
+
   addUndoButton(cond: boolean = true) {
-    if (!$("button_undo") && !this.bga.players.isCurrentPlayerSpectator() && cond) {
-      const div = this.statusBar.addActionButton(
-        _("Undo"),
-        () =>
-          this.bga.actions
-            .performAction("action_undo", [], {
-              checkAction: false
-            })
-            ?.catch((e: Error) => {
-              this.setSubPrompt(e.message);
-            }),
-        {
-          color: "alert",
-          id: "button_undo"
-        }
-      );
+    if ($("button_undo")) $("button_undo").remove();
+    if (!this.bga.players.isCurrentPlayerSpectator() && cond) {
+      const div = this.addActionButtonColor("button_undo", _("Undo Turn"), () => this.sendActionUndo(0), "alert");
       div.classList.add("button_undo");
       div.title = _("Undo all possible steps");
       $("undoredo_wrap")?.appendChild(div);
+    }
 
-      // const div2 = this.addActionButtonColor("button_undo_last", _("Undo"), () => this.sendActionUndo(-1), "red");
-      // div2.classList.add("button_undo");
-      // div2.title = _("Undo One Step");
-      // $("undoredo_wrap")?.appendChild(div2);
+    if ($("button_undo_last")) $("button_undo_last").remove();
+    if (!this.bga.players.isCurrentPlayerSpectator() && cond) {
+      const div2 = this.addActionButtonColor("button_undo_last", _("Undo"), () => this.sendActionUndo(-1), "alert");
+      div2.classList.add("button_undo");
+      div2.title = _("Undo One Step");
+      $("undoredo_wrap")?.appendChild(div2);
     }
   }
 

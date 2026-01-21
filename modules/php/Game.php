@@ -357,6 +357,16 @@ class Game extends Base {
         );
     }
 
+    function getPlayerIdByColor(?string $color): int {
+        if ($color === OpMachine::GAME_MULTI_COLOR) {
+            return 1;
+        }
+        if ($color === OpMachine::GAME_BARIER_COLOR) {
+            return 2;
+        }
+        return parent::getPlayerIdByColor($color);
+    }
+
     function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
         $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
         unset($args["message"]);
@@ -710,14 +720,46 @@ class Game extends Base {
         $count += $this->tokens->getTrackerValue($color, "midden");
         return $count;
     }
+
+    //// UNDO STUFF
+
+    protected $undoSavepointMeta = [];
     public function customUndoSavepoint(int $player_id, int $barrier = 0, string $label = "undo"): void {
-        $this->debugLog("customUndoSavepoint $player_id bar= $barrier");
-        if ($this->gamestate->isMultiactiveState()) {
-            $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
-        } else {
-            $this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
-            $this->undoSavepoint();
+        //$this->notifyMessage("customUndoSavepoint $player_id bar= $barrier");
+        if ($player_id < 10) {
+            return;
+        } // automas
+        if (!isset($this->undoSavepointMeta[$player_id])) {
+            $this->undoSavepointMeta[$player_id] = [];
         }
+
+        $this->undoSavepointMeta[$player_id]["label"] = $label;
+        $this->undoSavepointMeta[$player_id]["player_id"] = $player_id;
+        if ($barrier) {
+            $this->undoSavepointMeta[$player_id]["barrier"] = 1;
+        }
+
+        $move_id = $this->getGameStateValue("next_move_id", 0);
+        $this->dbMultiUndo->notifyUndoMoveMeta($this->undoSavepointMeta[$player_id] + ["move_id" => $move_id, "player_id" => $player_id]);
+        if ($this->isUndoSavepoint()) {
+            // already set, move on
+        } else {
+            $this->setUndoSavepoint(true);
+        }
+    }
+
+    function doCustomUndoSavePoint() {
+        foreach ($this->undoSavepointMeta as $player_id => $meta) {
+            // generic one first
+            if (!$player_id) {
+                $this->dbMultiUndo->doSaveUndoSnapshot($meta, $player_id, false);
+                unset($this->undoSavepointMeta[$player_id]);
+            }
+        }
+        foreach ($this->undoSavepointMeta as $player_id => $meta) {
+            $this->dbMultiUndo->doSaveUndoSnapshot($meta, $player_id, false);
+        }
+        $this->undoSavepointMeta = []; // and reset
     }
 
     function restorePlayerTables($table, $saved_data, $meta) {
@@ -732,7 +774,7 @@ class Game extends Base {
                     array_key_exists($row["token_key"], $curtokens);
             });
             $keys = array_map(fn($row) => $row["token_key"], $saved_data);
-            $this->notifyMessage(clienttranslate('${player_name} undoes their turn'), [], $player_id);
+            //$this->notifyMessage(clienttranslate('${player_name} undoes their turn'), [], $player_id);
             $this->tokens->db->dbReplaceValues($saved_data);
             foreach ($keys as $token_id) {
                 $info = $this->tokens->db->getTokenInfo($token_id);
@@ -747,31 +789,34 @@ class Game extends Base {
                     $this->game->machine->hide((int) $dop["id"]);
                 }
             }
+
             $this->game->machine->db->normalize();
+
             $saved_data = array_filter($saved_data, function ($row) use ($owner) {
                 return $row["owner"] == $owner && $row["rank"] >= 0;
             });
+            // sort $save_data by rank
             uasort($saved_data, function ($a, $b) {
                 return $a["rank"] <=> $b["rank"];
             });
+            $saved_data = array_values($saved_data);
+
+            // renumber rank in save_data
             $rank = 1;
-            foreach ($saved_data as $dop) {
+            foreach ($saved_data as &$dop) {
                 $dop["rank"] = $rank++;
             }
-            $this->game->machine->db->interrupt(count($saved_data));
+            unset($dop);
+
+            $this->game->machine->db->interrupt(0, count($saved_data) + 1);
             $this->game->machine->db->insertList(null, $saved_data);
+
             //return true;
         }
         return false;
     }
 
-    function multiPlayerUndo($owner) {
-        if ($this->game->gamestate->isMultiactiveState()) {
-            $this->dbMultiUndo->undoRestorePoint(0, true);
-        } else {
-            throw new \BgaSystemException("Not implemented");
-        }
-    }
+    //// DEBUG STUFF
 
     function debug_op(string $type) {
         $color = $this->getCurrentPlayerColor();

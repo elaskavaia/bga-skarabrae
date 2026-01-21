@@ -159,10 +159,6 @@ class Game0Basics extends GameGui<any> {
     return this.gamedatas.gamestate.name;
   }
 
-  getServerStateName() {
-    return this.last_server_state.name;
-  }
-
   getPlayerColor(playerId: number) {
     return this.gamedatas.players[playerId]?.color ?? "ffffff";
   }

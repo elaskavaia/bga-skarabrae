@@ -73,11 +73,12 @@ class Op_draft extends Operation {
         $this->game->tokens->dbSetTokenLocation($card, "tableau_{$owner}", 0, "*", [], $this->getPlayerId());
     }
 
-    public function undo() {
+    public function unresolve(): bool {
         $owner = $this->getOwner();
         $card = $this->game->tokens->db->getTokensOfTypeInLocationSingleKey("action_special", "tableau_{$owner}");
-        $this->game->systemAssert("missing card", $card);
+        $this->game->userAssert(clienttranslate("Nothing to undo"), $card);
         $this->game->tokens->dbSetTokenLocation($card, "hand_{$owner}", 0, "*", ["_private" => true], $this->getPlayerId());
         $this->game->machine->push($this->getType(), $owner);
+        return true;
     }
 }

@@ -149,6 +149,13 @@ class Op_act extends Operation {
         $this->queue($r, $owner, [], $action_tile);
     }
 
+    function auto(): bool {
+        if ($this->getPlayerId()) {
+            $this->game->customUndoSavepoint($this->getPlayerId(), 0);
+        }
+        return parent::auto();
+    }
+
     function resolve(): void {
         $owner = $this->getOwner();
         $args = $this->getArgs();
@@ -178,6 +185,7 @@ class Op_act extends Operation {
         $worker = array_shift($workers);
 
         $this->queue($this->getType(), $owner);
+        $this->game->customUndoSavepoint($this->getPlayerId(), 0);
     }
 
     public function getPrompt() {
