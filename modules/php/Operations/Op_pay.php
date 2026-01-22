@@ -32,7 +32,11 @@ class Op_pay extends CountableOperation {
     function getLimitCount() {
         $owner = $this->getOwner();
         $current = $this->game->tokens->getTrackerValue($owner, $this->getResType());
-        return $current;
+        $count = $this->getCount();
+        if ($count == 0) {
+            return 0;
+        }
+        return (int) floor($current / $count);
     }
 
     function getPossibleMoves() {

@@ -447,6 +447,7 @@
   gap: 10px;
   padding: 10px;
   z-index: 0;
+  min-height: 200px;
 }
 #mainarea > * {
   order: 10;
