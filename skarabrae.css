@@ -1419,6 +1419,10 @@ html[data-theme=dark] .restrackers .counter {
 .tooltip-left {
   padding: 0.5em;
 }
+.tooltip-left .tooltipimage.action,
+.tooltip-left .tooltipimage.card {
+  height: 300px;
+}
 
 .tooltip-right {
   padding: 0.5em;

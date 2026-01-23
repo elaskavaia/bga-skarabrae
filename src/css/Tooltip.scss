@@ -55,6 +55,11 @@
 
 .tooltip-left {
   padding: 0.5em;
+
+  .tooltipimage.action,
+  .tooltipimage.card {
+    height: 300px;
+  }
 }
 
 .tooltip-right {

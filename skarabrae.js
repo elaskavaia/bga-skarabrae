@@ -2133,7 +2133,7 @@ var GameXBody = /** @class */ (function (_super) {
         return gameui.bgaAnimationsActive() && !this.inSetup;
     };
     GameXBody.prototype.updateTokenDisplayInfo = function (tokenInfo) {
-        var _a, _b;
+        var _a, _b, _c;
         // override to generate dynamic tooltips and such
         var mainType = tokenInfo.mainType;
         var token = $(tokenInfo.tokenId);
@@ -2159,9 +2159,9 @@ var GameXBody = /** @class */ (function (_super) {
                     var slotNum = getPart(tokenId_2, 2);
                     var name_3 = (_b = tokenInfo.name) !== null && _b !== void 0 ? _b : _("Slot") + " #" + slotNum;
                     if (tokenId_2.startsWith("slot_furnish")) {
-                        name_3 = _("Furnish Slot") + " #" + slotNum;
+                        name_3 = _("Furnish Level") + " #" + slotNum;
                     }
-                    tokenInfo.tooltip += "tbd";
+                    (_c = tokenInfo.tooltip) !== null && _c !== void 0 ? _c : (tokenInfo.tooltip = "");
                     tokenInfo.name = name_3;
                 }
                 return;

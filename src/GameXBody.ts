@@ -512,9 +512,9 @@ class GameXBody extends GameMachine {
           let name = tokenInfo.name ?? _("Slot") + " #" + slotNum;
 
           if (tokenId.startsWith("slot_furnish")) {
-            name = _("Furnish Slot") + " #" + slotNum;
+            name = _("Furnish Level") + " #" + slotNum;
           }
-          tokenInfo.tooltip += "tbd";
+          tokenInfo.tooltip ??= "";
           tokenInfo.name = name;
         }
         return;
