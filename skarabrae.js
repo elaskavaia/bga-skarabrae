@@ -2223,6 +2223,23 @@ var GameXBody = /** @class */ (function (_super) {
                     tokenInfo.tooltip = _("Hearth Tracker shows how much food you can cook (total weight of all food items)");
                 }
                 return;
+            case "action": {
+                var tokenId_5 = tokenInfo.key;
+                var token_1 = $(tokenId_5);
+                // When action is not flipped (state 0), show the reverse side in tooltip
+                var name_tr = this.getTr(tokenInfo.name);
+                var imageTypes = tokenInfo.imageTypes;
+                if (imageTypes.includes("_override"))
+                    return;
+                var origtt = tokenInfo.tooltip;
+                tokenInfo.imageTypes += " _override";
+                var flip = "";
+                if (state === 0) {
+                    flip = "<div class='tooltipimage ".concat(imageTypes, "' data-state='1'></div>");
+                }
+                tokenInfo.tooltip = "\n            <div class='tooltip-left'><div class='tooltipimage ".concat(imageTypes, "' data-state='").concat(state, "'></div></div>\n            <div class='tooltip-right'>\n              <div class='tooltiptitle'>").concat(name_tr, "</div>\n              <div class='tooltiptext'>").concat(origtt, "</div>\n              ").concat(flip, "\n            </div>\n          ");
+                return;
+            }
         }
     };
     GameXBody.prototype.ttSection = function (prefix, text) {

@@ -575,6 +575,32 @@ class GameXBody extends GameMachine {
         }
 
         return;
+      case "action": {
+        const tokenId = tokenInfo.key;
+        const token = $(tokenId);
+
+        // When action is not flipped (state 0), show the reverse side in tooltip
+
+        const name_tr = this.getTr(tokenInfo.name);
+        const imageTypes = tokenInfo.imageTypes;
+        if (imageTypes.includes("_override")) return;
+        const origtt = tokenInfo.tooltip;
+        tokenInfo.imageTypes += " _override";
+        let flip = "";
+        if (state === 0) {
+          flip = `<div class='tooltipimage ${imageTypes}' data-state='1'></div>`;
+        }
+        tokenInfo.tooltip = `
+            <div class='tooltip-left'><div class='tooltipimage ${imageTypes}' data-state='${state}'></div></div>
+            <div class='tooltip-right'>
+              <div class='tooltiptitle'>${name_tr}</div>
+              <div class='tooltiptext'>${origtt}</div>
+              ${flip}
+            </div>
+          `;
+
+        return;
+      }
     }
   }
 

@@ -65,4 +65,9 @@
 .tooltip-right {
   padding: 0.5em;
   padding-left: 0em;
+
+  .tooltipimage.action {
+    height: 200px;
+    margin-top: 0.5em;
+  }
 }

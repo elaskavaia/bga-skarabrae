@@ -1428,6 +1428,10 @@ html[data-theme=dark] .restrackers .counter {
   padding: 0.5em;
   padding-left: 0em;
 }
+.tooltip-right .tooltipimage.action {
+  height: 200px;
+  margin-top: 0.5em;
+}
 
 /**
  *------
