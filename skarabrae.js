@@ -350,7 +350,7 @@ var Game0Basics = /** @class */ (function (_super) {
     Game0Basics.prototype.notif_message_warning = function (notif) {
         if (this.bgaAnimationsActive()) {
             var message = this.format_string_recursive(notif.log, notif.args);
-            this.showMessage(_("Warning:") + " " + message, "warning");
+            this.showMessage(_("Warning:") + " " + message, "info");
         }
     };
     Game0Basics.prototype.notif_message_info = function (notif) {
@@ -499,6 +499,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var Game1Tokens = /** @class */ (function (_super) {
     __extends(Game1Tokens, _super);
     function Game1Tokens() {
@@ -529,6 +538,10 @@ var Game1Tokens = /** @class */ (function (_super) {
         if (!this.gamedatas.token_types) {
             console.error("Missing gamadatas.token_types!");
             this.gamedatas.token_types = {};
+        }
+        if (!this.gamedatas.tokens_order) {
+            console.error("Missing gamadatas.tokens_order!");
+            this.gamedatas.tokens_order = __spreadArray([], Object.keys(this.gamedatas.tokens), true);
         }
         this.gamedatas.tokens["limbo"] = {
             key: "limbo",
@@ -622,7 +635,8 @@ var Game1Tokens = /** @class */ (function (_super) {
             var loc = _a[_i];
             this.placeTokenSetup(loc);
         }
-        for (var token in this.gamedatas.tokens) {
+        for (var _b = 0, _c = this.gamedatas.tokens_order; _b < _c.length; _b++) {
+            var token = _c[_b];
             var tokenInfo = this.gamedatas.tokens[token];
             var location_1 = tokenInfo.location;
             if (location_1 && !this.gamedatas.tokens[location_1] && !$(location_1)) {
@@ -633,8 +647,8 @@ var Game1Tokens = /** @class */ (function (_super) {
         for (var token in this.gamedatas.tokens) {
             this.updateTooltip(token);
         }
-        for (var _b = 0, _c = this.getAllLocations(); _b < _c.length; _b++) {
-            var loc = _c[_b];
+        for (var _d = 0, _e = this.getAllLocations(); _d < _e.length; _d++) {
+            var loc = _e[_d];
             this.updateTooltip(loc);
         }
     };
@@ -1933,6 +1947,8 @@ var GameXBody = /** @class */ (function (_super) {
                     var count = $(location).querySelectorAll(".card.setl").length;
                     counter.dataset.state = "".concat(count);
                     // sort
+                    var node = $(tokenId);
+                    delete node.style.order;
                     var parentNode = $(result.location);
                     var children = Array.from(parentNode.children);
                     children.sort(function (a, b) { return Number(a.dataset.state) - Number(b.dataset.state); });
@@ -1955,7 +1971,7 @@ var GameXBody = /** @class */ (function (_super) {
                     result.onClick = function (x) { return _this.onToken(x); };
                 }
             }
-            else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
+            else if (location.startsWith("tableau")) {
                 var color_2 = getPart(location, 1);
                 result.location = "cards_area_".concat(color_2);
                 var mid = getPart(tokenId, 1);
@@ -1966,10 +1982,18 @@ var GameXBody = /** @class */ (function (_super) {
                         counter.dataset.state = "".concat(count);
                     };
                 }
+                var node = $(tokenId);
+                if (node)
+                    delete node.style.order;
+            }
+            else if (location.startsWith("cardset")) {
+                result.onEnd = function (node) {
+                    node.style.order = node.dataset.state;
+                };
             }
             else if (location.startsWith("discard")) {
                 result.location = "discard_village";
-                //result.onEnd = (node) => this.hideCard(node);
+                result.onEnd = function (node) { return _this.hideCard(node); };
             }
             else if (location.startsWith("deck")) {
                 result.onEnd = function (node) { return _this.hideCard(node); };

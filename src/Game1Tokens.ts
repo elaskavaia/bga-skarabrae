@@ -76,6 +76,10 @@ class Game1Tokens extends Game0Basics {
       console.error("Missing gamadatas.token_types!");
       this.gamedatas.token_types = {};
     }
+    if (!this.gamedatas.tokens_order) {
+      console.error("Missing gamadatas.tokens_order!");
+      this.gamedatas.tokens_order = [...Object.keys(this.gamedatas.tokens)];
+    }
 
     this.gamedatas.tokens["limbo"] = {
       key: "limbo",
@@ -178,7 +182,7 @@ class Game1Tokens extends Game0Basics {
       this.placeTokenSetup(loc);
     }
 
-    for (let token in this.gamedatas.tokens) {
+    for (let token of this.gamedatas.tokens_order) {
       const tokenInfo = this.gamedatas.tokens[token];
       const location = tokenInfo.location;
       if (location && !this.gamedatas.tokens[location] && !$(location)) {

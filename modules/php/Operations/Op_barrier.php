@@ -26,10 +26,8 @@ use Bga\Games\skarabrae\States\GameDispatchForced;
 /** Special operation that act as barrier for all multi player operations */
 class Op_barrier extends Operation {
     function onEnteringGameState() {
-        // XXX destroy all undo
         $this->destroy();
         $this->game->customUndoSavepoint(0, 1);
-        $this->game->debugLog("barrier");
 
         return GameDispatchForced::class;
     }

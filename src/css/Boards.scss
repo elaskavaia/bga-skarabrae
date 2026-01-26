@@ -67,7 +67,10 @@
 
 .cardset {
   position: relative;
-  display: block;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  gap: 5px;
   min-width: calc(2 * 125px);
   &:empty {
     min-width: unset;
@@ -77,6 +80,7 @@
     display: inline-block;
     position: relative;
     vertical-align: top;
+    order: attr(data-state);
   }
 }
 .cardset::after {

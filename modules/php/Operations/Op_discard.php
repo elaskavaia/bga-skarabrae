@@ -42,7 +42,7 @@ class Op_discard extends CountableOperation {
     function getPossibleMoves() {
         $owner = $this->getOwner();
         $tokens = $this->game->tokens->getTokensOfTypeInLocation("card_setl", "tableau_$owner", null, "token_state");
-        $keys = array_map(fn($x) => $x["key"], $tokens);
+        $keys = array_keys($tokens);
 
         $res = [];
         $set = [];

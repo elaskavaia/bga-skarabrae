@@ -61,9 +61,6 @@ env_2|Hills
 env_3|Thickets
 env_4|Fields
 
-cardset_1|Turn 1 Cards
-cardset_2|Turn 2 Cards
-cardset_3|Turn 3 Cards
 
 #names of the stats
 game_vp_setl_count|VP for Settler Cards (Furnish)

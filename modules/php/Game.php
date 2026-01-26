@@ -220,7 +220,8 @@ class Game extends Base {
         $result = [];
         $result = parent::getAllDatas();
 
-        $result = array_merge($result, $this->tokens->getAllDatas());
+        $tokens = $this->tokens->getAllDatas();
+        $result = array_merge($result, $tokens);
 
         $isGameEnded = $this->isEndOfGame();
         $result["gameEnded"] = $isGameEnded;
@@ -602,7 +603,7 @@ class Game extends Base {
                 }
             } else {
                 // tie breaker
-                $this->playerScoreAux->set($player_id, $this->tokens->getTrackerValue($color, "turnmarker"));
+                $this->playerScoreAux->set($player_id, $this->getTurnMarkerPosition($color, "turnmarker"));
             }
         }
         $this->notify->all("endScores", "", ["endScores" => $this->getEndScores(), "final" => true]);

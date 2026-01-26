@@ -312,6 +312,8 @@ class GameXBody extends GameMachine {
           counter.dataset.state = `${count}`;
 
           // sort
+          const node = $(tokenId);
+          delete node.style.order;
           const parentNode = $(result.location);
           const children = Array.from(parentNode.children);
           children.sort((a: HTMLElement, b: HTMLElement) => Number(a.dataset.state) - Number(b.dataset.state));
@@ -330,7 +332,7 @@ class GameXBody extends GameMachine {
           result.location = `selection_area`;
           result.onClick = (x) => this.onToken(x);
         }
-      } else if (tokenId.startsWith("card") && location.startsWith("tableau")) {
+      } else if (location.startsWith("tableau")) {
         const color = getPart(location, 1);
         result.location = `cards_area_${color}`;
         const mid = getPart(tokenId, 1);
@@ -341,9 +343,15 @@ class GameXBody extends GameMachine {
             counter.dataset.state = `${count}`;
           };
         }
+        const node = $(tokenId);
+        if (node) delete node.style.order;
+      } else if (location.startsWith("cardset")) {
+        result.onEnd = (node: HTMLElement) => {
+          node.style.order = node.dataset.state;
+        };
       } else if (location.startsWith("discard")) {
         result.location = `discard_village`;
-        //result.onEnd = (node) => this.hideCard(node);
+        result.onEnd = (node) => this.hideCard(node);
       } else if (location.startsWith("deck")) {
         result.onEnd = (node) => this.hideCard(node);
       }

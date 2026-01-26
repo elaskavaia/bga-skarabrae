@@ -30,7 +30,7 @@ class Op_village extends OpCard {
             return [$card];
         }
         $n = $this->game->getTurnNumber();
-        $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
+        $cards = $this->game->tokens->getTokensOfTypeInLocation(null, "cardset_$n", null, "token_state");
         $owner = $this->getOwner();
         if ($owner === "000000") {
             return [array_keys($cards)[0]];

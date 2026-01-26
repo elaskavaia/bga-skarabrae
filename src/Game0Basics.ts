@@ -221,7 +221,7 @@ class Game0Basics extends GameGui<any> {
   }
   /** @Override onScriptError from gameui */
   onScriptError(msg: any, url, linenumber) {
-    if (gameui.page_is_unloading) {
+    if ((gameui as any).page_is_unloading) {
       // Don't report errors during page unloading
       return;
     }
@@ -327,7 +327,7 @@ class Game0Basics extends GameGui<any> {
   notif_message_warning(notif: Notif) {
     if (this.bgaAnimationsActive()) {
       var message = this.format_string_recursive(notif.log, notif.args);
-      this.showMessage(_("Warning:") + " " + message, "warning");
+      this.showMessage(_("Warning:") + " " + message, "info");
     }
   }
 

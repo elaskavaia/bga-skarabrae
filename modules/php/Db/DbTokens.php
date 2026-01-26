@@ -479,11 +479,7 @@ class DbTokens {
             $sql .= " ORDER BY $order_by ASC";
         }
 
-        if ($order_by !== null) {
-            return $this->game->getObjectListFromDB($sql);
-        } else {
-            return $this->game->getCollectionFromDB($sql);
-        }
+        return $this->game->getCollectionFromDB($sql);
     }
 
     function getTokensOfTypeInLocationSingle($type, $location = null, $state = null, $order_by = null) {

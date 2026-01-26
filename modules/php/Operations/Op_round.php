@@ -57,7 +57,11 @@ class Op_round extends Operation {
             if ($this->game->isSolo() && $i > 1) {
                 $state = 1;
             }
-            $this->game->tokens->dbSetTokensLocation($cards, "cardset_$i", $state, "", ["place_from" => "deck_village"]);
+            $pos = 1; // will start at 2 because 1 is face down
+            foreach ($cards as $card) {
+                $pos++;
+                $this->game->tokens->dbSetTokenLocation($card, "cardset_$i", $state == 0 ? $pos : 1, "", ["place_from" => "deck_village"]);
+            }
             $this->queue("turnall", OpMachine::GAME_BARIER_COLOR, ["num" => $i]);
         }
 

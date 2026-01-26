@@ -33,7 +33,6 @@ turnpick|Turn
 nop|None
 #fake name
 barrier|None
-savepoint|None
 draftdiscard|Discard
 n_midden|Clean Midden
 or|Choice

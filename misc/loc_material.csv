@@ -10,6 +10,9 @@ deck_village|Village Deck|supply|global|public|hidden|
 discard_village|Village Discard|supply|global|public|hidden|
 limbo|Limbo||global|hidden|hidden|
 tableau|Player Area|players_panels|player|hidden|public|'sort'=>'token_state'
+cardset_1|Turn 1 Cards|mainarea|global|hidden|public|'sort'=>'token_state'
+cardset_2|Turn 2 Cards|mainarea|global|hidden|public|'sort'=>'token_state'
+cardset_3|Turn 3 Cards|mainarea|global|hidden|public|'sort'=>'token_state'
 hand|Player Hand|players_panels|player|hidden|private|
 supply|Deck|supply|global|public|public|
 

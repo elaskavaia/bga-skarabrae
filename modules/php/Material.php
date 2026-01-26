@@ -63,742 +63,760 @@ class Material {
             ],
 
             /* --- gen php begin loc_material --- */
-            "deck_roof" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Roof Cards"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "public",
-                "content" => "hidden",
-            ],
-            "deck_spin" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Spindle Whorl Cards"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "public",
-                "content" => "hidden",
-            ],
-            "deck_goal" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Deck"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "hidden",
-                "content" => "hidden",
-            ],
-            "deck_task" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Deck"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "hidden",
-                "content" => "hidden",
-            ],
-            "deck_village" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Village Deck"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "public",
-                "content" => "hidden",
-            ],
-            "discard_village" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Village Discard"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "public",
-                "content" => "hidden",
-            ],
-            "limbo" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Limbo"),
-                "scope" => "global",
-                "counter" => "hidden",
-                "content" => "hidden",
-            ],
-            "tableau" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Player Area"),
-                "location" => "players_panels",
-                "scope" => "player",
-                "counter" => "hidden",
-                "content" => "public",
-                "sort" => "token_state",
-            ],
-            "hand" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Player Hand"),
-                "location" => "players_panels",
-                "scope" => "player",
-                "counter" => "hidden",
-                "content" => "private",
-            ],
-            "supply" => [
-                "type" => "location",
-                "showtooltip" => 0,
-                "create" => 0,
-                "name" => clienttranslate("Deck"),
-                "location" => "supply",
-                "scope" => "global",
-                "counter" => "public",
-                "content" => "public",
-            ],
+    "deck_roof" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Roof Cards"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "hidden",
+],
+    "deck_spin" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Spindle Whorl Cards"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "hidden",
+],
+    "deck_goal" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Deck"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "hidden",
+],
+    "deck_task" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Deck"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "hidden",
+],
+    "deck_village" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Village Deck"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "hidden",
+],
+    "discard_village" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Village Discard"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "hidden",
+],
+    "limbo" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Limbo"),
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "hidden",
+],
+    "tableau" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Player Area"),
+        "location" => "players_panels",
+        "scope" => "player",
+        "counter" => "hidden",
+        "content" => "public",
+        'sort'=>'token_state',
+],
+    "cardset_1" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Turn 1 Cards"),
+        "location" => "mainarea",
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "public",
+        'sort'=>'token_state',
+],
+    "cardset_2" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Turn 2 Cards"),
+        "location" => "mainarea",
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "public",
+        'sort'=>'token_state',
+],
+    "cardset_3" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Turn 3 Cards"),
+        "location" => "mainarea",
+        "scope" => "global",
+        "counter" => "hidden",
+        "content" => "public",
+        'sort'=>'token_state',
+],
+    "hand" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Player Hand"),
+        "location" => "players_panels",
+        "scope" => "player",
+        "counter" => "hidden",
+        "content" => "private",
+],
+    "supply" => [ 
+        "type" => "location",
+        "showtooltip" => 0,
+        "create" => 0,
+        "name" => clienttranslate("Deck"),
+        "location" => "supply",
+        "scope" => "global",
+        "counter" => "public",
+        "content" => "public",
+],
             /* --- gen php end loc_material --- */
             /* --- gen php begin op_material --- */
-            "Op_furnish" => [
-                "type" => "furnish",
-                "name" => clienttranslate("Furnish"),
-            ],
-            "Op_furnishPay" => [
-                "type" => "furnishPay",
-                "name" => clienttranslate("Furnish"),
-            ],
-            "Op_cook" => [
-                "type" => "cook",
-                "name" => clienttranslate("Cook"),
-            ],
-            "Op_craft" => [
-                "type" => "craft",
-                "name" => clienttranslate("Craft"),
-            ],
-            "Op_clean" => [
-                "type" => "clean",
-                "name" => clienttranslate("Clean"),
-            ],
-            "Op_trade" => [
-                "type" => "trade",
-                "name" => clienttranslate("Trade"),
-            ],
-            "Op_tradePay" => [
-                "type" => "tradePay",
-                "name" => clienttranslate("Trade"),
-            ],
-            "Op_build" => [
-                "type" => "build",
-                "name" => clienttranslate("Build"),
-            ],
-            "Op_endOfRound" => [
-                "type" => "endOfRound",
-                "name" => clienttranslate("End of Round"),
-            ],
-            "Op_cotag" => [
-                "type" => "cotag",
-                "name" => clienttranslate("Count of Tags"),
-            ],
-            "Op_roof" => [
-                "type" => "roof",
-                "name" => clienttranslate("Gain Roof Card"),
-            ],
-            "Op_n_slider" => [
-                "type" => "n_slider",
-                "name" => clienttranslate("Shift Slider"),
-            ],
-            "Op_night" => [
-                "type" => "night",
-                "name" => clienttranslate("Night Actions"),
-            ],
-            "Op_feed" => [
-                "type" => "feed",
-                "name" => clienttranslate("Feeding Action"),
-            ],
-            "Op_clutter" => [
-                "type" => "clutter",
-                "name" => clienttranslate("Gain Midden"),
-            ],
-            "Op_discard" => [
-                "type" => "discard",
-                "name" => clienttranslate("Discard Settler"),
-            ],
-            "Op_muster" => [
-                "type" => "muster",
-                "name" => clienttranslate("Muster"),
-            ],
-            "Op_explore" => [
-                "type" => "explore",
-                "name" => clienttranslate("Explore"),
-            ],
-            "Op_task" => [
-                "type" => "task",
-                "name" => clienttranslate("Complete Task"),
-            ],
-            "Op_draw" => [
-                "type" => "draw",
-                "name" => clienttranslate("Draw Card"),
-            ],
-            "Op_keep" => [
-                "type" => "keep",
-                "name" => clienttranslate("Keep Card"),
-            ],
-            "Op_activate" => [
-                "type" => "activate",
-                "name" => clienttranslate("Activate"),
-            ],
-            "Op_recruit" => [
-                "type" => "recruit",
-                "name" => clienttranslate("Recruit"),
-            ],
-            "Op_spin" => [
-                "type" => "spin",
-                "name" => clienttranslate("Spin Wool"),
-            ],
-            "Op_tend" => [
-                "type" => "tend",
-                "name" => clienttranslate("Tend Land"),
-            ],
-            "Op_draft" => [
-                "type" => "draft",
-                "name" => clienttranslate("Select Special Action"),
-            ],
-            "Op_turnpick" => [
-                "type" => "turnpick",
-                "name" => clienttranslate("Turn"),
-            ],
-            "Op_nop" => [
-                "type" => "nop",
-                "name" => clienttranslate("None"),
-            ],
-            // #fake name
-            "Op_barrier" => [
-                "type" => "barrier",
-                "name" => clienttranslate("None"),
-            ],
-            "Op_draftdiscard" => [
-                "type" => "draftdiscard",
-                "name" => clienttranslate("Discard"),
-            ],
-            "Op_n_midden" => [
-                "type" => "n_midden",
-                "name" => clienttranslate("Clean Midden"),
-            ],
-            "Op_or" => [
-                "type" => "or",
-                "name" => clienttranslate("Choice"),
-            ],
-            "Op_unique" => [
-                "type" => "unique",
-                "name" => clienttranslate("Unique Choice"),
-            ],
-            "Op_order" => [
-                "type" => "order",
-                "name" => clienttranslate("Choose Order"),
-            ],
-            "Op_seq" => [
-                "type" => "seq",
-                "name" => clienttranslate("Sequence"),
-            ],
-            "Op_payAny" => [
-                "type" => "payAny",
-                "name" => clienttranslate("Pay any Resource"),
-            ],
-            "Op_act" => [
-                "type" => "act",
-                "name" => clienttranslate("Worker Action"),
-            ],
-            "Op_gain" => [
-                "type" => "gain",
-                "name" => clienttranslate("Gain"),
-            ],
-            "Op_pay" => [
-                "type" => "pay",
-                "name" => clienttranslate("Pay"),
-            ],
-            "Op_paygain" => [
-                "type" => "paygain",
-                "name" => clienttranslate("Trade"),
-            ],
-            "Op_recall" => [
-                "type" => "recall",
-                "name" => clienttranslate("Return Workers"),
-            ],
-            "Op_pass" => [
-                "type" => "pass",
-                "name" => clienttranslate("Delay"),
-            ],
-            "Op_round" => [
-                "type" => "round",
-                "name" => clienttranslate("Round"),
-            ],
-            "Op_turn" => [
-                "type" => "turn",
-                "name" => clienttranslate("Turn"),
-            ],
-            "Op_turnall" => [
-                "type" => "turnall",
-                "name" => clienttranslate("Turn"),
-            ],
-            "Op_village" => [
-                "type" => "village",
-                "name" => clienttranslate("Gain Village Card"),
-            ],
-            "Op_tradeInc" => [
-                "type" => "tradeInc",
-                "name" => clienttranslate("Move up on Trade track"),
-            ],
-            "Op_shell" => [
-                "class" => "Op_gain",
-                "type" => "shell",
-                "name" => clienttranslate("Gain Shell"),
-            ],
-            "Op_rabbit" => [
-                "class" => "Op_gain",
-                "type" => "rabbit",
-                "name" => clienttranslate("Gain Rabbit"),
-            ],
-            "Op_barley" => [
-                "class" => "Op_gain",
-                "type" => "barley",
-                "name" => clienttranslate("Gain Barley"),
-            ],
-            "Op_fish" => [
-                "class" => "Op_gain",
-                "type" => "fish",
-                "name" => clienttranslate("Gain Fish"),
-            ],
-            "Op_seaweed" => [
-                "class" => "Op_gain",
-                "type" => "seaweed",
-                "name" => clienttranslate("Gain Seaweed"),
-            ],
-            "Op_sheep" => [
-                "class" => "Op_gain",
-                "type" => "sheep",
-                "name" => clienttranslate("Gain Sheep"),
-            ],
-            "Op_wool" => [
-                "class" => "Op_gain",
-                "type" => "wool",
-                "name" => clienttranslate("Gain Wool"),
-            ],
-            "Op_deer" => [
-                "class" => "Op_gain",
-                "type" => "deer",
-                "name" => clienttranslate("Gain Deer"),
-            ],
-            "Op_stone" => [
-                "class" => "Op_gain",
-                "type" => "stone",
-                "name" => clienttranslate("Gain Stone"),
-            ],
-            "Op_cow" => [
-                "class" => "Op_gain",
-                "type" => "cow",
-                "name" => clienttranslate("Gain Cow"),
-            ],
-            "Op_wood" => [
-                "class" => "Op_gain",
-                "type" => "wood",
-                "name" => clienttranslate("Gain Wood"),
-            ],
-            "Op_skaill" => [
-                "class" => "Op_gain",
-                "type" => "skaill",
-                "name" => clienttranslate("Gain Skaill"),
-            ],
-            "Op_hide" => [
-                "class" => "Op_gain",
-                "type" => "hide",
-                "name" => clienttranslate("Gain Hide"),
-            ],
-            "Op_food" => [
-                "class" => "Op_gain",
-                "type" => "food",
-                "name" => clienttranslate("Gain Food"),
-            ],
-            "Op_bone" => [
-                "class" => "Op_gain",
-                "type" => "bone",
-                "name" => clienttranslate("Gain Bone"),
-            ],
-            "Op_midden" => [
-                "class" => "Op_gain",
-                "type" => "midden",
-                "name" => clienttranslate("Gain Midden"),
-            ],
-            "Op_boar" => [
-                "class" => "Op_gain",
-                "type" => "boar",
-                "name" => clienttranslate("Gain Boar"),
-            ],
-            "Op_n_shell" => [
-                "class" => "Op_pay",
-                "type" => "n_shell",
-                "name" => clienttranslate("Pay Shell"),
-            ],
-            "Op_n_rabbit" => [
-                "class" => "Op_pay",
-                "type" => "n_rabbit",
-                "name" => clienttranslate("Pay Rabbit"),
-            ],
-            "Op_n_barley" => [
-                "class" => "Op_pay",
-                "type" => "n_barley",
-                "name" => clienttranslate("Pay Barley"),
-            ],
-            "Op_n_fish" => [
-                "class" => "Op_pay",
-                "type" => "n_fish",
-                "name" => clienttranslate("Pay Fish"),
-            ],
-            "Op_n_seaweed" => [
-                "class" => "Op_pay",
-                "type" => "n_seaweed",
-                "name" => clienttranslate("Pay Seaweed"),
-            ],
-            "Op_n_sheep" => [
-                "class" => "Op_pay",
-                "type" => "n_sheep",
-                "name" => clienttranslate("Pay Sheep"),
-            ],
-            "Op_n_wool" => [
-                "class" => "Op_pay",
-                "type" => "n_wool",
-                "name" => clienttranslate("Pay Wool"),
-            ],
-            "Op_n_deer" => [
-                "class" => "Op_pay",
-                "type" => "n_deer",
-                "name" => clienttranslate("Pay Deer"),
-            ],
-            "Op_n_stone" => [
-                "class" => "Op_pay",
-                "type" => "n_stone",
-                "name" => clienttranslate("Pay Stone"),
-            ],
-            "Op_n_cow" => [
-                "class" => "Op_pay",
-                "type" => "n_cow",
-                "name" => clienttranslate("Pay Cow"),
-            ],
-            "Op_n_wood" => [
-                "class" => "Op_pay",
-                "type" => "n_wood",
-                "name" => clienttranslate("Pay Wood"),
-            ],
-            "Op_n_skaill" => [
-                "class" => "Op_pay",
-                "type" => "n_skaill",
-                "name" => clienttranslate("Pay Skaill"),
-            ],
-            "Op_n_hide" => [
-                "class" => "Op_pay",
-                "type" => "n_hide",
-                "name" => clienttranslate("Pay Hide"),
-            ],
-            "Op_n_food" => [
-                "class" => "Op_pay",
-                "type" => "n_food",
-                "name" => clienttranslate("Pay Food"),
-            ],
-            "Op_n_bone" => [
-                "class" => "Op_pay",
-                "type" => "n_bone",
-                "name" => clienttranslate("Pay Bone"),
-            ],
-            "Op_n_boar" => [
-                "class" => "Op_pay",
-                "type" => "n_boar",
-                "name" => clienttranslate("Pay Boar"),
-            ],
+    "Op_furnish" => [ 
+        "type" => "furnish",
+        "name" => clienttranslate("Furnish"),
+],
+    "Op_furnishPay" => [ 
+        "type" => "furnishPay",
+        "name" => clienttranslate("Furnish"),
+],
+    "Op_cook" => [ 
+        "type" => "cook",
+        "name" => clienttranslate("Cook"),
+],
+    "Op_craft" => [ 
+        "type" => "craft",
+        "name" => clienttranslate("Craft"),
+],
+    "Op_clean" => [ 
+        "type" => "clean",
+        "name" => clienttranslate("Clean"),
+],
+    "Op_trade" => [ 
+        "type" => "trade",
+        "name" => clienttranslate("Trade"),
+],
+    "Op_tradePay" => [ 
+        "type" => "tradePay",
+        "name" => clienttranslate("Trade"),
+],
+    "Op_build" => [ 
+        "type" => "build",
+        "name" => clienttranslate("Build"),
+],
+    "Op_endOfRound" => [ 
+        "type" => "endOfRound",
+        "name" => clienttranslate("End of Round"),
+],
+    "Op_cotag" => [ 
+        "type" => "cotag",
+        "name" => clienttranslate("Count of Tags"),
+],
+    "Op_roof" => [ 
+        "type" => "roof",
+        "name" => clienttranslate("Gain Roof Card"),
+],
+    "Op_n_slider" => [ 
+        "type" => "n_slider",
+        "name" => clienttranslate("Shift Slider"),
+],
+    "Op_night" => [ 
+        "type" => "night",
+        "name" => clienttranslate("Night Actions"),
+],
+    "Op_feed" => [ 
+        "type" => "feed",
+        "name" => clienttranslate("Feeding Action"),
+],
+    "Op_clutter" => [ 
+        "type" => "clutter",
+        "name" => clienttranslate("Gain Midden"),
+],
+    "Op_discard" => [ 
+        "type" => "discard",
+        "name" => clienttranslate("Discard Settler"),
+],
+    "Op_muster" => [ 
+        "type" => "muster",
+        "name" => clienttranslate("Muster"),
+],
+    "Op_explore" => [ 
+        "type" => "explore",
+        "name" => clienttranslate("Explore"),
+],
+    "Op_task" => [ 
+        "type" => "task",
+        "name" => clienttranslate("Complete Task"),
+],
+    "Op_draw" => [ 
+        "type" => "draw",
+        "name" => clienttranslate("Draw Card"),
+],
+    "Op_keep" => [ 
+        "type" => "keep",
+        "name" => clienttranslate("Keep Card"),
+],
+    "Op_activate" => [ 
+        "type" => "activate",
+        "name" => clienttranslate("Activate"),
+],
+    "Op_recruit" => [ 
+        "type" => "recruit",
+        "name" => clienttranslate("Recruit"),
+],
+    "Op_spin" => [ 
+        "type" => "spin",
+        "name" => clienttranslate("Spin Wool"),
+],
+    "Op_tend" => [ 
+        "type" => "tend",
+        "name" => clienttranslate("Tend Land"),
+],
+    "Op_draft" => [ 
+        "type" => "draft",
+        "name" => clienttranslate("Select Special Action"),
+],
+    "Op_turnpick" => [ 
+        "type" => "turnpick",
+        "name" => clienttranslate("Turn"),
+],
+    "Op_nop" => [ 
+        "type" => "nop",
+        "name" => clienttranslate("None"),
+],
+// #fake name
+    "Op_barrier" => [ 
+        "type" => "barrier",
+        "name" => clienttranslate("None"),
+],
+    "Op_draftdiscard" => [ 
+        "type" => "draftdiscard",
+        "name" => clienttranslate("Discard"),
+],
+    "Op_n_midden" => [ 
+        "type" => "n_midden",
+        "name" => clienttranslate("Clean Midden"),
+],
+    "Op_or" => [ 
+        "type" => "or",
+        "name" => clienttranslate("Choice"),
+],
+    "Op_unique" => [ 
+        "type" => "unique",
+        "name" => clienttranslate("Unique Choice"),
+],
+    "Op_order" => [ 
+        "type" => "order",
+        "name" => clienttranslate("Choose Order"),
+],
+    "Op_seq" => [ 
+        "type" => "seq",
+        "name" => clienttranslate("Sequence"),
+],
+    "Op_payAny" => [ 
+        "type" => "payAny",
+        "name" => clienttranslate("Pay any Resource"),
+],
+    "Op_act" => [ 
+        "type" => "act",
+        "name" => clienttranslate("Worker Action"),
+],
+    "Op_gain" => [ 
+        "type" => "gain",
+        "name" => clienttranslate("Gain"),
+],
+    "Op_pay" => [ 
+        "type" => "pay",
+        "name" => clienttranslate("Pay"),
+],
+    "Op_paygain" => [ 
+        "type" => "paygain",
+        "name" => clienttranslate("Trade"),
+],
+    "Op_recall" => [ 
+        "type" => "recall",
+        "name" => clienttranslate("Return Workers"),
+],
+    "Op_pass" => [ 
+        "type" => "pass",
+        "name" => clienttranslate("Delay"),
+],
+    "Op_round" => [ 
+        "type" => "round",
+        "name" => clienttranslate("Round"),
+],
+    "Op_turn" => [ 
+        "type" => "turn",
+        "name" => clienttranslate("Turn"),
+],
+    "Op_turnall" => [ 
+        "type" => "turnall",
+        "name" => clienttranslate("Turn"),
+],
+    "Op_village" => [ 
+        "type" => "village",
+        "name" => clienttranslate("Gain Village Card"),
+],
+    "Op_tradeInc" => [ 
+        "type" => "tradeInc",
+        "name" => clienttranslate("Move up on Trade track"),
+],
+    "Op_shell" => [ 
+        "class" => "Op_gain",
+        "type" => "shell",
+        "name" => clienttranslate("Gain Shell"),
+],
+    "Op_rabbit" => [ 
+        "class" => "Op_gain",
+        "type" => "rabbit",
+        "name" => clienttranslate("Gain Rabbit"),
+],
+    "Op_barley" => [ 
+        "class" => "Op_gain",
+        "type" => "barley",
+        "name" => clienttranslate("Gain Barley"),
+],
+    "Op_fish" => [ 
+        "class" => "Op_gain",
+        "type" => "fish",
+        "name" => clienttranslate("Gain Fish"),
+],
+    "Op_seaweed" => [ 
+        "class" => "Op_gain",
+        "type" => "seaweed",
+        "name" => clienttranslate("Gain Seaweed"),
+],
+    "Op_sheep" => [ 
+        "class" => "Op_gain",
+        "type" => "sheep",
+        "name" => clienttranslate("Gain Sheep"),
+],
+    "Op_wool" => [ 
+        "class" => "Op_gain",
+        "type" => "wool",
+        "name" => clienttranslate("Gain Wool"),
+],
+    "Op_deer" => [ 
+        "class" => "Op_gain",
+        "type" => "deer",
+        "name" => clienttranslate("Gain Deer"),
+],
+    "Op_stone" => [ 
+        "class" => "Op_gain",
+        "type" => "stone",
+        "name" => clienttranslate("Gain Stone"),
+],
+    "Op_cow" => [ 
+        "class" => "Op_gain",
+        "type" => "cow",
+        "name" => clienttranslate("Gain Cow"),
+],
+    "Op_wood" => [ 
+        "class" => "Op_gain",
+        "type" => "wood",
+        "name" => clienttranslate("Gain Wood"),
+],
+    "Op_skaill" => [ 
+        "class" => "Op_gain",
+        "type" => "skaill",
+        "name" => clienttranslate("Gain Skaill"),
+],
+    "Op_hide" => [ 
+        "class" => "Op_gain",
+        "type" => "hide",
+        "name" => clienttranslate("Gain Hide"),
+],
+    "Op_food" => [ 
+        "class" => "Op_gain",
+        "type" => "food",
+        "name" => clienttranslate("Gain Food"),
+],
+    "Op_bone" => [ 
+        "class" => "Op_gain",
+        "type" => "bone",
+        "name" => clienttranslate("Gain Bone"),
+],
+    "Op_midden" => [ 
+        "class" => "Op_gain",
+        "type" => "midden",
+        "name" => clienttranslate("Gain Midden"),
+],
+    "Op_boar" => [ 
+        "class" => "Op_gain",
+        "type" => "boar",
+        "name" => clienttranslate("Gain Boar"),
+],
+    "Op_n_shell" => [ 
+        "class" => "Op_pay",
+        "type" => "n_shell",
+        "name" => clienttranslate("Pay Shell"),
+],
+    "Op_n_rabbit" => [ 
+        "class" => "Op_pay",
+        "type" => "n_rabbit",
+        "name" => clienttranslate("Pay Rabbit"),
+],
+    "Op_n_barley" => [ 
+        "class" => "Op_pay",
+        "type" => "n_barley",
+        "name" => clienttranslate("Pay Barley"),
+],
+    "Op_n_fish" => [ 
+        "class" => "Op_pay",
+        "type" => "n_fish",
+        "name" => clienttranslate("Pay Fish"),
+],
+    "Op_n_seaweed" => [ 
+        "class" => "Op_pay",
+        "type" => "n_seaweed",
+        "name" => clienttranslate("Pay Seaweed"),
+],
+    "Op_n_sheep" => [ 
+        "class" => "Op_pay",
+        "type" => "n_sheep",
+        "name" => clienttranslate("Pay Sheep"),
+],
+    "Op_n_wool" => [ 
+        "class" => "Op_pay",
+        "type" => "n_wool",
+        "name" => clienttranslate("Pay Wool"),
+],
+    "Op_n_deer" => [ 
+        "class" => "Op_pay",
+        "type" => "n_deer",
+        "name" => clienttranslate("Pay Deer"),
+],
+    "Op_n_stone" => [ 
+        "class" => "Op_pay",
+        "type" => "n_stone",
+        "name" => clienttranslate("Pay Stone"),
+],
+    "Op_n_cow" => [ 
+        "class" => "Op_pay",
+        "type" => "n_cow",
+        "name" => clienttranslate("Pay Cow"),
+],
+    "Op_n_wood" => [ 
+        "class" => "Op_pay",
+        "type" => "n_wood",
+        "name" => clienttranslate("Pay Wood"),
+],
+    "Op_n_skaill" => [ 
+        "class" => "Op_pay",
+        "type" => "n_skaill",
+        "name" => clienttranslate("Pay Skaill"),
+],
+    "Op_n_hide" => [ 
+        "class" => "Op_pay",
+        "type" => "n_hide",
+        "name" => clienttranslate("Pay Hide"),
+],
+    "Op_n_food" => [ 
+        "class" => "Op_pay",
+        "type" => "n_food",
+        "name" => clienttranslate("Pay Food"),
+],
+    "Op_n_bone" => [ 
+        "class" => "Op_pay",
+        "type" => "n_bone",
+        "name" => clienttranslate("Pay Bone"),
+],
+    "Op_n_boar" => [ 
+        "class" => "Op_pay",
+        "type" => "n_boar",
+        "name" => clienttranslate("Pay Boar"),
+],
             /* --- gen php end op_material --- */
             /* --- gen php begin token_material --- */
-            // # create is one of the numbers
-            // # 0 - do not create token
-            // # 1 - the token with id $id will be created, count must be set to 1 if used
-            // # 2 - the token with id "${id}_{INDEX}" will be created, using count starting from 1
-            // # 3 - the token with id "${id}_{COLOR}_{INDEX}" will be created, using count, per player
-            // # 4 - the token with id "${id}_{COLOR}" for each player will be created, count must be 1
-            // # 5 - the token with id "${id}_{INDEX}_{COLOR}" for each player will be created
-            // # 6 - custom placeholders
-            // #4 Large Workers (1 per player colour)
-            "worker_1" => [
-                "name" => clienttranslate("Large Worker"),
-                "count" => 1,
-                "type" => "worker wooden large",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            // #15 Small Workers (3 Black + 3 per player colour)
-            "worker_2" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_3" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_4" => [
-                "name" => clienttranslate("Small Worker"),
-                "count" => 1,
-                "type" => "worker wooden small",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "worker_{INDEX}_000000" => [
-                "name" => clienttranslate("Small Black Worker"),
-                "count" => 3,
-                "type" => "worker wooden small color_000000",
-                "create" => 6,
-                "location" => "supply",
-                "start" => 2,
-            ],
-            // #4 Turn Markers (1 per player colour)
-            "turnmarker" => [
-                "name" => clienttranslate("Turn Marker"),
-                "count" => 1,
-                "type" => "wooden",
-                "create" => 4,
-                "location" => "turndisk",
-            ],
-            "turnmarker_000000" => [
-                "name" => clienttranslate("Neutral Turn Marker"),
-                "count" => 1,
-                "type" => "wooden  color_000000",
-                "create" => 1,
-                "location" => "supply",
-            ],
-            // #4 Furnish Markers
-            // #4 Trade Markers
-            "tracker_furnish" => [
-                "name" => clienttranslate("Furnish Marker"),
-                "count" => 1,
-                "type" => "wooden tracker furnish",
-                "create" => 4,
-                "location" => "slot_furnish_0_{COLOR}",
-            ],
-            "tracker_trade" => [
-                "name" => clienttranslate("Trade Marker"),
-                "count" => 1,
-                "type" => "wooden tracker trade",
-                "create" => 4,
-                "location" => "slot_trade_0_{COLOR}",
-            ],
-            "tracker_slider" => [
-                "name" => clienttranslate("Slider"),
-                "count" => 1,
-                "type" => "tracker slider",
-                "create" => 4,
-                "location" => "tableau_{COLOR}",
-            ],
-            "tracker_hearth" => [
-                "name" => clienttranslate("Hearth Limit"),
-                "count" => 0,
-                "type" => "wooden tracker hearth",
-                "create" => 0,
-                "location" => "miniboard_{COLOR}",
-            ],
-            "tracker_nturns" => [
-                "name" => clienttranslate("Turn"),
-                "count" => 1,
-                "type" => "turninfo",
-                "create" => 1,
-                "location" => "round_banner",
-            ],
-            "tracker_nrounds" => [
-                "name" => clienttranslate("Round"),
-                "count" => 1,
-                "type" => "turninfo",
-                "create" => 1,
-                "location" => "round_banner",
-            ],
-            // #cards
-            // #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
-            "card_ball" => [
-                "name" => clienttranslate("Stone Ball Card"),
-                "count" => 8,
-                "type" => "card village ball",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 2,
-                "r" => "skaill",
-            ],
-            "card_util" => [
-                "name" => clienttranslate("Utencil Card"),
-                "count" => 4,
-                "type" => "card village util",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 2,
-                "r" => "hide",
-            ],
-            "card_roofi" => [
-                "name" => clienttranslate("Small Roof Card"),
-                "count" => 40,
-                "type" => "card roofi",
-                "create" => 2,
-                "location" => "deck_roof",
-                "vp" => 1,
-            ],
-            "card_roof" => [
-                "name" => clienttranslate("Roof Card"),
-                "count" => 8,
-                "type" => "card village roof",
-                "create" => 2,
-                "location" => "deck_village",
-                "vp" => 2,
-            ],
-            "card_spin" => [
-                "name" => clienttranslate("Spindle Card"),
-                "count" => 10,
-                "type" => "card spin",
-                "create" => 2,
-                "location" => "deck_spin",
-                "vp" => 1,
-                "r" => "wool",
-            ],
-            // #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
-            // #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5
-            "game_action_1" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_2" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_3" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_4" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_5" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_6" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_7" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_8" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_9" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "game_action_10" => [
-                "create" => 4,
-                "location" => "stats",
-            ],
-            "env_1" => [
-                "create" => 0,
-                "name" => clienttranslate("Shore"),
-            ],
-            "env_2" => [
-                "create" => 0,
-                "name" => clienttranslate("Hills"),
-            ],
-            "env_3" => [
-                "create" => 0,
-                "name" => clienttranslate("Thickets"),
-            ],
-            "env_4" => [
-                "create" => 0,
-                "name" => clienttranslate("Fields"),
-            ],
-            "cardset_1" => [
-                "create" => 0,
-                "name" => clienttranslate("Turn 1 Cards"),
-            ],
-            "cardset_2" => [
-                "create" => 0,
-                "name" => clienttranslate("Turn 2 Cards"),
-            ],
-            "cardset_3" => [
-                "create" => 0,
-                "name" => clienttranslate("Turn 3 Cards"),
-            ],
-            // #names of the stats
-            "game_vp_setl_count" => [
-                "create" => 0,
-                "name" => clienttranslate("VP for Settler Cards (Furnish)"),
-            ],
-            "game_vp_setl_sets" => [
-                "create" => 0,
-                "name" => clienttranslate("VP for Settler Sets (Furnish)"),
-            ],
-            "game_vp_trade" => [
-                "create" => 0,
-                "name" => clienttranslate("VP from Trade Track"),
-            ],
-            "game_vp_action_tiles" => [
-                "create" => 0,
-                "name" => clienttranslate("VP from Action Tiles (Craft)"),
-            ],
-            "game_vp_cards" => [
-                "create" => 0,
-                "name" => clienttranslate("VP from Cards"),
-            ],
-            "game_vp_food" => [
-                "create" => 0,
-                "name" => clienttranslate("VP from Food"),
-            ],
-            "game_vp_skaill" => [
-                "create" => 0,
-                "name" => clienttranslate("VP from Skaill Knives"),
-            ],
-            "game_vp_midden" => [
-                "create" => 0,
-                "name" => clienttranslate("VP penalty from Midden"),
-            ],
-            "game_vp_slider" => [
-                "create" => 0,
-                "name" => clienttranslate("VP penalty from Slider"),
-            ],
-            "game_vp_tasks" => [
-                "create" => 0,
-                "name" => clienttranslate("VP penalty from Tasks"),
-            ],
-            "game_vp_goals" => [
-                "create" => 0,
-                "name" => clienttranslate("VP penalty from Goals"),
-            ],
-            "game_vp_total" => [
-                "create" => 0,
-                "name" => clienttranslate("VP total"),
-            ],
-            // #counters
-            "counter_setl" => [
-                "create" => 0,
-                "name" => clienttranslate("Number of Settlers"),
-            ],
-            "counter_roof" => [
-                "create" => 0,
-                "name" => clienttranslate("Number of Roofs"),
-            ],
+// # create is one of the numbers
+// # 0 - do not create token
+// # 1 - the token with id $id will be created, count must be set to 1 if used
+// # 2 - the token with id "${id}_{INDEX}" will be created, using count starting from 1
+// # 3 - the token with id "${id}_{COLOR}_{INDEX}" will be created, using count, per player
+// # 4 - the token with id "${id}_{COLOR}" for each player will be created, count must be 1
+// # 5 - the token with id "${id}_{INDEX}_{COLOR}" for each player will be created
+// # 6 - custom placeholders
+// #4 Large Workers (1 per player colour)
+    "worker_1" => [ 
+        "name" => clienttranslate("Large Worker"),
+        "count" => 1,
+        "type" => "worker wooden large",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+// #15 Small Workers (3 Black + 3 per player colour)
+    "worker_2" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_3" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_4" => [ 
+        "name" => clienttranslate("Small Worker"),
+        "count" => 1,
+        "type" => "worker wooden small",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "worker_{INDEX}_000000" => [ 
+        "name" => clienttranslate("Small Black Worker"),
+        "count" => 3,
+        "type" => "worker wooden small color_000000",
+        "create" => 6,
+        "location" => "supply",
+        "start" => 2,
+],
+// #4 Turn Markers (1 per player colour)
+    "turnmarker" => [ 
+        "name" => clienttranslate("Turn Marker"),
+        "count" => 1,
+        "type" => "wooden",
+        "create" => 4,
+        "location" => "turndisk",
+],
+    "turnmarker_000000" => [ 
+        "name" => clienttranslate("Neutral Turn Marker"),
+        "count" => 1,
+        "type" => "wooden  color_000000",
+        "create" => 1,
+        "location" => "supply",
+],
+// #4 Furnish Markers
+// #4 Trade Markers
+    "tracker_furnish" => [ 
+        "name" => clienttranslate("Furnish Marker"),
+        "count" => 1,
+        "type" => "wooden tracker furnish",
+        "create" => 4,
+        "location" => "slot_furnish_0_{COLOR}",
+],
+    "tracker_trade" => [ 
+        "name" => clienttranslate("Trade Marker"),
+        "count" => 1,
+        "type" => "wooden tracker trade",
+        "create" => 4,
+        "location" => "slot_trade_0_{COLOR}",
+],
+    "tracker_slider" => [ 
+        "name" => clienttranslate("Slider"),
+        "count" => 1,
+        "type" => "tracker slider",
+        "create" => 4,
+        "location" => "tableau_{COLOR}",
+],
+    "tracker_hearth" => [ 
+        "name" => clienttranslate("Hearth Limit"),
+        "count" => 0,
+        "type" => "wooden tracker hearth",
+        "create" => 0,
+        "location" => "miniboard_{COLOR}",
+],
+    "tracker_nturns" => [ 
+        "name" => clienttranslate("Turn"),
+        "count" => 1,
+        "type" => "turninfo",
+        "create" => 1,
+        "location" => "round_banner",
+],
+    "tracker_nrounds" => [ 
+        "name" => clienttranslate("Round"),
+        "count" => 1,
+        "type" => "turninfo",
+        "create" => 1,
+        "location" => "round_banner",
+],
+// #cards
+// #80 Village Cards 40 Roof Cards 10 Spindle Whorl Cards 8 Focus Cards 10 Task Cards
+    "card_ball" => [ 
+        "name" => clienttranslate("Stone Ball Card"),
+        "count" => 8,
+        "type" => "card village ball",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>2,'r'=>'skaill',
+],
+    "card_util" => [ 
+        "name" => clienttranslate("Utencil Card"),
+        "count" => 4,
+        "type" => "card village util",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>2,'r'=>'hide',
+],
+    "card_roofi" => [ 
+        "name" => clienttranslate("Small Roof Card"),
+        "count" => 40,
+        "type" => "card roofi",
+        "create" => 2,
+        "location" => "deck_roof",
+        'vp'=>1,
+],
+    "card_roof" => [ 
+        "name" => clienttranslate("Roof Card"),
+        "count" => 8,
+        "type" => "card village roof",
+        "create" => 2,
+        "location" => "deck_village",
+        'vp'=>2,
+],
+    "card_spin" => [ 
+        "name" => clienttranslate("Spindle Card"),
+        "count" => 10,
+        "type" => "card spin",
+        "create" => 2,
+        "location" => "deck_spin",
+        'vp'=>1,'r'=>'wool',
+],
+// #card_task|Task Card|10|card task|2|deck_task|'vp'=>-2
+// #card_goal|Goal Card|8|card goal|2|deck_goal|'vp'=>-5
+    "game_action_1" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_2" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_3" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_4" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_5" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_6" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_7" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_8" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_9" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "game_action_10" => [ 
+        "create" => 4,
+        "location" => "stats",
+],
+    "env_1" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Shore"),
+],
+    "env_2" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Hills"),
+],
+    "env_3" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Thickets"),
+],
+    "env_4" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Fields"),
+],
+// #names of the stats
+    "game_vp_setl_count" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP for Settler Cards (Furnish)"),
+],
+    "game_vp_setl_sets" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP for Settler Sets (Furnish)"),
+],
+    "game_vp_trade" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP from Trade Track"),
+],
+    "game_vp_action_tiles" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP from Action Tiles (Craft)"),
+],
+    "game_vp_cards" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP from Cards"),
+],
+    "game_vp_food" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP from Food"),
+],
+    "game_vp_skaill" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP from Skaill Knives"),
+],
+    "game_vp_midden" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP penalty from Midden"),
+],
+    "game_vp_slider" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP penalty from Slider"),
+],
+    "game_vp_tasks" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP penalty from Tasks"),
+],
+    "game_vp_goals" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP penalty from Goals"),
+],
+    "game_vp_total" => [ 
+        "create" => 0,
+        "name" => clienttranslate("VP total"),
+],
+// #counters
+    "counter_setl" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Number of Settlers"),
+],
+    "counter_roof" => [ 
+        "create" => 0,
+        "name" => clienttranslate("Number of Roofs"),
+],
             /* --- gen php end token_material --- */
             /* --- gen php begin action_material --- */
             // #general actions
