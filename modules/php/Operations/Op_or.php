@@ -27,6 +27,12 @@ use Bga\Games\skarabrae\OpCommon\Operation;
 
 /** User choses operation. If count is used it is shared and decreases for all choices */
 class Op_or extends ComplexOperation {
+    function getArgType() {
+        if ($this->getCount() > 1) {
+            return Operation::TTYPE_TOKEN_COUNT;
+        }
+        return Operation::TTYPE_TOKEN;
+    }
     function resolve(): void {
         $res = $this->getCheckedArg();
         if (!is_array($res)) {
@@ -36,6 +42,7 @@ class Op_or extends ComplexOperation {
         $count = $this->getCount();
         $minCount = $this->getMinCount();
         $rank = 1;
+
         foreach ($this->delegates as $i => $sub) {
             $key = "choice_$i";
             $c = $res[$key] ?? 0;
@@ -104,13 +111,6 @@ class Op_or extends ComplexOperation {
             return ["q" => Material::MA_ERR_COST];
         }
         return $res;
-    }
-
-    function getArgType() {
-        if ($this->getCount() > 1) {
-            return Operation::TTYPE_TOKEN_COUNT;
-        }
-        return Operation::TTYPE_TOKEN;
     }
 
     function getPrompt() {

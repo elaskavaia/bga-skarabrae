@@ -57,16 +57,8 @@ abstract class CountableOperation extends Operation {
         return ["count" => $this->getCount(), "mcount" => $this->getMinCount(), "name" => $this->getOpName()];
     }
 
-    function getCount() {
-        return $this->getDataField("count", 1);
-    }
-
     function getLimitCount() {
         return self::RES_INFINITE;
-    }
-
-    function getMinCount() {
-        return $this->getDataField("mcount", 1);
     }
 
     function incMinCount($inc = 1) {

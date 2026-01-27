@@ -269,6 +269,10 @@ class Game extends Base {
         return $num >= 5;
     }
 
+    function getUserPreference(int $player_id, int $code): int {
+        return (int) $this->userPreferences->get($player_id, $code);
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
     ////////////
@@ -405,7 +409,7 @@ class Game extends Base {
     }
 
     function getTurnMarkerPosition(string $owner) {
-        return $this->tokens->db->getTokenState("turnmarker_$owner", 0);
+        return (int) $this->tokens->db->getTokenState("turnmarker_$owner", 0);
     }
     function setTurnMarkerPosition(string $owner, int $pos) {
         return $this->tokens->dbSetTokenState("turnmarker_$owner", $pos, "");
@@ -603,7 +607,7 @@ class Game extends Base {
                 }
             } else {
                 // tie breaker
-                $this->playerScoreAux->set($player_id, $this->getTurnMarkerPosition($color, "turnmarker"));
+                $this->playerScoreAux->set($player_id, (int) $this->getTurnMarkerPosition($color, "turnmarker"));
             }
         }
         $this->notify->all("endScores", "", ["endScores" => $this->getEndScores(), "final" => true]);

@@ -1987,9 +1987,16 @@ var GameXBody = /** @class */ (function (_super) {
                     delete node.style.order;
             }
             else if (location.startsWith("cardset")) {
-                result.onEnd = function (node) {
-                    node.style.order = node.dataset.state;
-                };
+                var state_1 = tokenInfo.state;
+                result.onStart = function (node) { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        node.dataset.state = state_1 + "";
+                        if (state_1 > 1) {
+                            node.style.order = node.dataset.state;
+                        }
+                        return [2 /*return*/];
+                    });
+                }); };
             }
             else if (location.startsWith("discard")) {
                 result.location = "discard_village";

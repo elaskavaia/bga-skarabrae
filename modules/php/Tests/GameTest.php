@@ -96,7 +96,7 @@ class GameUT extends Game {
         }
     }
 
-    function getUserPreference(int $player_id, int $code) {
+    function getUserPreference(int $player_id, int $code): int {
         return 0;
     }
     function getAutomaColor() {
@@ -327,23 +327,23 @@ final class GameTest extends TestCase {
     }
 
     public function testRangedOr() {
-        $rule = "2(wool/stone)";
+        $rule = "4(wool/stone)";
         $color = PCOLOR;
         $this->game->machine->push($rule, $color, ["reason" => "xxx"]);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals("xxx", $op->getReason());
-        $this->assertEquals("2(wool/stone)", $op->getTypeFullExpr());
+        $this->assertEquals("4(wool/stone)", $op->getTypeFullExpr());
         $this->dispatchOneStep();
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $this->assertTrue($op instanceof Op_or);
         $this->assertEquals("xxx", $op->getReason());
-        $this->assertEquals("2(wool/stone)", $op->getTypeFullExpr());
+        $this->assertEquals("4(wool/stone)", $op->getTypeFullExpr());
         $this->dispatchOneStep(PlayerTurn::class);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);
         $t = $op->getArgs()["target"];
         $op->action_resolve([
-            Operation::ARG_TARGET => $t[0],
+            Operation::ARG_TARGET => [$t[0] => 3],
         ]);
         $this->dispatchOneStep(GameDispatch::class);
         $op = $this->game->machine->createTopOperationFromDbForOwner(null);

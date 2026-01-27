@@ -244,28 +244,39 @@ abstract class Operation {
                 $arg = [$arg => 1];
             }
         }
+        $this->checkUserCounts($arg, $checkMaxCount, $checkMaxCount);
+
+        return $arg;
+    }
+
+    function getCount() {
+        return $this->getDataField("count", 1);
+    }
+
+    function getMinCount() {
+        return $this->getDataField("mcount", 1);
+    }
+
+    protected function checkUserCounts(mixed $arg, bool $checkMaxCount = false, bool $checkMinCount = false) {
         $total = $this->getUserArgCount($arg);
 
         if ($checkMaxCount) {
-            $args = $this->getArgs();
-            $max = $args["count"] ?? $this->getDataField("count", 1);
+            $max = $this->getCount();
 
             $this->game->userAssert(
-                clienttranslate("Cannot use this action because superfluous amount of elements is selected"),
+                clienttranslate("Cannot execute this action because superfluous amount of elements is selected"),
                 $total <= $max
             );
         }
         if ($checkMinCount) {
-            $args = $this->getArgs();
-            $min = $args["mcount"] ?? $this->getDataField("mcount", 1);
-
+            $min = $this->getMinCount();
             $this->game->userAssert(
-                clienttranslate("Cannot use this action because insuffient amount of elements is selected"),
+                clienttranslate("Cannot execute this action because insuffient amount of elements is selected"),
                 $total >= $min
             );
         }
 
-        return $arg;
+        return $total;
     }
     protected function getUserArgCount($arg) {
         $ttype = $this->getArgType();

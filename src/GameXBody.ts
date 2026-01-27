@@ -346,8 +346,12 @@ class GameXBody extends GameMachine {
         const node = $(tokenId);
         if (node) delete node.style.order;
       } else if (location.startsWith("cardset")) {
-        result.onEnd = (node: HTMLElement) => {
-          node.style.order = node.dataset.state;
+        const state = tokenInfo.state;
+        result.onStart = async (node: HTMLElement) => {
+          node.dataset.state = state + "";
+          if (state > 1) {
+            node.style.order = node.dataset.state;
+          }
         };
       } else if (location.startsWith("discard")) {
         result.location = `discard_village`;

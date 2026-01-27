@@ -6,6 +6,7 @@ namespace Bga\Games\skarabrae\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\skarabrae\Game;
+use Bga\Games\skarabrae\Material;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\Actions\Types\JsonParam;

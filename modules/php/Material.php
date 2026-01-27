@@ -13,6 +13,8 @@ class Material {
     const MA_ERR_NOT_ENOUGH = 5;
     const MA_ERR_NOT_APPLICABLE = 6;
 
+    const MA_PREF_CONFIRM_TURN = 101;
+
     private array $token_types;
     private bool $adjusted = false;
     public function __construct() {
@@ -378,6 +380,10 @@ class Material {
     "Op_turnall" => [ 
         "type" => "turnall",
         "name" => clienttranslate("Turn"),
+],
+    "Op_turnconf" => [ 
+        "type" => "turnconf",
+        "name" => clienttranslate("Confirm Turn"),
 ],
     "Op_village" => [ 
         "type" => "village",

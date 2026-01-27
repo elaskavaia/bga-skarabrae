@@ -50,6 +50,7 @@ class Op_turn extends Operation {
         if ($curturn == 3) {
             $this->queue("night", $this->getOwner());
         }
+        $this->queue("turnconf", $this->getOwner());
         if (!$this->game->isSimultanousPlay()) {
             $this->queue("turnpick", OpMachine::GAME_MULTI_COLOR);
         }
