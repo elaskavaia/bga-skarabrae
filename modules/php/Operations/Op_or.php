@@ -55,6 +55,10 @@ class Op_or extends ComplexOperation {
                 $sub->saveToDb($rank, true);
                 $rank++;
 
+                // Reset delegate counts so OR serialization stays clean if saved again
+                $sub->withDataField("count", null);
+                $sub->withDataField("mcount", null);
+
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $this->incMinCount(-$c);
                 $this->incCount(-$c);
