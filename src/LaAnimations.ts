@@ -111,13 +111,26 @@ class LaAnimations {
     clone.classList.add("phantom");
     clone.classList.add("phantom" + postfix);
     clone.style.transitionDuration = "0ms"; // disable animation during projection
-    if (elemRect.width > 1) {
-      clone.style.width = elemRect.width + "px";
-      clone.style.height = elemRect.height + "px";
-    }
 
     var fullmatrix = this.getFulltransformMatrix(elem.parentNode as Element, over.parentNode as Element);
 
+    // Calculate the scale factor of oversurface relative to viewport
+    // This handles cases where oversurface or its ancestors are scaled
+    const overElement = over as HTMLElement;
+    const overRect = over.getBoundingClientRect();
+    const scaleX = overElement.offsetWidth > 0 ? overRect.width / overElement.offsetWidth : 1;
+    const scaleY = overElement.offsetHeight > 0 ? overRect.height / overElement.offsetHeight : 1;
+
+    // Set dimensions adjusted for scale so clone appears same visual size as original
+    if (elemRect.width > 1) {
+      clone.style.width = (elemRect.width / scaleX) + "px";
+      clone.style.height = (elemRect.height / scaleY) + "px";
+    }
+
+    // Set initial position before appending so we measure from a known baseline
+    clone.style.position = "absolute";
+    clone.style.left = "0px";
+    clone.style.top = "0px";
     over.appendChild(clone);
     var cloneRect = clone.getBoundingClientRect();
 
@@ -129,12 +142,10 @@ class LaAnimations {
     const offsetX = centerX - cloneRect.width / 2 - cloneRect.x;
     const offsetY = centerY - cloneRect.height / 2 - cloneRect.y;
 
-    // Then remove the clone's parent position (since left/top is from tthe parent)
-    //console.log("cloneRect", cloneRect);
-
-    // @ts-ignore
-    clone.style.left = offsetX + "px";
-    clone.style.top = offsetY + "px";
+    // Then remove the clone's parent position (since left/top is from the parent)
+    // Divide by scale factor to convert from viewport pixels to CSS pixels
+    clone.style.left = (offsetX / scaleX) + "px";
+    clone.style.top = (offsetY / scaleY) + "px";
     clone.style.transform = fullmatrix;
     clone.style.transitionDuration = undefined;
 

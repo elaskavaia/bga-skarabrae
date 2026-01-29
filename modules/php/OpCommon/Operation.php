@@ -41,6 +41,7 @@ abstract class Operation {
     const TTYPE_TOKEN_COUNT = "token_count";
     const TARGET_AUTO = "auto";
     const TARGET_CONFIRM = "confirm";
+    const RES_INFINITE = 1000;
     protected Game $game;
     protected int $player_id = 0;
     private mixed $data = null;
@@ -244,37 +245,31 @@ abstract class Operation {
                 $arg = [$arg => 1];
             }
         }
-        $this->checkUserCounts($arg, $checkMaxCount, $checkMaxCount);
+        $this->checkUserCounts($arg, $checkMaxCount ? $this->getCount() : self::RES_INFINITE, $checkMaxCount ? $this->getMinCount() : 0);
 
         return $arg;
     }
 
-    function getCount() {
-        return $this->getDataField("count", 1);
+    function getCount(): int {
+        return (int) $this->getDataField("count", 1);
     }
 
-    function getMinCount() {
-        return $this->getDataField("mcount", 1);
+    function getMinCount(): int {
+        return (int) $this->getDataField("mcount", 1);
     }
 
-    protected function checkUserCounts(mixed $arg, bool $checkMaxCount = false, bool $checkMinCount = false) {
+    protected function checkUserCounts(mixed $arg, mixed $max = self::RES_INFINITE, mixed $min = 0) {
         $total = $this->getUserArgCount($arg);
 
-        if ($checkMaxCount) {
-            $max = $this->getCount();
+        $this->game->userAssert(
+            clienttranslate("Cannot execute this action because superfluous amount of elements is selected"),
+            $total <= $max
+        );
 
-            $this->game->userAssert(
-                clienttranslate("Cannot execute this action because superfluous amount of elements is selected"),
-                $total <= $max
-            );
-        }
-        if ($checkMinCount) {
-            $min = $this->getMinCount();
-            $this->game->userAssert(
-                clienttranslate("Cannot execute this action because insuffient amount of elements is selected"),
-                $total >= $min
-            );
-        }
+        $this->game->userAssert(
+            clienttranslate("Cannot execute this action because insuffient amount of elements is selected"),
+            $total >= $min
+        );
 
         return $total;
     }

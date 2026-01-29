@@ -51,7 +51,7 @@ class GameXBody extends GameMachine {
   setup(gamedatas) {
     try {
       super.setup(gamedatas);
-
+      (gameui as any).interface_autoscale = true;
       placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
       // Setting up player boards
       for (const playerId of gamedatas.playerorder) {
@@ -221,7 +221,9 @@ class GameXBody extends GameMachine {
   onEnteringState_MultiPlayerTurnPrivate(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
   }
-
+  onEnteringState_gameEnd(opInfo: OpInfo) {
+    this.setSubPrompt("Game Over");
+  }
   onEnteringState_MultiPlayerMaster(opInfo: OpInfo) {
     this.onEnteringState_PlayerTurn(opInfo);
   }
@@ -346,11 +348,22 @@ class GameXBody extends GameMachine {
         const node = $(tokenId);
         if (node) delete node.style.order;
       } else if (location.startsWith("cardset")) {
-        const state = tokenInfo.state;
+        const state = String(tokenInfo.state);
+        const node = $(tokenId);
+        let stateChanged = false;
+        if (node?.parentElement.id == result.location && node?.dataset.state != state && node?.dataset.state == "1") {
+          stateChanged = true;
+        }
+        node?.classList.remove("flipped");
         result.onStart = async (node: HTMLElement) => {
-          node.dataset.state = state + "";
-          if (state > 1) {
-            node.style.order = node.dataset.state;
+          if (tokenInfo.state > 1) {
+            node.style.order = state;
+          } else if (stateChanged) {
+            result.nop = true;
+            this.animationLa.cardFlip(tokenId, state, 1000);
+            return this.wait(1000);
+          } else if (tokenInfo.state == 1) {
+            node.classList.add("flipped");
           }
         };
       } else if (location.startsWith("discard")) {
@@ -674,7 +687,7 @@ class GameXBody extends GameMachine {
   /** @Override */
   bgaFormatText(log: string, args: any) {
     try {
-      if (log && args && !args.processed) {
+      if (log && args && !args.processed && typeof args === "object" && log.includes("$")) {
         args.processed = true;
 
         if (!args.player_id) {
@@ -685,7 +698,7 @@ class GameXBody extends GameMachine {
         }
 
         if (args.you) args.you = this.divYou(); // will replace ${you} with colored version
-        args.You = this.divYou(); // will replace ${You} with colored version
+        if (log.includes("You")) args.You = this.divYou(); // will replace ${You} with colored version
 
         if (args.reason) {
           args.reason = "(" + this.getTokenName(args.reason) + ")";

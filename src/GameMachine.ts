@@ -511,7 +511,7 @@ class GameMachine extends Game1Tokens {
       if (opInfo.info.skip && !opInfo.info.skip.name) {
         opInfo.info.skip.name = _("Skip");
       }
-      if (this.isMultiSelectArgs(opInfo)) {
+      if (this.isMultiSelectArgs(opInfo) && opInfo.ui.replicate !== false) {
         opInfo.ui.replicate = true;
         opInfo.ui.color ??= "secondary";
       } else {

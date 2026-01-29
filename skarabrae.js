@@ -262,18 +262,6 @@ var Game0Basics = /** @class */ (function (_super) {
         //super.onScriptError(msg, url, linenumber);
         return this.inherited(arguments);
     };
-    Game0Basics.prototype.bgaFormatText = function (log, args) {
-        if (log && args && !args.processed) {
-            args.processed = true;
-            if (!args.player_id) {
-                args.player_id = this.bga.players.getActivePlayerId();
-            }
-            if (args.player_id && !args.player_name) {
-                args.player_name = this.gamedatas.players[args.player_id].name;
-            }
-        }
-        return { log: this.format_string_recursive(log, args), args: args };
-    };
     Game0Basics.prototype.divYou = function () {
         var color = "black";
         var color_bg = "";
@@ -292,11 +280,11 @@ var Game0Basics = /** @class */ (function (_super) {
             return null;
         if (name.log !== undefined) {
             var notif = name;
-            var log = this.bgaFormatText(notif.log, notif.args).log;
+            var log = this.format_string_recursive(notif.log, notif.args);
             return this.clienttranslate_string(log);
         }
         else {
-            var log = this.bgaFormatText(name, args).log;
+            var log = this.format_string_recursive(name, args);
             return this.clienttranslate_string(log);
         }
     };
@@ -809,7 +797,6 @@ var Game1Tokens = /** @class */ (function (_super) {
                 tokenDbInfo = this.setTokenInfo(tokenId, tokenNode_1.parentElement.id, st, false);
             }
             else {
-                //console.error("Cannot setup token for " + tokenId);
                 tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
             }
         }
@@ -854,7 +841,7 @@ var Game1Tokens = /** @class */ (function (_super) {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _c.trys.push([0, 6, , 7]);
+                        _c.trys.push([0, 7, , 8]);
                         placeInfo = this.prapareToken(tokenId, tokenDbInfo, args);
                         if (!placeInfo) {
                             return [2 /*return*/];
@@ -874,16 +861,17 @@ var Game1Tokens = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.slideAndPlace(tokenNode, placeInfo.location, animTime, 0, undefined, placeInfo.onEnd)];
                     case 3:
                         _c.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        (_b = placeInfo.onEnd) === null || _b === void 0 ? void 0 : _b.call(placeInfo, tokenNode);
-                        _c.label = 5;
-                    case 5: return [3 /*break*/, 7];
-                    case 6:
+                        return [3 /*break*/, 6];
+                    case 4: return [4 /*yield*/, ((_b = placeInfo.onEnd) === null || _b === void 0 ? void 0 : _b.call(placeInfo, tokenNode))];
+                    case 5:
+                        _c.sent();
+                        _c.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
                         e_1 = _c.sent();
                         console.error("Exception thrown", e_1, e_1.stack);
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
                 }
             });
         });
@@ -1126,7 +1114,7 @@ var Game1Tokens = /** @class */ (function (_super) {
                 console.error(log, args, "Exception thrown", e.stack);
             }
         }
-        return _super.prototype.bgaFormatText.call(this, log, args);
+        return { log: log, args: args };
     };
     Game1Tokens.prototype.slideAndPlace = function (token, finalPlace, duration, delay, mobileStyle, onEnd) {
         var _a;
@@ -1700,7 +1688,7 @@ var GameMachine = /** @class */ (function (_super) {
             if (opInfo.info.skip && !opInfo.info.skip.name) {
                 opInfo.info.skip.name = _("Skip");
             }
-            if (this.isMultiSelectArgs(opInfo)) {
+            if (this.isMultiSelectArgs(opInfo) && opInfo.ui.replicate !== false) {
                 opInfo.ui.replicate = true;
                 (_d = (_f = opInfo.ui).color) !== null && _d !== void 0 ? _d : (_f.color = "secondary");
             }
@@ -1740,6 +1728,7 @@ var GameXBody = /** @class */ (function (_super) {
         var _a;
         try {
             _super.prototype.setup.call(this, gamedatas);
+            gameui.interface_autoscale = true;
             placeHtml(this.gameTemplate, this.bga.gameArea.getElement());
             // Setting up player boards
             for (var _i = 0, _b = gamedatas.playerorder; _i < _b.length; _i++) {
@@ -1852,6 +1841,9 @@ var GameXBody = /** @class */ (function (_super) {
     };
     GameXBody.prototype.onEnteringState_MultiPlayerTurnPrivate = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
+    };
+    GameXBody.prototype.onEnteringState_gameEnd = function (opInfo) {
+        this.setSubPrompt("Game Over");
     };
     GameXBody.prototype.onEnteringState_MultiPlayerMaster = function (opInfo) {
         this.onEnteringState_PlayerTurn(opInfo);
@@ -1987,12 +1979,25 @@ var GameXBody = /** @class */ (function (_super) {
                     delete node.style.order;
             }
             else if (location.startsWith("cardset")) {
-                var state_1 = tokenInfo.state;
+                var state_1 = String(tokenInfo.state);
+                var node = $(tokenId);
+                var stateChanged_1 = false;
+                if ((node === null || node === void 0 ? void 0 : node.parentElement.id) == result.location && (node === null || node === void 0 ? void 0 : node.dataset.state) != state_1 && (node === null || node === void 0 ? void 0 : node.dataset.state) == "1") {
+                    stateChanged_1 = true;
+                }
+                node === null || node === void 0 ? void 0 : node.classList.remove("flipped");
                 result.onStart = function (node) { return __awaiter(_this, void 0, void 0, function () {
                     return __generator(this, function (_a) {
-                        node.dataset.state = state_1 + "";
-                        if (state_1 > 1) {
-                            node.style.order = node.dataset.state;
+                        if (tokenInfo.state > 1) {
+                            node.style.order = state_1;
+                        }
+                        else if (stateChanged_1) {
+                            result.nop = true;
+                            this.animationLa.cardFlip(tokenId, state_1, 1000);
+                            return [2 /*return*/, this.wait(1000)];
+                        }
+                        else if (tokenInfo.state == 1) {
+                            node.classList.add("flipped");
                         }
                         return [2 /*return*/];
                     });
@@ -2347,7 +2352,7 @@ var GameXBody = /** @class */ (function (_super) {
     /** @Override */
     GameXBody.prototype.bgaFormatText = function (log, args) {
         try {
-            if (log && args && !args.processed) {
+            if (log && args && !args.processed && typeof args === "object" && log.includes("$")) {
                 args.processed = true;
                 if (!args.player_id) {
                     args.player_id = this.bga.players.getActivePlayerId();
@@ -2357,7 +2362,8 @@ var GameXBody = /** @class */ (function (_super) {
                 }
                 if (args.you)
                     args.you = this.divYou(); // will replace ${you} with colored version
-                args.You = this.divYou(); // will replace ${You} with colored version
+                if (log.includes("You"))
+                    args.You = this.divYou(); // will replace ${You} with colored version
                 if (args.reason) {
                     args.reason = "(" + this.getTokenName(args.reason) + ")";
                 }
@@ -2483,11 +2489,22 @@ var LaAnimations = /** @class */ (function () {
         clone.classList.add("phantom");
         clone.classList.add("phantom" + postfix);
         clone.style.transitionDuration = "0ms"; // disable animation during projection
-        if (elemRect.width > 1) {
-            clone.style.width = elemRect.width + "px";
-            clone.style.height = elemRect.height + "px";
-        }
         var fullmatrix = this.getFulltransformMatrix(elem.parentNode, over.parentNode);
+        // Calculate the scale factor of oversurface relative to viewport
+        // This handles cases where oversurface or its ancestors are scaled
+        var overElement = over;
+        var overRect = over.getBoundingClientRect();
+        var scaleX = overElement.offsetWidth > 0 ? overRect.width / overElement.offsetWidth : 1;
+        var scaleY = overElement.offsetHeight > 0 ? overRect.height / overElement.offsetHeight : 1;
+        // Set dimensions adjusted for scale so clone appears same visual size as original
+        if (elemRect.width > 1) {
+            clone.style.width = (elemRect.width / scaleX) + "px";
+            clone.style.height = (elemRect.height / scaleY) + "px";
+        }
+        // Set initial position before appending so we measure from a known baseline
+        clone.style.position = "absolute";
+        clone.style.left = "0px";
+        clone.style.top = "0px";
         over.appendChild(clone);
         var cloneRect = clone.getBoundingClientRect();
         var centerY = elemRect.y + elemRect.height / 2;
@@ -2497,11 +2514,10 @@ var LaAnimations = /** @class */ (function () {
         // Therefore I remove half of the dimensions + the existing offset
         var offsetX = centerX - cloneRect.width / 2 - cloneRect.x;
         var offsetY = centerY - cloneRect.height / 2 - cloneRect.y;
-        // Then remove the clone's parent position (since left/top is from tthe parent)
-        //console.log("cloneRect", cloneRect);
-        // @ts-ignore
-        clone.style.left = offsetX + "px";
-        clone.style.top = offsetY + "px";
+        // Then remove the clone's parent position (since left/top is from the parent)
+        // Divide by scale factor to convert from viewport pixels to CSS pixels
+        clone.style.left = (offsetX / scaleX) + "px";
+        clone.style.top = (offsetY / scaleY) + "px";
         clone.style.transform = fullmatrix;
         clone.style.transitionDuration = undefined;
         return clone;

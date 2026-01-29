@@ -64,12 +64,15 @@ class Op_tend extends CountableOperation {
         }
         [$midden_id, $midden_value] = $this->game->getTrackerIdAndValue($owner, "midden");
         $res[$midden_id] = [
-            "name" => '${token_div}',
-            "args" => ["token_div" => $midden_id],
+            "name" => clienttranslate("Clean"),
             "max" => $this->getCount(),
             "q" => 0,
         ];
         return $res;
+    }
+
+    function getUiArgs() {
+        return ["replicate" => false];
     }
 
     public function getArgType() {

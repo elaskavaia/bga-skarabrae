@@ -38,7 +38,8 @@ abstract class ComplexOperation extends CountableOperation {
         }
         $data = $this->getDataForDb();
         $data["count"] = $count;
-        $data["mcount"] = $count;
+        $data["mcount"] = $mcount;
+        return $data;
     }
 
     function canSkip() {

@@ -27,10 +27,12 @@ use function Bga\Games\skarabrae\getPart;
 
 class Op_clean extends Operation {
     function resolve(): void {
-        $res = $this->getCheckedArg(true, true);
+        $res = $this->getCheckedArg();
         $args = $this->getArgs();
 
-        $maxcount = $args["count"];
+        $maxcount = (int) $args["count"];
+        $this->checkUserCounts($res, $maxcount, 2);
+
         $userCount = count($res);
 
         foreach ($res as $item => $count) {

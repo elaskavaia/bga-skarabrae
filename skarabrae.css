@@ -403,7 +403,7 @@
   position: absolute;
 }
 
-.cardset .card[data-state="1"] {
+.card.flipped {
   background-image: url(img/nset_cards.jpg);
   background-position: 71.4285714286% 0 !important;
   background-size: 800% auto;

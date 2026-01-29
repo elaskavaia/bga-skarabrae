@@ -55,7 +55,7 @@ class Op_n_midden extends CountableOperation {
         ];
     }
 
-    function getMinCount() {
+    function getMinCount(): int {
         return 0;
     }
 

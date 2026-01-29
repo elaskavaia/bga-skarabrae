@@ -27,13 +27,10 @@ class Op_unique extends ComplexOperation {
         $target = $this->getCheckedArg();
         foreach ($this->delegates as $arg) {
             if ($arg->getId() == $target) {
-                // XXX
                 $this->game->machine->push($arg->getType(), $arg->getOwner(), $arg->getData());
                 $this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
-                $arg->destroy();
-            } else {
-                // subtract count
             }
+            $arg->destroy();
         }
 
         return;

@@ -21,7 +21,7 @@ interface TokenDisplayInfo {
 
 interface TokenMoveInfo extends Token {
   onStart?: (node: Element) => Promise<void>;
-  onEnd?: (node: Element) => void;
+  onEnd?: (node: Element) => Promise<void> | void;
   onClick?: (event?: any) => void;
   animtime?: number;
   nop?: boolean;
@@ -351,7 +351,6 @@ class Game1Tokens extends Game0Basics {
         const st = parseInt(tokenNode.dataset.state);
         tokenDbInfo = this.setTokenInfo(tokenId, tokenNode.parentElement.id, st, false);
       } else {
-        //console.error("Cannot setup token for " + tokenId);
         tokenDbInfo = this.setTokenInfo(tokenId, undefined, 0, false);
       }
     }
@@ -406,7 +405,7 @@ class Game1Tokens extends Game0Basics {
 
       if (placeInfo.onStart) await placeInfo.onStart(tokenNode);
       if (!placeInfo.nop) await this.slideAndPlace(tokenNode, placeInfo.location, animTime, 0, undefined, placeInfo.onEnd);
-      else placeInfo.onEnd?.(tokenNode);
+      else await placeInfo.onEnd?.(tokenNode);
 
       //if (animTime == 0) $(location).appendChild(tokenNode);
       //else void this.animationManager.slideAndAttach(tokenNode, $(location));
@@ -670,7 +669,7 @@ class Game1Tokens extends Game0Basics {
       }
     }
 
-    return super.bgaFormatText(log, args);
+    return { log, args };
   }
 
   async slideAndPlace(
@@ -679,7 +678,7 @@ class Game1Tokens extends Game0Basics {
     duration?: number,
     delay: number = 0,
     mobileStyle?: StringProperties,
-    onEnd?: (node?: HTMLElement) => void
+    onEnd?: (node?: HTMLElement) => void | Promise<void>
   ) {
     if (!$(token)) console.error(`token not found for ${token}`);
     if ($(token)?.parentNode == $(finalPlace)) return;

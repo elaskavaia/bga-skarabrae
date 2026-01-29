@@ -48,7 +48,7 @@ class Op_tradePay extends Operation {
         return $dis;
     }
 
-    function getCount() {
+    function getCount(): int {
         $owner = $this->getOwner();
         $value = $this->game->tokens->getTrackerValue($owner, "trade", 0);
         $this->game->systemAssert("", $value >= 0);

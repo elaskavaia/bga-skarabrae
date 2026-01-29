@@ -64,12 +64,12 @@ class Op_feed extends CountableOperation {
         return max(0, $countSetl - $countRoof);
     }
 
-    function getCount() {
+    function getCount(): int {
         $owner = $this->getOwner();
         $food = $this->game->tokens->getTrackerValue($owner, "food");
         return min($food, $this->getRequiredFood());
     }
-    function getMinCount() {
+    function getMinCount(): int {
         return 0;
     }
 
