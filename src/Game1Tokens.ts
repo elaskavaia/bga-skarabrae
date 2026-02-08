@@ -244,7 +244,7 @@ class Game1Tokens extends Game0Basics {
 
   updateToken(tokenNode: HTMLElement, placeInfo: TokenMoveInfo) {
     const tokenId = placeInfo.key;
-    const displayInfo = this.getTokenDisplayInfo(tokenId);
+    const displayInfo = this.getTokenDisplayInfo(tokenId, true);
     const classes = displayInfo.imageTypes.split(/  */);
     tokenNode.classList.add(...classes);
     if (displayInfo.name) tokenNode.dataset.name = this.getTr(displayInfo.name);

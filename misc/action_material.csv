@@ -36,15 +36,15 @@ num|name|r|rb|craft|tooltip|php
 #set location=limbo
 #set id=recipe_{num}
 #set create=0
-#cooking Options
-1|Cook Shell|n_shell:food||1
-2|Cook Barley|n_barley:food||1
-3|Cook Fish|n_fish:food,bone||2
-4|Cook Rabbit|n_rabbit:food,hide||2
-5|Cook Sheep|n_sheep:food,hide,wool,bone||3
-6|Cook Deer|n_deer:food,hide,2bone||3
-7|Cook Cow|n_cow:2food,hide,2bone||4
-8|Cook Boar|n_boar:2food,2hide,bone||3|Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide.
+#cooking Options (recipies)
+1|Cook Shell|n_shell:food||1|Cook 1 Shell to gain 1 Food.
+2|Cook Barley|n_barley:food||1|Cook 1 Barley to gain 1 Food.
+3|Cook Fish|n_fish:food,bone||2|Cook 1 Fish to gain 1 Food and 1 Bone.
+4|Cook Rabbit|n_rabbit:food,hide||2|Cook 1 Rabbit to gain 1 Food and 1 Hide.
+5|Cook Sheep|n_sheep:food,hide,wool,bone||3|Cook 1 Sheep to gain 1 Food, 1 Hide, 1 Wool, and 1 Bone.
+6|Cook Deer|n_deer:food,hide,2bone||3|Cook 1 Deer to gain 1 Food, 1 Hide, and 2 Bones.
+7|Cook Cow|n_cow:2food,hide,2bone||4|Cook 1 Cow to gain 2 Food, 1 Hide, and 2 Bones.
+8|Cook Boar|n_boar:2food,hide,bone|n_boar:2food,2hide,bone|3|Cook 1 Boar to gain 2 Food, 1 Bone, and 1 Hide (when flipped 2 Hide).
 
 #set name=Trade level {num}
 #set id=slot_trade_{num}

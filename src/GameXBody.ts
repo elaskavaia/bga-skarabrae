@@ -361,7 +361,9 @@ class GameXBody extends GameMachine {
           } else if (stateChanged) {
             result.nop = true;
             this.animationLa.cardFlip(tokenId, state, 1000);
-            return this.wait(1000);
+            await this.wait(1000);
+            this.updateTooltip(node.id);
+            return;
           } else if (tokenInfo.state == 1) {
             node.classList.add("flipped");
           }
@@ -516,6 +518,7 @@ class GameXBody extends GameMachine {
     const token = $(tokenInfo.tokenId);
     const parentId = token?.parentElement?.id;
     const state = parseInt(token?.dataset.state);
+    const location = token?.dataset.location ?? parentId;
     switch (mainType) {
       case "worker":
         {
@@ -547,6 +550,11 @@ class GameXBody extends GameMachine {
         {
           const tokenId = tokenInfo.key;
           const name = tokenInfo.name;
+          if (location?.startsWith("cardset") && state == 1) {
+            tokenInfo.showtooltip = false;
+          } else {
+            tokenInfo.showtooltip = true;
+          }
           const tooltip = tokenInfo.tooltip;
           if (tokenId.startsWith("card_setl")) {
             tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");

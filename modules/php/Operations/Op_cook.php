@@ -33,8 +33,16 @@ class Op_cook extends Operation {
         $res = $this->getCheckedArg();
         $prevWeight = $this->getWeight();
         $hearth_limit = $this->game->getHearthLimit($owner);
+
         foreach ($res as $recipe_token => $c) {
             $recipe_rule = $this->game->getRulesFor($recipe_token, "r");
+            if ($recipe_token === "recipe_8") {
+                // bore
+                $flipped = $this->game->getActionTileSide("action_special_7");
+                if ($flipped) {
+                    $recipe_rule = $this->game->getRulesFor($recipe_token, "rb");
+                }
+            }
             $this->game->systemAssert("ERR:Op_cook:1", $recipe_rule);
             $weight = $this->game->getRulesFor($recipe_token, "craft");
             $this->queue("$c($recipe_rule)", $this->getOwner(), null, "action_main_2_$owner"); // cook action is the reason

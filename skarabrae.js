@@ -680,7 +680,7 @@ var Game1Tokens = /** @class */ (function (_super) {
     Game1Tokens.prototype.updateToken = function (tokenNode, placeInfo) {
         var _a;
         var tokenId = placeInfo.key;
-        var displayInfo = this.getTokenDisplayInfo(tokenId);
+        var displayInfo = this.getTokenDisplayInfo(tokenId, true);
         var classes = displayInfo.imageTypes.split(/  */);
         (_a = tokenNode.classList).add.apply(_a, classes);
         if (displayInfo.name)
@@ -1988,18 +1988,27 @@ var GameXBody = /** @class */ (function (_super) {
                 node === null || node === void 0 ? void 0 : node.classList.remove("flipped");
                 result.onStart = function (node) { return __awaiter(_this, void 0, void 0, function () {
                     return __generator(this, function (_a) {
-                        if (tokenInfo.state > 1) {
-                            node.style.order = state_1;
+                        switch (_a.label) {
+                            case 0:
+                                if (!(tokenInfo.state > 1)) return [3 /*break*/, 1];
+                                node.style.order = state_1;
+                                return [3 /*break*/, 4];
+                            case 1:
+                                if (!stateChanged_1) return [3 /*break*/, 3];
+                                result.nop = true;
+                                this.animationLa.cardFlip(tokenId, state_1, 1000);
+                                return [4 /*yield*/, this.wait(1000)];
+                            case 2:
+                                _a.sent();
+                                this.updateTooltip(node.id);
+                                return [2 /*return*/];
+                            case 3:
+                                if (tokenInfo.state == 1) {
+                                    node.classList.add("flipped");
+                                }
+                                _a.label = 4;
+                            case 4: return [2 /*return*/];
                         }
-                        else if (stateChanged_1) {
-                            result.nop = true;
-                            this.animationLa.cardFlip(tokenId, state_1, 1000);
-                            return [2 /*return*/, this.wait(1000)];
-                        }
-                        else if (tokenInfo.state == 1) {
-                            node.classList.add("flipped");
-                        }
-                        return [2 /*return*/];
                     });
                 }); };
             }
@@ -2169,12 +2178,13 @@ var GameXBody = /** @class */ (function (_super) {
         return gameui.bgaAnimationsActive() && !this.inSetup;
     };
     GameXBody.prototype.updateTokenDisplayInfo = function (tokenInfo) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         // override to generate dynamic tooltips and such
         var mainType = tokenInfo.mainType;
         var token = $(tokenInfo.tokenId);
         var parentId = (_a = token === null || token === void 0 ? void 0 : token.parentElement) === null || _a === void 0 ? void 0 : _a.id;
         var state = parseInt(token === null || token === void 0 ? void 0 : token.dataset.state);
+        var location = (_b = token === null || token === void 0 ? void 0 : token.dataset.location) !== null && _b !== void 0 ? _b : parentId;
         switch (mainType) {
             case "worker":
                 {
@@ -2193,11 +2203,11 @@ var GameXBody = /** @class */ (function (_super) {
                 {
                     var tokenId_2 = tokenInfo.key;
                     var slotNum = getPart(tokenId_2, 2);
-                    var name_3 = (_b = tokenInfo.name) !== null && _b !== void 0 ? _b : _("Slot") + " #" + slotNum;
+                    var name_3 = (_c = tokenInfo.name) !== null && _c !== void 0 ? _c : _("Slot") + " #" + slotNum;
                     if (tokenId_2.startsWith("slot_furnish")) {
                         name_3 = _("Furnish Level") + " #" + slotNum;
                     }
-                    (_c = tokenInfo.tooltip) !== null && _c !== void 0 ? _c : (tokenInfo.tooltip = "");
+                    (_d = tokenInfo.tooltip) !== null && _d !== void 0 ? _d : (tokenInfo.tooltip = "");
                     tokenInfo.name = name_3;
                 }
                 return;
@@ -2205,6 +2215,12 @@ var GameXBody = /** @class */ (function (_super) {
                 {
                     var tokenId_3 = tokenInfo.key;
                     var name_4 = tokenInfo.name;
+                    if ((location === null || location === void 0 ? void 0 : location.startsWith("cardset")) && state == 1) {
+                        tokenInfo.showtooltip = false;
+                    }
+                    else {
+                        tokenInfo.showtooltip = true;
+                    }
                     var tooltip = tokenInfo.tooltip;
                     if (tokenId_3.startsWith("card_setl")) {
                         tokenInfo.tooltip = _("When gaining this card you must resolve top harvest and you may resolve bottom effect");
