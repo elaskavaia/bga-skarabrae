@@ -74,6 +74,14 @@ latin
   }
 }
 
+:root {
+  --accent-game-font: Roboto, Arial, sans-serif;
+}
+
+.pref_font_game:root {
+  --accent-game-font: "Caesar Dressing";
+}
+
 #gameaction_status_wrap {
   display: block !important; // prevent flickering of top bar
 
@@ -339,14 +347,6 @@ html:before {
 }
 html.darkmode:before {
   background: url(img/stonex.jpg);
-}
-
-:root {
-  --accent-game-font: Roboto, Arial, sans-serif;
-}
-
-.pref_font_game:root {
-  --accent-game-font: "Caesar Dressing";
 }
 
 #round_banner {
