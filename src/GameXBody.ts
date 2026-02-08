@@ -301,7 +301,7 @@ class GameXBody extends GameMachine {
       const color = getPart(location, 1);
       result.location = `selection_area`;
       result.onClick = (x) => this.onToken(x);
-    } else if (tokenId.startsWith("card")) {
+    } else if (tokenId.startsWith("card_")) {
       // cards
       result.onClick = (x) => this.onToken(x);
       if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {

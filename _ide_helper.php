@@ -1957,7 +1957,7 @@ namespace Bga\GameFramework {
          */
         final public function _(string $text): string
         {            
-            return '';
+            return $text;
         }
 
         /**

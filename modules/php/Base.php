@@ -59,7 +59,7 @@ class Base extends Table {
                 $args["player_id"] = $this->getMostlyActivePlayerId();
             }
             if (isset($args["player_id"]) && !isset($args["player_name"]) && str_contains($message, '${player_name}')) {
-                $args["player_name"] = $this->getPlayerNameById($args["player_id"]);
+                $args["player_name"] = $this->getPlayerNameById((int) $args["player_id"]);
             }
             if (str_contains($message, '${you}')) {
                 $args["you"] = "You"; // translated on client side, this is for replay after
@@ -451,10 +451,6 @@ class Base extends Table {
         throw new BgaUserException("Internal Error. That should not have happened. Reload page and Retry" . " " . $log);
     }
 
-    public function tostranslate($text): string {
-        return $this->_($text);
-    }
-
     function dumpError($log) {
         $move = $this->getGameStateValue("next_move_id", 0);
         $this->error("Internal Error during move $move: $log.");
@@ -509,7 +505,7 @@ class Base extends Table {
             }
         }
         if ($message) {
-            $player_name = $this->getPlayerNameById($player_id);
+            $player_name = $this->getPlayerNameById((int) $player_id);
             $args["player_name"] = $player_name;
         }
         if (isset($args["_notifType"])) {

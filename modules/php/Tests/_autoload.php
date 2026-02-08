@@ -10,7 +10,7 @@ spl_autoload_register(function ($class_name) {
         case "BgaUserException":
             //var_dump($class_name);
             //var_dump(APP_GAMEMODULE_PATH);
-            include APP_GAMEMODULE_PATH . "/module" . "/table/table.game.php";
+            require_once APP_GAMEMODULE_PATH . "/module" . "/table/table.game.php";
             return;
         case "Deck":
             //var_dump($class_name);

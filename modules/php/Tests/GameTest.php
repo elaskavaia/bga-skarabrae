@@ -72,10 +72,6 @@ class GameUT extends Game {
         $this->tokens = new PGameTokens($this, $tokens);
     }
 
-    public function _($s): string {
-        return $s;
-    }
-
     function getPlayersNumber(): int {
         return count($this->_colors);
     }

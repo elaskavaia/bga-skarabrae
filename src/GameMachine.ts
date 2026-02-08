@@ -314,8 +314,8 @@ class GameMachine extends Game1Tokens {
       ?.then((x) => {
         console.log("action complete", x);
       })
-      .catch((e: Error) => {
-        this.setSubPrompt(e.message);
+      .catch((e: any) => {
+        this.setSubPrompt(e.message, e.args);
       });
   }
 

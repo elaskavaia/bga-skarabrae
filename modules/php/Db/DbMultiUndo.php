@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Db;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\skarabrae\Game;
 use BgaUserException;
 
@@ -94,7 +95,7 @@ class DbMultiUndo {
     function notifyUndoMove(int $move_id, int $player_id) {
         $this->game->systemAssert("Missing player_id in notifyUndoMove", $player_id);
         $meta = $this->getMetaForMove($move_id, $player_id, true);
-        $this->notifyUndoMoveMeta($meta);
+        $this->notifyUndoMoveMeta($meta ?? []);
     }
 
     function notifyUndoMoveMeta($meta) {
@@ -149,7 +150,9 @@ class DbMultiUndo {
     function getAvailableUndoMoves(int $player_id) {
         $moves = [];
         $undotable = $this->table;
-        $all = $this->game->getObjectListFromDB("SELECT `move_id`,`player_id`,`meta` WHERE `player_id` = $player_id FROM $undotable");
+        $all = $this->game->getObjectListFromDB(
+            "SELECT `move_id`,`player_id`,`meta` FROM $undotable  WHERE `player_id` = $player_id FROM $undotable"
+        );
 
         foreach ($all as $row) {
             $value = $row["meta"];
@@ -163,11 +166,10 @@ class DbMultiUndo {
 
     function errorCannotUndo(int $move_id = 0) {
         if ($move_id == 0) {
-            $message = $this->game->tostranslate("Nothing to undo");
+            throw new UserException(clienttranslate("Nothing to undo"));
         } else {
-            $message = sprintf($this->game->tostranslate("Nothing to undo for move %s"), $move_id);
+            throw new UserException(clienttranslate('Nothing to undo for move ${move_id}'), ["move_id" => $move_id]);
         }
-        throw new \BgaUserException($message);
     }
 
     /** Replace custom undo data of move_id into bga system undo tables */
@@ -332,10 +334,10 @@ class DbMultiUndo {
         }
         $this->game->setUndoSavepoint(false); // unset it because it was set by bga undo
         //$this->dbMultiUndo->doSaveUndoSnapshot(["barrier" => $barrier, "label" => $label], $player_id, true);
-        $this->clearSnapshotsAfter($move_id + 1, $player_id);
+        $this->clearSnapshotsAfter($move_id, $player_id);
         $this->deleteGamelogs($move_id);
-        $this->rewriteHistory($move_id, $next, $player_id);
-        $this->game->setGameStateValue("next_move_id", $next);
+        //$this->rewriteHistory($move_id, $next, $player_id);
+        //$this->game->setGameStateValue("next_move_id", $next);
 
         $this->game->notifyWithName(
             "undoRestore",
@@ -348,7 +350,7 @@ class DbMultiUndo {
             $player_id
         );
 
-        $this->notifyUndoMove($move_id, $player_id);
+        $this->notifyUndoMoveMeta($meta);
     }
 
     protected static function extractNotifIds($notifications) {

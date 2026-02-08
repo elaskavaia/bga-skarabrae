@@ -1492,7 +1492,7 @@ var GameMachine = /** @class */ (function (_super) {
         })) === null || _a === void 0 ? void 0 : _a.then(function (x) {
             console.log("action complete", x);
         }).catch(function (e) {
-            _this.setSubPrompt(e.message);
+            _this.setSubPrompt(e.message, e.args);
         });
     };
     GameMachine.prototype.addActionButtonColor = function (buttonId, name, handler, buttonColor) {
@@ -1927,7 +1927,7 @@ var GameXBody = /** @class */ (function (_super) {
             result.location = "selection_area";
             result.onClick = function (x) { return _this.onToken(x); };
         }
-        else if (tokenId.startsWith("card")) {
+        else if (tokenId.startsWith("card_")) {
             // cards
             result.onClick = function (x) { return _this.onToken(x); };
             if (tokenId.startsWith("card_setl") && location.startsWith("tableau")) {

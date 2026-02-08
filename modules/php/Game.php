@@ -728,7 +728,7 @@ class Game extends Base {
         $this->undoSavepointMeta[$player_id]["label"] = $label;
         $this->undoSavepointMeta[$player_id]["player_id"] = $player_id;
         if ($barrier) {
-            $this->undoSavepointMeta[$player_id]["barrier"] = 1;
+            $this->undoSavepointMeta[$player_id]["barrier"] = $barrier;
         }
 
         $move_id = $this->getGameStateValue("next_move_id", 0);
@@ -760,6 +760,11 @@ class Game extends Base {
         if ($table == "token") {
             // filter the data
             $curtokens = $this->tokens->db->getTokensOfTypeInLocation(null, "%_{$owner}%");
+            if ($this->hasSpecial(3, $owner)) {
+                // recruit
+                $workers = $this->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
+                $curtokens = array_merge($curtokens, $workers);
+            }
             $saved_data = array_filter($saved_data, function ($row) use ($owner, $curtokens) {
                 return str_contains($row["token_location"], $owner) ||
                     str_contains($row["token_key"], $owner) ||
@@ -770,7 +775,7 @@ class Game extends Base {
             $this->tokens->db->dbReplaceValues($saved_data);
             foreach ($keys as $token_id) {
                 $info = $this->tokens->db->getTokenInfo($token_id);
-                $this->tokens->dbSetTokenLocation($token_id, $info["location"], $info["state"], "", [], $player_id);
+                $this->tokens->dbSetTokenLocation($token_id, $info["location"], $info["state"], "", ["nod" => true], $player_id);
             }
 
             //return true;
