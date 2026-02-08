@@ -13,5 +13,22 @@
       }
     },
     "default": 1
+  },
+  "102": {
+    "$comment": "MA_PREF_THEME_FONT",
+    "name": "Use thematic font",
+    "needReload": false,
+    "values": {
+      "1": {
+        "name": "Yes",
+        "cssPref": "pref_font_game"
+      },
+      "0": {
+        "name": "No",
+        "description": "Use default BGA font",
+        "cssPref": "pref_font_bga"
+      }
+    },
+    "default": 1
   }
 }

@@ -1417,7 +1417,7 @@ html[data-theme=dark] .restrackers .counter {
   top: unset;
 }
 .tooltipcontainer .tooltiptitle {
-  font-family: "Caesar Dressing";
+  font-family: var(--accent-game-font);
 }
 
 .tooltip-left {
@@ -1559,7 +1559,7 @@ latin
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  font-family: "Caesar Dressing";
+  font-family: var(--accent-game-font);
 }
 
 .bgabutton_orange {
@@ -1731,6 +1731,14 @@ html.darkmode:before {
   background: url(img/stonex.jpg);
 }
 
+:root {
+  --accent-game-font: Roboto, Arial, sans-serif;
+}
+
+.pref_font_game:root {
+  --accent-game-font: "Caesar Dressing";
+}
+
 #round_banner {
   height: 24px;
   width: 100%;
@@ -1738,7 +1746,7 @@ html.darkmode:before {
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  font-family: "Caesar Dressing";
+  font-family: var(--accent-game-font);
   font-size: large;
   color: #999;
   opacity: 0.8;
@@ -1763,9 +1771,9 @@ html.darkmode:before {
 .score-sheet {
   background-image: url(img/stonex.jpg);
   background-size: cover;
-  font-family: "Caesar Dressing";
   font-size: large;
   z-index: 5;
+  font-family: var(--accent-game-font);
 }
 .score-sheet table,
 .score-sheet td,
