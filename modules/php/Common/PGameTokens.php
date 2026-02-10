@@ -241,7 +241,7 @@ class PGameTokens {
         return $type == "location"; // XXX contains?
     }
 
-    protected function isContentAllowedForLocation($player_id, $location, $attr = "content") {
+    protected function isContentAllowedForLocation(int $player_id, $location, $attr = "content") {
         if ($location === "dev_null") {
             return false;
         }

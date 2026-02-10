@@ -36,7 +36,7 @@ class OpMachine {
         $this->game = Game::$instance;
     }
 
-    function createTopOperationFromDb($player_id): ?Operation {
+    function createTopOperationFromDb(int $player_id): ?Operation {
         if ($player_id === 0) {
             $owner = null;
         } else {
@@ -260,6 +260,7 @@ class OpMachine {
 
         $players = $this->game->loadPlayersBasicInfos();
         foreach ($players as $player_id => $player_info) {
+            $player_id = (int) $player_id;
             $pstate = $this->game->getPrivateStateId($player_id);
             $color = $this->game->getPlayerColorById($player_id);
             $results[$color]["instate"] = $pstate;

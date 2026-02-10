@@ -96,9 +96,9 @@ abstract class Operation {
     final function getId() {
         return $this->id;
     }
-    final function getPlayerId() {
+    final function getPlayerId(): int {
         if ($this->player_id == 0) {
-            $this->player_id = $this->game->getPlayerIdByColor($this->getOwner());
+            $this->player_id = (int) $this->game->getPlayerIdByColor($this->getOwner());
         }
 
         return $this->player_id;

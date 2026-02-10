@@ -113,7 +113,7 @@ class GameUT extends Game {
         return $this->multimachine;
     }
 
-    public $curid;
+    public int $curid;
 
     public function getCurrentPlayerId($bReturnNullIfNotLogged = false): string|int {
         return $this->curid;

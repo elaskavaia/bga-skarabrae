@@ -139,7 +139,7 @@ class Game extends Base {
         }
         $maxdisks = $order + 1;
         foreach ($p as $player_id) {
-            $color = $this->getPlayerColorById($player_id);
+            $color = $this->getPlayerColorById((int) $player_id);
             $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
             $this->machine->queue("draft", $color);
             $this->tokens->dbSetTokenState(
