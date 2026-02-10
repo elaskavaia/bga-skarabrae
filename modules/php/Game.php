@@ -718,7 +718,7 @@ class Game extends Base {
     protected $undoSavepointMeta = [];
     public function customUndoSavepoint(int $player_id, int $barrier = 0, string $label = "undo"): void {
         //$this->notifyMessage("customUndoSavepoint $player_id bar= $barrier");
-        if ($player_id < 10) {
+        if ($player_id !== 0 && $player_id < 10) {
             return;
         } // automas
         if (!isset($this->undoSavepointMeta[$player_id])) {

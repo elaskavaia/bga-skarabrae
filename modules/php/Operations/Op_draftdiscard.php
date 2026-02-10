@@ -29,6 +29,6 @@ class Op_draftdiscard extends Operation {
     function resolve(): void {
         $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "hand%");
         $this->game->tokens->dbSetTokensLocation($cards, "limbo", 0, "");
-        $this->game->customUndoSavepoint($this->player_id, 1, $this->getOpId());
+        $this->game->customUndoSavepoint(0, 2, $this->getOpId());
     }
 }
