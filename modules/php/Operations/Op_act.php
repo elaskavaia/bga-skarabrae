@@ -54,14 +54,13 @@ class Op_act extends Operation {
                 $anyWorker = $largeWorker;
             }
             $workersf = $this->game->tokens->getTokensOfTypeInLocation("worker%_$owner", null, 1);
-            $workersPerAction = 2;
-            if ($this->game->hasSpecial(3, $owner)) {
+            $hasRecruit = $this->game->hasSpecial(3, $owner);
+            $recruitFlipped = false;
+            if ($hasRecruit) {
                 // recruit
                 $workers_extra = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
                 $workersf = array_merge($workersf, $workers_extra);
-                if ($this->game->getActionTileSide("action_special_3")) {
-                    $workersPerAction = 3;
-                }
+                $recruitFlipped = $this->game->getActionTileSide("action_special_3");
             }
             $locs = $this->game->tokens->getReverseLocationTokensMapping($workersf);
             $keys = array_keys($this->game->tokens->getTokensOfTypeInLocation("action", "tableau_$owner"));
@@ -73,6 +72,12 @@ class Op_act extends Operation {
                 ];
                 $occupied = $locs[$act] ?? [];
                 $countw = count($occupied);
+                // Base: 1 large worker OR 1 small worker
+                // When this action tile is flipped AND recruit is flipped: up to 2 small workers OR 1 large worker
+                $workersPerAction = 2;
+                if ($recruitFlipped && $this->game->getActionTileSide($act)) {
+                    $workersPerAction = 3; // 2 small + 1 large
+                }
                 if ($countw >= $workersPerAction) {
                     $res[$act]["q"] = Material::MA_ERR_OCCUPIED;
                     continue;

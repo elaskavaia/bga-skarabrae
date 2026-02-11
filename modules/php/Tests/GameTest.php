@@ -462,4 +462,79 @@ final class GameTest extends TestCase {
         $this->dispatch(GameDispatchForced::class);
         $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
     }
+
+    public function testOpActRecruitWorkerPlacement() {
+        $game = $this->game();
+        $owner = PCOLOR;
+
+        // Setup: Create all tokens from material
+        $game->tokens->createTokens();
+
+        // Move action tiles and workers to appropriate locations
+        $game->tokens->dbSetTokenLocation("action_main_1_$owner", "tableau_$owner", 0);
+        $game->tokens->dbSetTokenLocation("action_main_2_$owner", "tableau_$owner", 0);
+        $game->tokens->dbSetTokenLocation("action_special_3", "tableau_$owner", 0);
+        $game->tokens->dbSetTokenLocation("worker_0_$owner", "tableau_$owner", 1);
+        $game->tokens->dbSetTokenLocation("worker_1_$owner", "tableau_$owner", 1);
+        $game->tokens->dbSetTokenLocation("worker_2_$owner", "tableau_$owner", 1);
+        $game->tokens->dbSetTokenLocation("worker_3_$owner", "tableau_$owner", 1); // Extra worker to check occupied status
+        $game->tokens->dbSetTokenLocation("worker_0_000000", "limbo", 1);
+
+        // Add resources so actions can be performed without cost errors
+        $game->effect_incCount($owner, "wool", 10, "");
+        $game->effect_incCount($owner, "hide", 10, "");
+        $game->effect_incCount($owner, "food", 10, "");
+
+        // Test: THE BUG - Recruit flipped BUT action tile NOT flipped - should only allow 2 workers total
+        // This was the bug: it was allowing 3 workers (2 small + 1 large) on ALL actions when recruit was flipped
+        $game->tokens->dbSetTokenState("action_special_3", 1); // Recruit flipped
+        $game->tokens->dbSetTokenState("action_main_2_$owner", 0); // Action tile NOT flipped
+
+        // Place 1 small worker
+        $game->tokens->dbSetTokenLocation("worker_0_$owner", "action_main_2_$owner", 1);
+
+        // Check possible moves - should show that we need a large worker next (workersPerAction = 2, not 3)
+        $op = $game->machine->instanciateOperation("act", $owner);
+        $moves = $op->getPossibleMoves();
+        $this->assertArrayHasKey("action_main_2_$owner", $moves);
+        // Should require large worker for second slot (not allow another small worker)
+        $this->assertEquals("worker_1_$owner", $moves["action_main_2_$owner"]["worker"]);
+
+        // Place large worker - should now be full
+        $game->tokens->dbSetTokenLocation("worker_1_$owner", "action_main_2_$owner", 1);
+
+        $op = $game->machine->instanciateOperation("act", $owner);
+        $moves = $op->getPossibleMoves();
+        $this->assertArrayHasKey("action_main_2_$owner", $moves);
+        $this->assertEquals(3, $moves["action_main_2_$owner"]["q"]); // MA_ERR_OCCUPIED - only 2 workers allowed
+
+        // Reset for second test
+        $game->tokens->dbSetTokenLocation("worker_0_$owner", "tableau_$owner", 1);
+        $game->tokens->dbSetTokenLocation("worker_1_$owner", "tableau_$owner", 1);
+
+        // Test 2: Recruit AND action tile BOTH flipped - should allow 3 workers (2 small + 1 large)
+        $game->tokens->dbSetTokenState("action_special_3", 1); // Recruit flipped
+        $game->tokens->dbSetTokenState("action_main_1_$owner", 1); // Action tile ALSO flipped
+
+        // Place 1 small worker
+        $game->tokens->dbSetTokenLocation("worker_0_$owner", "action_main_1_$owner", 1);
+
+        // Place 2nd small worker
+        $game->tokens->dbSetTokenLocation("worker_2_$owner", "action_main_1_$owner", 1);
+
+        // Should NOT be occupied yet (workersPerAction = 3 when both flipped)
+        $op = $game->machine->instanciateOperation("act", $owner);
+        $moves = $op->getPossibleMoves();
+        $this->assertArrayHasKey("action_main_1_$owner", $moves);
+        $this->assertNotEquals(3, $moves["action_main_1_$owner"]["q"]); // Not occupied, can place large worker
+
+        // Place large worker
+        $game->tokens->dbSetTokenLocation("worker_1_$owner", "action_main_1_$owner", 1);
+
+        // Now should be occupied (3 workers placed)
+        $op = $game->machine->instanciateOperation("act", $owner);
+        $moves = $op->getPossibleMoves();
+        $this->assertArrayHasKey("action_main_1_$owner", $moves);
+        $this->assertEquals(3, $moves["action_main_1_$owner"]["q"]); // MA_ERR_OCCUPIED
+    }
 }

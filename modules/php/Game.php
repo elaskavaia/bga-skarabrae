@@ -742,11 +742,11 @@ class Game extends Base {
                 $count = $this->tokens->getTrackerValue($color, "midden");
                 return $count <= 2;
             case "card_goal_5": //Advance the Trade Marker 6 or more spaces.
-                $count = $this->tokens->getTrackerValue($color, "trade") + 1;
+                $count = $this->tokens->getTrackerValue($color, "trade");
                 return $count >= 6;
             case "card_goal_6":
                 //Advance the Furnish Marker 5 or more spaces.
-                $count = $this->tokens->getTrackerValue($color, "furnish") + 1;
+                $count = $this->tokens->getTrackerValue($color, "furnish");
                 return $count >= 5;
             case "card_goal_7":
                 //Have 7 or more Food remaining (after feeding Settlers).

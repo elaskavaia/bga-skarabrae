@@ -19,6 +19,19 @@ npm run watch:scss   # Watch SCSS only
 
 Compiled outputs (`skarabrae.js`, `skarabrae.css`) are checked into the repo — BGA requires them.
 
+## Deployment
+
+Use the `/deploy` skill to prepare for BGA deployment. This will:
+
+1. Run `npm run build` to compile TypeScript and SCSS
+2. Check for build errors
+3. Run tests `npm run tests`
+4. Show git status to see changed files
+5. Check for spelling mistakes and issues in changed code
+6. Check if new PHP tests should be added
+
+Deployment does not create git commits automatically. Files are uploaded to BGA via the SFTP VSCode extension (auto-upload on save if configured).
+
 ## Code Formatting
 
 Prettier with `printWidth: 140`, `braceStyle: "1tbs"`, `trailingComma: "none"`. Includes PHP plugin.
@@ -28,6 +41,7 @@ Prettier with `printWidth: 140`, `braceStyle: "1tbs"`, `trailingComma: "none"`. 
 ### Client (TypeScript → `skarabrae.js`)
 
 Class inheritance chain:
+
 ```
 GameGui (BGA) → Game0Basics → Game1Tokens → GameMachine → GameXBody
 ```
@@ -49,7 +63,7 @@ Table (BGA) → Base → Game
 
 - **Game** (`modules/php/Game.php`): Main game logic.
 - **Base** (`modules/php/Base.php`): Base class extending BGA Table.
-- **Material** (`modules/php/Material.php`): Token/material definitions, error messages.
+- **Material** (`modules/php/Material.php`): Token/material definitions, error messages. Partially generated — see below.
 
 ### Operation Machine (`modules/php/OpCommon/`)
 
@@ -90,6 +104,16 @@ Entry point: `src/css/GameXBody.scss`. Partials: `Boards.scss`, `Cards.scss`, `T
 ### TypeScript Compilation
 
 `tsconfig.json` targets ES5 with no modules, concatenating all `src/**/*.ts` into a single `skarabrae.js`. Type definitions for BGA framework are in `src/types/`.
+
+## Material Generation
+
+`Material.php` is partially generated from CSV files in `misc/`. The script `misc/other/genmat.php` reads pipe-separated CSV files and updates sections of `Material.php` between `/* --- gen php begin <name> --- */` and `/* --- gen php end <name> --- */` markers. Sections outside these markers (constants, manual entries) are hand-edited.
+
+Source CSV files: `loc_material.csv`, `op_material.csv`, `token_material.csv`, `action_material.csv`, `setl_material.csv`, `tracker_material.csv`.
+
+To regenerate: `npm run genmat` (also runs as part of `npm run build`).
+
+When modifying material data, edit the corresponding CSV file, then run `npm run genmat`. Do not hand-edit the generated sections in `Material.php`.
 
 ## PHP Tests
 
