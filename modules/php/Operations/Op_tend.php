@@ -27,11 +27,13 @@ class Op_tend extends CountableOperation {
     function resolve(): void {
         $uargs = $this->getCheckedArg(true);
         $nc = 0;
-
         foreach ($uargs as $arg => $count) {
             if (str_starts_with($arg, "tracker_midden")) {
                 $this->queue("{$count}n_midden");
-            } else {
+            }
+        }
+        foreach ($uargs as $arg => $count) {
+            if (!str_starts_with($arg, "tracker_midden")) {
                 $action_tile = $arg;
                 $this->withDataField($action_tile, 1);
                 $owner = $this->getOwner();

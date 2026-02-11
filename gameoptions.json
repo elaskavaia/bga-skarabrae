@@ -31,6 +31,9 @@
       },
       "2": {
         "name": "Hard (55 vp)"
+      },
+      "3": {
+        "name": "Beat your own score"
       }
     },
     "default": 1,

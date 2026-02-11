@@ -31,6 +31,7 @@ use Bga\Games\skarabrae\States\GameDispatch;
 class Game extends Base {
     const TURNS_NUMBER_GLOBAL = "tracker_nturns";
     const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
+    const LEGACY_BEST_SCORE = "bscore";
     public static Game $instance;
     public OpMachine $machine;
     public Material $material;
@@ -169,6 +170,36 @@ class Game extends Base {
 
         $this->machine->queue("draftdiscard");
         $this->machine->queue("round", $this->getPlayerColorById((int) $startingPlayer));
+
+        if ($this->isSolo()) {
+            $var = $this->getVariantSoloDif();
+            $goal = 0;
+            if ($var == 3) {
+                // Beat your own score mode
+                $goal = $this->legacy->get(self::LEGACY_BEST_SCORE, (int) $startingPlayer, null);
+                if ($goal !== null) {
+                    $goal = (int) $goal;
+                    $this->notifyMessage(clienttranslate('${player_name} previous best score is ${points}'), [
+                        "points" => $goal,
+                    ]);
+                } else {
+                    $goal = 0;
+                }
+            } else {
+                if ($var <= 1) {
+                    $goal = 45;
+                } else {
+                    $goal = 55;
+                }
+            }
+            $this->notifyMessage(
+                clienttranslate('${player_name} the goal is get ${points} points or more. Good luck!'),
+                [
+                    "points" => $goal,
+                ],
+                ((int) $startingPlayer)
+            );
+        }
         return GameDispatch::class;
     }
 
@@ -518,6 +549,7 @@ class Game extends Base {
     function finalScoring() {
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $player_id => $player) {
+            $this->playerScore->set($player_id, 0);
             $color = $this->getPlayerColorById((int) $player_id);
             //         Furnish Track (VP per Settler and completed rows of Settlers).
             $furnish = $this->tokens->getTrackerValue($color, "furnish");
@@ -594,16 +626,46 @@ class Game extends Base {
             $this->playerStats->set("game_vp_total", $score, $player_id);
             if ($this->isSolo()) {
                 $var = $this->getVariantSoloDif();
-                if ($var <= 1) {
-                    $goal = 45;
+                if ($var == 3) {
+                    // Beat your own score mode
+                    $bestScore = $this->legacy->get(self::LEGACY_BEST_SCORE, $player_id, null);
+                    if ($bestScore !== null) {
+                        $bestScore = (int) $bestScore;
+                        $this->notifyMessage(clienttranslate('${player_name} previous best score is ${points}'), [
+                            "points" => $bestScore,
+                        ]);
+                    } else {
+                        $this->notifyMessage(clienttranslate('${player_name} has no previous best score'));
+                        $bestScore = 0;
+                    }
+                    if ($score <= $bestScore) {
+                        $this->notifyMessage(
+                            clienttranslate('${player_name} did not beat their best score of ${points}, score is negated'),
+                            [
+                                "points" => $bestScore,
+                            ]
+                        );
+                        $this->playerScore->set($player_id, -1);
+                        $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $bestScore); // set to refresh the time as this expires
+                    } else {
+                        $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $score);
+                        $this->notifyMessage(clienttranslate('${player_name} sets a new best personal score of ${points}!'), [
+                            "points" => $score,
+                        ]);
+                    }
                 } else {
-                    $goal = 55;
-                }
-                if ($score < $goal) {
-                    $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
-                        "points" => $goal,
-                    ]);
-                    $score = $this->playerScore->set($player_id, -1);
+                    if ($var <= 1) {
+                        $goal = 45;
+                    } else {
+                        $goal = 55;
+                    }
+                    $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $score);
+                    if ($score < $goal) {
+                        $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
+                            "points" => $goal,
+                        ]);
+                        $score = $this->playerScore->set($player_id, -1);
+                    }
                 }
             } else {
                 // tie breaker
@@ -816,6 +878,14 @@ class Game extends Base {
             $this->tokens->db->dbReplaceValuesGeneric("stats", $saved_data);
         }
         return false;
+    }
+
+    function setPersistent(string $key, int $playerId, mixed $value): void {
+        try {
+            $this->legacy->set($key, $playerId, $value);
+        } catch (\Throwable $e) {
+            $this->warn("legacy set failed for $key/$playerId: " . $e->getMessage());
+        }
     }
 
     //// DEBUG STUFF
