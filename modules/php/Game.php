@@ -139,10 +139,30 @@ class Game extends Base {
             $order++;
         }
         $maxdisks = $order + 1;
+        // For 2-player games, randomly determine neutral player position (0, 1, or 2)
+        $neutralPosition = ($pnum == 2) ? bga_rand(0, 2) : -1;
+        $currentPosition = $maxdisks - 1;
+
         foreach ($p as $player_id) {
             $color = $this->getPlayerColorById((int) $player_id);
             $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
             $this->machine->queue("draft", $color);
+
+            // Place neutral player if we've reached its random position
+            if ($pnum == 2 && $currentPosition == $neutralPosition) {
+                $this->tokens->dbSetTokenLocation(
+                    "turnmarker_000000",
+                    "turndisk",
+                    $order,
+                    clienttranslate('neutral token initial turn order ${order}'),
+                    [
+                        "order" => $maxdisks - $order,
+                    ]
+                );
+                $order--;
+                $currentPosition--;
+            }
+
             $this->tokens->dbSetTokenState(
                 "turnmarker_$color",
                 $order,
@@ -152,20 +172,21 @@ class Game extends Base {
                 ],
                 $player_id
             );
-            if ($order == 2 && $pnum == 2) {
-                $order--;
-                $this->tokens->dbSetTokenLocation(
-                    "turnmarker_000000",
-                    "turndisk",
-                    $order,
-
-                    clienttranslate('neutral token initial turn order ${order}'),
-                    [
-                        "order" => $maxdisks - $order,
-                    ]
-                );
-            }
             $order--;
+            $currentPosition--;
+        }
+
+        // If neutral position is last (after all players), place it now
+        if ($pnum == 2 && $currentPosition == $neutralPosition) {
+            $this->tokens->dbSetTokenLocation(
+                "turnmarker_000000",
+                "turndisk",
+                $order,
+                clienttranslate('neutral token initial turn order ${order}'),
+                [
+                    "order" => $maxdisks - $order,
+                ]
+            );
         }
 
         $this->machine->queue("draftdiscard");
