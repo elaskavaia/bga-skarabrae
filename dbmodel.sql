@@ -21,13 +21,13 @@
 CREATE TABLE IF NOT EXISTS `token` (
   `token_key` varchar(64) NOT NULL,
   `token_location` varchar(64) NOT NULL,
-  `token_state` int(10),
+  `token_state` int,
   PRIMARY KEY (`token_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `machine` (
-   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-   `rank` int(10) NOT NULL DEFAULT 1,
+   `id` int unsigned NOT NULL AUTO_INCREMENT,
+   `rank` int NOT NULL DEFAULT 1,
    `type` varchar(80) NOT NULL,
    `owner` varchar(10) NOT NULL DEFAULT '',
    `data` JSON,
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS `machine` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `multiundo` (
-  `move_id` int(10) NOT NULL,
-  `player_id` int(10) NOT NULL,
+  `move_id` int NOT NULL,
+  `player_id` int NOT NULL,
   `data` JSON NOT NULL,
   `meta` JSON NOT NULL,
   PRIMARY KEY (`move_id`,`player_id`)
