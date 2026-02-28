@@ -68,6 +68,6 @@ class Op_keep extends OpCard {
         $state = $this->game->getActionTileSide($this->getReason() ?: "action_special_6");
         $this->effect_gainCard($owner, $card, $this->getReason(), ["flags" => $state ? 2 : 0]);
         $cards = $this->game->tokens->getTokensOfTypeInLocation("card", "hand_$owner");
-        $this->game->tokens->dbSetTokensLocation($cards, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));
+        $this->game->tokens->dbSetTokensLocation($cards, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'), [], $this->getPlayerId());
     }
 }

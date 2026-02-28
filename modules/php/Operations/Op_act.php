@@ -171,7 +171,7 @@ class Op_act extends Operation {
             return;
         }
         $worker = $args["info"][$action_tile]["worker"];
-        $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1);
+        $this->game->tokens->dbSetTokenLocation($worker, $action_tile, 1, "*", [], $this->getPlayerId());
 
         $this->activateAction($action_tile);
 

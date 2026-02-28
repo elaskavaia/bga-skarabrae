@@ -40,11 +40,11 @@ class Op_round extends Operation {
         $this->notifyMessage(clienttranslate('--- Round ${number} begins ---'), ["number" => $roundNum]);
 
         $players_basic = $this->game->loadPlayersBasicInfos();
-        foreach ($players_basic as $player_info) {
+        foreach ($players_basic as $player_id => $player_info) {
             $color = $player_info["player_color"];
             $workers = $this->game->tokens->getTokensOfTypeInLocation("worker_$roundNum", "tableau_$color", 0);
             foreach ($workers as $worker => $info) {
-                $this->game->tokens->dbSetTokenState($worker, 1, clienttranslate('${player_name} gains worker'));
+                $this->game->tokens->dbSetTokenState($worker, 1, clienttranslate('${player_name} gains worker'), [], (int) $player_id);
             }
         }
 

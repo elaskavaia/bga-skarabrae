@@ -68,7 +68,7 @@ class Op_discard extends CountableOperation {
     function resolve(): void {
         $card = $this->getCheckedArg();
 
-        $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'));
+        $this->game->tokens->dbSetTokenLocation($card, "discard_village", 0, clienttranslate('${player_name} discards ${token_name}'), [], $this->getPlayerId());
         $rem = $this->getCount() - 1;
         if ($rem > 0) {
             $this->queue("$rem" . $this->getType());

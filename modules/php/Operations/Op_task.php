@@ -72,7 +72,7 @@ class Op_task extends Operation {
     function resolve(): void {
         $owner = $this->getOwner();
         $action_tile = $this->getCheckedArg();
-        $this->game->tokens->dbSetTokenState($action_tile, 1, clienttranslate('${player_name} completes task ${token_name}'));
+        $this->game->tokens->dbSetTokenState($action_tile, 1, clienttranslate('${player_name} completes task ${token_name}'), [], $this->getPlayerId());
         $r = $this->game->getRulesFor($action_tile, "r");
         $this->queue($r, $owner, [], $action_tile);
     }

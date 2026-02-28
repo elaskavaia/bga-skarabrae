@@ -35,6 +35,6 @@ class Op_recruit extends Operation {
     function resolve(): void {
         $worker = $this->getCheckedArg();
         $owner = $this->getOwner();
-        $this->game->tokens->dbSetTokenLocation($worker, "tableau_$owner", 1);
+        $this->game->tokens->dbSetTokenLocation($worker, "tableau_$owner", 1, "*", [], $this->getPlayerId());
     }
 }
