@@ -121,4 +121,15 @@ class TokensInMem extends DbTokens {
     function countTokensInLocation($location, $state = null) {
         return count($this->getTokensOfTypeInLocation(null, $location, $state));
     }
+
+    function dbReplaceValues($values) {
+        foreach ($values as $row) {
+            $key = $row["token_key"];
+            if (!array_key_exists($key, $this->keyindex)) {
+                $this->keyindex[$key] = ["key" => $key, "location" => "limbo", "state" => 0];
+            }
+            $this->keyindex[$key]["location"] = $row["token_location"];
+            $this->keyindex[$key]["state"] = (int) ($row["token_state"] ?? 0);
+        }
+    }
 }

@@ -131,6 +131,14 @@ class GameUT extends Game {
         return $op->action_resolve([Operation::ARG_TARGET => $target]);
     }
 
+    function getPlayerColorById($player_id): string {
+        $idx = $player_id - 10;
+        if ($idx >= 0 && $idx < count($this->_colors)) {
+            return $this->_colors[$idx];
+        }
+        return "000000";
+    }
+
     // override/stub methods here that access db and stuff
 }
 
@@ -580,5 +588,58 @@ final class GameTest extends TestCase {
         $moves = $op->getPossibleMoves();
         $this->assertArrayHasKey("action_main_1_$owner", $moves);
         $this->assertEquals(3, $moves["action_main_1_$owner"]["q"]); // MA_ERR_OCCUPIED
+    }
+
+    public function testRestorePlayerTablesRestoresDiscardedVillageCard() {
+        // Regression test: player selects a village card (shepherd), plays through the
+        // turn, then discards shepherd due to insufficient food. On "undo turn", the
+        // snapshot pre-dates the village selection (shepherd was in shared cardset_N).
+        // The fix must restore shepherd from discard_village back to cardset_1.
+        $game = $this->game;
+        $color = PCOLOR;
+        $player_id = 10; // maps to PCOLOR via getPlayerColorById
+
+        $shepherd = "card_setl_shepherd";
+        $otherCard = "card_setl_other";
+        $foodKey = "tracker_{$color}_food";
+
+        // --- Set up current state (after player's turn, before undo) ---
+        // Shepherd was selected then discarded: now in discard_village
+        $game->tokens->db->moveToken($shepherd, "discard_village", 0);
+        // Another card that was already in discard_village at snapshot time (should NOT be restored)
+        $game->tokens->db->moveToken($otherCard, "discard_village", 0);
+        // Player's food tracker has been spent (state=2, down from snapshot state=5)
+        $game->tokens->db->moveToken($foodKey, "tracker_{$color}", 2);
+        // Another player's token — should not be touched
+        $otherPlayerFood = "tracker_" . BCOLOR . "_food";
+        $game->tokens->db->moveToken($otherPlayerFood, "tracker_" . BCOLOR, 8);
+
+        // --- Snapshot (saved_data): state at start of turn, before village selection ---
+        // shepherd was in cardset_1 (shared location, no owner color in key or location)
+        // otherCard was ALREADY in discard_village (so it must not be restored)
+        $saved_data = [
+            ["token_key" => $shepherd,       "token_location" => "cardset_1",          "token_state" => 0],
+            ["token_key" => $otherCard,      "token_location" => "discard_village",     "token_state" => 0],
+            ["token_key" => $foodKey,        "token_location" => "tracker_{$color}",    "token_state" => 5],
+            ["token_key" => $otherPlayerFood,"token_location" => "tracker_" . BCOLOR,  "token_state" => 10],
+        ];
+
+        $game->restorePlayerTables("token", $saved_data, ["player_id" => $player_id]);
+
+        // Shepherd must be restored to cardset_1 (the fix: 4th filter condition)
+        $info = $game->tokens->db->getTokenInfo($shepherd);
+        $this->assertEquals("cardset_1", $info["location"], "Shepherd must be restored from discard_village to cardset_1");
+
+        // Card already in discard at snapshot time must remain in discard (not moved)
+        $info = $game->tokens->db->getTokenInfo($otherCard);
+        $this->assertEquals("discard_village", $info["location"], "Card already in discard at snapshot time must stay in discard");
+
+        // Player's own tracker must be restored to snapshot value
+        $info = $game->tokens->db->getTokenInfo($foodKey);
+        $this->assertEquals(5, (int) $info["state"], "Food tracker must be restored to snapshot state");
+
+        // Other player's tokens must not be touched
+        $info = $game->tokens->db->getTokenInfo($otherPlayerFood);
+        $this->assertEquals(8, (int) $info["state"], "Other player's tokens must not be affected");
     }
 }

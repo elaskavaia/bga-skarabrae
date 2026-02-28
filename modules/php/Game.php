@@ -848,10 +848,14 @@ class Game extends Base {
                 $workers = $this->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
                 $curtokens = array_merge($curtokens, $workers);
             }
-            $saved_data = array_filter($saved_data, function ($row) use ($owner, $curtokens) {
+            // Cards currently in discard that weren't there at snapshot time were moved to
+            // discard from a shared location (e.g. cardset_N) during this turn and must be restored.
+            $curDiscard = $this->tokens->db->getTokensOfTypeInLocation(null, "discard_village");
+            $saved_data = array_filter($saved_data, function ($row) use ($owner, $curtokens, $curDiscard) {
                 return str_contains($row["token_location"], $owner) ||
                     str_contains($row["token_key"], $owner) ||
-                    array_key_exists($row["token_key"], $curtokens);
+                    array_key_exists($row["token_key"], $curtokens) ||
+                    (array_key_exists($row["token_key"], $curDiscard) && $row["token_location"] !== "discard_village");
             });
             $keys = array_map(fn($row) => $row["token_key"], $saved_data);
             //$this->notifyMessage(clienttranslate('${player_name} undoes their turn'), [], $player_id);
