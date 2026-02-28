@@ -48,16 +48,18 @@ class Op_or extends ComplexOperation {
             $c = $res[$key] ?? 0;
             $total += $c;
             if ($c > 0) {
+                $origCount = $sub->getDataField("count", 1);
+                $origMCount = $sub->getDataField("mcount", 1);
                 $sub->withDataField("reason", $this->getReason());
-                $sub->withDataField("count", $sub->getDataField("count", 1) * $c);
-                $sub->withDataField("mcount", $sub->getDataField("mcount", 1) * $c);
+                $sub->withDataField("count", $origCount * $c);
+                $sub->withDataField("mcount", $origMCount * $c);
 
                 $sub->saveToDb($rank, true);
                 $rank++;
 
-                // Reset delegate counts so OR serialization stays clean if saved again
-                $sub->withDataField("count", null);
-                $sub->withDataField("mcount", null);
+                // Restore original delegate counts so OR can be correctly re-serialized if count > 0
+                $sub->withDataField("count", $origCount === 1 ? null : $origCount);
+                $sub->withDataField("mcount", $origMCount === 1 ? null : $origMCount);
 
                 //$this->notifyMessage(clienttranslate('${player_name} selected ${opname}'), ["opname" => $arg->getOpName()]);
                 $this->incMinCount(-$c);

@@ -463,6 +463,50 @@ final class GameTest extends TestCase {
         $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
     }
 
+    public function testFurnishAutoPayWoolOnly() {
+        // Regression test for bug: when 2(n_hide/2n_wool) is auto-resolved with only wool
+        // available (no hide), should spend 4 wool, not 3.
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        // Give player 4 wool, no hide
+        $this->game->effect_incCount($color, "wool", 4, "");
+        $this->assertEquals(4, $this->game->tokens->getTrackerValue($color, "wool"));
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue($color, "hide"));
+        // The furnish cost at position 1 is 2(n_hide/2n_wool): 2x (1 hide OR 2 wool)
+        // With no hide, the or auto-resolves to wool; should spend 4 total
+        $this->game->machine->push("2(n_hide/2n_wool)", $color);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue($color, "wool"), "Should have spent all 4 wool");
+    }
+
+    public function testFurnishPayWoolWithChoice() {
+        // Test: player has 2 hide and 4 wool, manually selects 1 wool unit (=2 wool) for first choice.
+        // Should spend 2 wool and then offer the remaining 1 choice (n_hide/2n_wool).
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        $this->game->effect_incCount($color, "hide", 2, "");
+        $this->game->effect_incCount($color, "wool", 4, "");
+
+        $this->game->machine->push("2(n_hide/2n_wool)", $color);
+
+        // Both options available — should stop for player input
+        $op = $this->dispatch(PlayerTurn::class);
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals(2, $op->getCount());
+
+        // Player selects 1 wool unit (choice_1=1 means 2n_wool × 1 = 2 wool)
+        $this->game->fakeUserAction($op, ["choice_1" => 1]);
+
+        // Dispatch resolves n_wool payment, then stops at the remaining OR choice
+        $op = $this->dispatch(PlayerTurn::class);
+
+        $this->assertEquals(2, $this->game->tokens->getTrackerValue($color, "wool"), "Should have spent 2 wool");
+        $this->assertEquals(2, $this->game->tokens->getTrackerValue($color, "hide"), "Hide should be untouched");
+        $this->assertTrue($op instanceof Op_or);
+        $this->assertEquals(1, $op->getCount(), "One remaining choice");
+        $this->assertEquals("n_hide/2(n_wool)", $op->getTypeFullExpr(), "Remainder should offer same options");
+    }
+
     public function testOpActRecruitWorkerPlacement() {
         $game = $this->game();
         $owner = PCOLOR;
