@@ -22,6 +22,7 @@ use Bga\Games\skarabrae\Operations\Op_furnishPay;
 use Bga\Games\skarabrae\Operations\Op_task;
 use Bga\Games\skarabrae\Operations\Op_turn;
 use Bga\Games\skarabrae\Operations\Op_turnall;
+use Bga\Games\skarabrae\Operations\Op_bottomeffect;
 use Bga\Games\skarabrae\Operations\Op_turnpick;
 use Bga\Games\skarabrae\StateConstants;
 use Bga\Games\skarabrae\States\GameDispatch;
@@ -207,7 +208,14 @@ final class GameTest extends TestCase {
                 continue;
             }
             echo "testing op $key\n";
-            $this->subTestOp($key, ["type" => $mne]);
+            switch ($mne) {
+                case "bottomeffect":
+                    $this->subTestOp($key, ["type" => "bottomeffect(nop)"]);
+                    break;
+                default:
+                    $this->subTestOp($key, ["type" => $mne]);
+                    break;
+            }
         }
     }
 
@@ -588,6 +596,90 @@ final class GameTest extends TestCase {
         $moves = $op->getPossibleMoves();
         $this->assertArrayHasKey("action_main_1_$owner", $moves);
         $this->assertEquals(3, $moves["action_main_1_$owner"]["q"]); // MA_ERR_OCCUPIED
+    }
+
+    public function testBottomEffectNonCotag() {
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        // Non-cotag bottom effect: simple confirm/skip
+        $this->game->machine->push("bottomeffect(fish)", $color, ["reason" => "card_setl_1_1"]);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_bottomeffect);
+
+        $args = $op->getArgs();
+        $targets = $args[Operation::ARG_TARGET];
+        $this->assertContains("confirm", $targets);
+        $this->assertTrue($op->canSkip());
+
+        // Resolve: should queue the fish operation
+        $op->action_resolve([Operation::ARG_TARGET => "confirm"]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        $this->assertEquals(1, $this->game->tokens->getTrackerValue($color, "fish"));
+    }
+
+    public function testBottomEffectCotagWithSettlersNoSkaill() {
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        // Place 2 settlers of terrain 3 in tableau
+        $this->game->tokens->dbSetTokenLocation("card_setl_3_31", "tableau_$color", 1);
+        $this->game->tokens->dbSetTokenLocation("card_setl_3_32", "tableau_$color", 2);
+        // No skaill
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue($color, "skaill"));
+
+        $this->game->machine->push("bottomeffect(cotag(3,wood))", $color, ["reason" => "card_setl_3_31"]);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_bottomeffect);
+
+        $args = $op->getArgs();
+        $targets = $args[Operation::ARG_TARGET];
+        $this->assertContains("confirm", $targets);
+
+        // Resolve: should gain 2 wood (2 settlers of terrain 3)
+        $op->action_resolve([Operation::ARG_TARGET => "confirm"]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        $this->assertEquals(2, $this->game->tokens->getTrackerValue($color, "wood"));
+    }
+
+    public function testBottomEffectCotagWithSettlersAndSkaill() {
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        // Place 1 settler of terrain 3
+        $this->game->tokens->dbSetTokenLocation("card_setl_3_31", "tableau_$color", 1);
+        // Give 2 skaill
+        $this->game->effect_incCount($color, "skaill", 2, "");
+        $this->assertEquals(2, $this->game->tokens->getTrackerValue($color, "skaill"));
+
+        $this->game->machine->push("bottomeffect(cotag(3,wood))", $color, ["reason" => "card_setl_3_31"]);
+        $op = $this->game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op instanceof Op_bottomeffect);
+
+        $args = $op->getArgs();
+        $targets = $args[Operation::ARG_TARGET];
+        $this->assertContains("resolve_base", $targets);
+        $this->assertContains("resolve_1", $targets);
+        $this->assertContains("resolve_2", $targets);
+        $this->assertNotContains("resolve_n", $targets); // only 2 skaill, no generic
+
+        // Resolve with 2 skaill: should gain 1 wood from settler + 2 wood from skaill
+        $op->action_resolve([Operation::ARG_TARGET => "resolve_2"]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        // 1 wood from settler count + 2 wood from skaill spending
+        $this->assertEquals(3, $this->game->tokens->getTrackerValue($color, "wood"));
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue($color, "skaill"));
+    }
+
+    public function testBottomEffectCotagZeroSettlersZeroSkaill() {
+        $color = PCOLOR;
+        $this->game->tokens->createTokens();
+        // No settlers of terrain 3, no skaill
+        $this->game->machine->push("bottomeffect(cotag(3,wood))", $color, ["reason" => "card_setl_3_31"]);
+        // requireConfirmation is always true, so player must manually skip
+        $op = $this->dispatch(PlayerTurn::class);
+        $this->assertTrue($op instanceof Op_bottomeffect);
+        $this->assertEquals([], $op->getPossibleMoves());
+        $op->action_skip();
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+        $this->assertEquals(0, $this->game->tokens->getTrackerValue($color, "wood"));
     }
 
     public function testRestorePlayerTablesRestoresDiscardedVillageCard() {

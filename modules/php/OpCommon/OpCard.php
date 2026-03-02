@@ -79,10 +79,14 @@ abstract class OpCard extends Operation {
             $this->queue("cotag($terr,$gain)/($r)", $owner, $data);
         } elseif ($flags == 3) {
             $this->queue("cotag($terr,$gain)", $owner, $data);
-            $this->queue("?($r)", $owner, $data);
+            $this->effect_settlerCardBottomEffect($owner, $card, $r);
         } elseif ($flags == 2) {
             // bottom only
-            $this->queue("?($r)", $owner, $data);
+            $this->effect_settlerCardBottomEffect($owner, $card, $r);
         }
+    }
+
+    function effect_settlerCardBottomEffect(string $owner, string $card, string $r) {
+        $this->queue("bottomeffect($r)", $owner, null, $card);
     }
 }
