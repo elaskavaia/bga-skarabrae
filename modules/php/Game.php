@@ -214,10 +214,10 @@ class Game extends Base {
                 // Solo Challenge mode
                 $goal = $this->challenge->getChallengeGoal((int) $startingPlayer, Material::SOLO_GOAL_STANDARD);
                 $challengeNum = $this->getVariantChallengeType();
-                $seed = $this->challenge->getChallengeSeed();
+                $challengeWeek = date("o") . "-W" . date("W");
                 $this->notifyMessage(
-                    clienttranslate('${player_name} playing Weekly Challenge ${challenge_num} (seed: ${seed}). Beat ${points} points!'),
-                    ["challenge_num" => $challengeNum, "seed" => $seed, "points" => $goal],
+                    clienttranslate('${player_name} playing Weekly Challenge ${challenge_num} (${week}). Beat ${points} points!'),
+                    ["challenge_num" => $challengeNum, "week" => $challengeWeek, "points" => $goal],
                     ((int) $startingPlayer)
                 );
             } elseif ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN) {
