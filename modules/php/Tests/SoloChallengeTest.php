@@ -164,4 +164,72 @@ final class SoloChallengeTest extends TestCase {
         $this->assertEquals($snapshots[0]["action"], $snapshots[1]["action"], "Action tile should be identical");
         $this->assertEquals($snapshots[0]["village_top5"], $snapshots[1]["village_top5"], "Village deck order should be identical");
     }
+
+    public function testLeaderboardResetsOnNewWeek() {
+        $challenge = new SoloChallenge($this->game, 1);
+        $playerId = 10;
+
+        // Store leaderboard data from a different week
+        $staleData = "999999;$playerId,Alice,80;2300663,Bob,70";
+        $this->game->legacy->set($challenge->getLeaderboardKey(), 0, $staleData);
+
+        // Reading should return empty (week mismatch = reset)
+        $entries = $challenge->getLeaderboard();
+        $this->assertEmpty($entries, "Leaderboard from old week should be empty");
+
+        // Writing a new entry should start fresh
+        $challenge->updateLeaderboard($playerId, "Alice", 50);
+        $entries = $challenge->getLeaderboard();
+        $this->assertCount(1, $entries, "Leaderboard should have 1 entry after reset");
+        $this->assertEquals(50, $entries[0]["s"]);
+    }
+
+    public function testLeaderboardTop10Limit() {
+        $challenge = new SoloChallenge($this->game, 2);
+
+        // Add 12 players
+        for ($i = 1; $i <= 12; $i++) {
+            $challenge->updateLeaderboard(1000 + $i, "Player$i", 40 + $i);
+        }
+        $entries = $challenge->getLeaderboard();
+        $this->assertCount(10, $entries, "Leaderboard should be capped at 10");
+        $this->assertEquals(52, $entries[0]["s"], "Top score should be 52");
+        $this->assertEquals(43, $entries[9]["s"], "10th score should be 43");
+    }
+
+    public function testLeaderboardUpdatesExistingPlayer() {
+        $challenge = new SoloChallenge($this->game, 3);
+        $playerId = 10;
+
+        $challenge->updateLeaderboard($playerId, "Alice", 50);
+        $challenge->updateLeaderboard($playerId, "Alice", 60);
+        $entries = $challenge->getLeaderboard();
+        $this->assertCount(1, $entries, "Should have 1 entry, not 2");
+        $this->assertEquals(60, $entries[0]["s"], "Score should be updated to 60");
+    }
+
+    public function testLeaderboardKeepsHigherScore() {
+        $challenge = new SoloChallenge($this->game, 4);
+        $playerId = 10;
+
+        $challenge->updateLeaderboard($playerId, "Alice", 60);
+        $challenge->updateLeaderboard($playerId, "Alice", 50);
+        $entries = $challenge->getLeaderboard();
+        $this->assertEquals(60, $entries[0]["s"], "Higher score should be kept");
+    }
+
+    public function testChallengeScoreResetsOnNewWeek() {
+        $challenge = new SoloChallenge($this->game, 5);
+        $playerId = 10;
+
+        // Store a score from a different week
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999999:80");
+
+        // Should be treated as no score (expired)
+        $score = $challenge->getPlayerChallengeScore($playerId);
+        $this->assertNull($score, "Score from old week should be null");
+
+        $goal = $challenge->getChallengeGoal($playerId, 45);
+        $this->assertEquals(45, $goal, "Goal should be minScore when old week score expired");
+    }
 }

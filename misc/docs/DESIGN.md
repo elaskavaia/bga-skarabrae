@@ -355,6 +355,7 @@ In challenge mode, the special action tile is auto-picked (no draft) to keep set
 ### Constants
 
 Solo difficulty modes and goals defined in `Material.php`:
+
 - `MA_GAMEOPTION_SOLO_DIFFICULTY_STANDARD` (1), `_HARD` (2), `_BEAT_OWN` (3), `_CHALLENGE` (4)
 - `SOLO_GOAL_STANDARD` (45), `SOLO_GOAL_HARD` (55)
 
@@ -367,3 +368,13 @@ Solo difficulty modes and goals defined in `Material.php`:
 - `npm run tests` — PHPUnit with in-memory doubles
 
 Compiled outputs are checked into the repo (BGA requirement). Type definitions for BGA framework are in `src/types/`.
+
+## Future Designs
+
+### Weekly top players
+
+- This only affect solo challenge mode
+- Store top 10 scores for each challenge in a in legacy mode shared data (i.e. use player_id 0 in api) store (player_id, player_name, challenge_id, score, timestamp)
+- Update on each game end if score > current best
+- Flush all expired records. If score same keep existing record (if date is still ok)
+- New end game page to display weekly leaderboard with player names and scores

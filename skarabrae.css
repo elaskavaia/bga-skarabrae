@@ -1786,3 +1786,43 @@ html.darkmode:before {
 .score-sheet .bga-score-sheet_player-name {
   color: var(--player-color);
 }
+
+.challenge_leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.challenge_leaderboard th,
+.challenge_leaderboard td {
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.challenge_leaderboard th {
+  font-weight: bold;
+}
+.challenge_leaderboard td:first-child,
+.challenge_leaderboard th:first-child {
+  width: 30px;
+  text-align: center;
+}
+.challenge_leaderboard td:last-child,
+.challenge_leaderboard th:last-child {
+  width: 60px;
+  text-align: right;
+}
+
+.challenge_lb_me {
+  font-weight: bold;
+}
+
+.challenge_lb_sep {
+  border-top: 2px solid #999;
+}
+
+.challenge_info_link {
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+  margin-top: 4px;
+}

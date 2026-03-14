@@ -70,7 +70,7 @@ class GameXBody extends GameMachine {
       console.error("Exception during game setup", e.stack);
     }
 
-    if (this.isSoloChallenge()) {
+    if (this.isSoloChallenge() && !this.bga.players.isCurrentPlayerSpectator()) {
       this.showChallengePopup();
     }
 
@@ -83,10 +83,10 @@ class GameXBody extends GameMachine {
     return this.isSolo() && soloDif == 4;
   }
 
-  showChallengePopup() {
+  showChallengePopup(force = false) {
     const challengeWeek = this.gamedatas.challengeWeek ?? "";
     const dismissedWeek = localStorage.getItem("skarabrae_challenge_dismissed");
-    if (dismissedWeek === challengeWeek) {
+    if (!force && dismissedWeek === challengeWeek) {
       return;
     }
 
@@ -97,11 +97,11 @@ class GameXBody extends GameMachine {
       <p>${this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek })}</p>
       <ul>
         <li>${_("All players with the same challenge number this week get an identical game setup.")}</li>
-        <li>${_("Your special action tile is assigned automatically.")}</li>
-        <li>${_("Beat your own score (minimum 45 points) to win.")}</li>
+        <li>${_("Beat your own score to win, but aim for the leaderboard to get famous!")}</li>
         <li>${_("Best Score resets each week.")}</li>
       </ul>
       <p>${this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset })}</p>
+      ${this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore)}
       <div style="margin-top:10px;">
         <label><input type="checkbox" id="challenge_dismiss_cb" /> ${_("Don't show this again this week")}</label>
       </div>
@@ -118,6 +118,27 @@ class GameXBody extends GameMachine {
       });
     }
   }
+  renderLeaderboard(entries: any[], currentGameScore?: number | null): string {
+    entries = entries || [];
+    const currentPlayerId = this.bga.players.getCurrentPlayerId();
+    const currentPlayerName = this.gamedatas.players[currentPlayerId]?.name ?? "";
+    const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    let rows = "";
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      const isMe = e.p == currentPlayerId;
+      const highlight = isMe ? ' class="challenge_lb_me"' : "";
+      rows += `<tr${highlight}><td>${i + 1}</td><td>${esc(e.n)}</td><td>${e.s}</td></tr>`;
+    }
+    // Always show current player's row at the bottom
+    const gameScore = currentGameScore != null ? currentGameScore : "*";
+    rows += `<tr class="challenge_lb_me challenge_lb_sep"><td></td><td>${esc(currentPlayerName)} (${_("current game")})</td><td>${gameScore}</td></tr>`;
+
+    return `<h3>${_("Top Scores This Week")}</h3>
+      <table class="challenge_leaderboard"><thead><tr><th>#</th><th>${_("Player")}</th><th>${_("Score")}</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+  }
+
   updateBanner() {
     $("round_banner_text").innerHTML = "";
     if (this.gamedatas.gameEnded) {
@@ -207,6 +228,18 @@ class GameXBody extends GameMachine {
 
     this.updateTooltip(`counter_setl_${pcolor}`);
     this.updateTooltip(`counter_roof_${pcolor}`);
+
+    if (this.isSoloChallenge() && this.player_color == pcolor) {
+      const challengeNum = this.gamedatas.table_options?.[103]?.value ?? 1;
+      $(`miniboard_${pcolor}`).insertAdjacentHTML(
+        "beforeend",
+        `<span id="challenge_info_link" class="challenge_info_link">🏆 ${this.format_string_recursive(_("Challenge ${n}"), { n: challengeNum })}</span>`
+      );
+      $("challenge_info_link").addEventListener("click", (e) => {
+        e.preventDefault();
+        this.showChallengePopup(true);
+      });
+    }
   }
 
   setupScoreSheet() {
@@ -736,6 +769,13 @@ class GameXBody extends GameMachine {
     await this.scoreSheet.setScores(args.endScores, {
       startBy: this.bga.players.getCurrentPlayerId()
     });
+    if (args.challengeLeaderboard && this.isSoloChallenge()) {
+      this.showPopin(
+        `<div class="challenge_popup">${this.renderLeaderboard(args.challengeLeaderboard, args.currentGameScore)}</div>`,
+        "challenge_leaderboard",
+        _("Weekly Challenge Leaderboard")
+      );
+    }
   }
   /** @Override */
   bgaFormatText(log: string, args: any) {

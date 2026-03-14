@@ -107,11 +107,8 @@ class Game extends Base {
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
 
         //7. Shuffle all Village Cards, placing them into a facedown Draw Pile.
-        if ($this->isSolo()) {
-            $this->challenge = new SoloChallenge($this, $this->getVariantChallengeType());
-            if ($this->isSoloChallenge()) {
-                $this->challenge->seedSetup();
-            }
+        if ($this->isSoloChallenge()) {
+            $this->getChallenge()->seedSetup();
         }
         $tokens->shuffle("deck_village");
         /*
@@ -212,7 +209,7 @@ class Game extends Base {
             $goal = 0;
             if ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE) {
                 // Solo Challenge mode
-                $goal = $this->challenge->getChallengeGoal((int) $startingPlayer, Material::SOLO_GOAL_STANDARD);
+                $goal = $this->getChallenge()->getChallengeGoal((int) $startingPlayer, Material::SOLO_GOAL_STANDARD);
                 $challengeNum = $this->getVariantChallengeType();
                 $challengeWeek = date("o") . "-W" . date("W");
                 $this->notifyMessage(
@@ -222,7 +219,7 @@ class Game extends Base {
                 );
             } elseif ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN) {
                 // Beat your own score mode
-                $bestScore = $this->challenge->getBestScore((int) $startingPlayer);
+                $bestScore = $this->getChallenge()->getBestScore((int) $startingPlayer);
                 $goal = $bestScore ?? 0;
                 if ($bestScore !== null) {
                     $this->notifyMessage(clienttranslate('${player_name} previous best score is ${points}'), [
@@ -305,7 +302,7 @@ class Game extends Base {
         $tokens = $this->tokens->getAllDatas();
         $result = array_merge($result, $tokens);
 
-        $isGameEnded = $this->isEndOfGame();
+        $isGameEnded = $this->isEndOfGame() || intval($this->gamestate->getCurrentMainStateId()) === StateConstants::STATE_END_GAME;
         $result["gameEnded"] = $isGameEnded;
         $result["endScores"] = $isGameEnded ? $this->getEndScores() : null;
 
@@ -327,6 +324,12 @@ class Game extends Base {
             // Next Monday (ISO week reset)
             $nextMonday = new \DateTime("next monday");
             $result["challengeNextReset"] = $nextMonday->format("F j, Y");
+            $result["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
+            $playerId = (int) $this->getActivePlayerId();
+            $result["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
+            if ($isGameEnded) {
+                $result["currentGameScore"] = $this->playerStats->get("game_vp_total", $playerId);
+            }
         }
 
         return $result;
@@ -500,6 +503,13 @@ class Game extends Base {
 
     function isSoloChallenge(): bool {
         return $this->isSolo() && $this->getVariantSoloDif() == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE;
+    }
+
+    function getChallenge(): SoloChallenge {
+        if ($this->challenge === null) {
+            $this->challenge = new SoloChallenge($this, $this->getVariantChallengeType());
+        }
+        return $this->challenge;
     }
 
     function getVariantChallengeType(): int {
@@ -695,17 +705,17 @@ class Game extends Base {
                 $var = $this->getVariantSoloDif();
                 if ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE) {
                     // Solo Challenge mode
-                    $this->challenge->scoreSoloChallenge($player_id, $score, Material::SOLO_GOAL_STANDARD);
+                    $this->getChallenge()->scoreSoloChallenge($player_id, $score, Material::SOLO_GOAL_STANDARD);
                 } elseif ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN) {
                     // Beat your own score mode
-                    $this->challenge->scoreBeatOwnScore($player_id, $score);
+                    $this->getChallenge()->scoreBeatOwnScore($player_id, $score);
                 } else {
                     if ($var <= Material::MA_GAMEOPTION_SOLO_DIFFICULTY_STANDARD) {
                         $goal = Material::SOLO_GOAL_STANDARD;
                     } else {
                         $goal = Material::SOLO_GOAL_HARD;
                     }
-                    $this->challenge->setBestScore($player_id, $score);
+                    $this->getChallenge()->setBestScore($player_id, $score);
                     if ($score < $goal) {
                         $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
                             "points" => $goal,
@@ -718,7 +728,14 @@ class Game extends Base {
                 $this->playerScoreAux->set($player_id, (int) $this->getTurnMarkerPosition($color, "turnmarker"));
             }
         }
-        $this->notify->all("endScores", "", ["endScores" => $this->getEndScores(), "final" => true]);
+        $endArgs = ["endScores" => $this->getEndScores(), "final" => true];
+        if ($this->isSoloChallenge()) {
+            $playerId = (int) $this->getActivePlayerId();
+            $endArgs["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
+            $endArgs["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
+            $endArgs["currentGameScore"] = $this->playerStats->get("game_vp_total", $playerId);
+        }
+        $this->notify->all("endScores", "", $endArgs);
     }
 
     function getEndScores(): array {
@@ -1026,5 +1043,38 @@ class Game extends Base {
     function debugLog($info, $args = []) {
         $this->notify->all("log", "", ["log" => $info, "args" => $args]);
         //$this->warn($info . ": " . toJson($args));
+    }
+
+    function debug_seedLeaderboard() {
+        $fakePlayerIds = [2300662, 2300663, 2300664, 2300665, 2300666];
+        $fakeNames = ["laskava0", "TestBob", "TestCharlie", "TestDiana", "TestEve"];
+        $fakeScores = [65, 58, 53, 47, 45];
+        for ($i = 0; $i < count($fakePlayerIds); $i++) {
+            $this->getChallenge()->updateLeaderboard($fakePlayerIds[$i], $fakeNames[$i], $fakeScores[$i]);
+        }
+        $this->debugConsole("Seeded leaderboard with " . count($fakePlayerIds) . " entries");
+    }
+
+    function debug_fakeEndScoring(int $score = 50) {
+        $this->debug_seedLeaderboard();
+        $this->tokens->db->setTokenState(Game::ROUNDS_NUMBER_GLOBAL, 5); // mark as end of game
+        $playerId = (int) $this->getActivePlayerId();
+        $this->playerScore->set($playerId, $score);
+        $this->playerStats->set("game_vp_total", $score, $playerId);
+
+        // Directly run challenge scoring with the fake score (skip real finalScoring)
+        if ($this->isSoloChallenge()) {
+            $this->getChallenge()->scoreSoloChallenge($playerId, $score, Material::SOLO_GOAL_STANDARD);
+        }
+
+        $endArgs = ["endScores" => $this->getEndScores(), "final" => true];
+        if ($this->isSoloChallenge()) {
+            $endArgs["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
+            $endArgs["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
+            $endArgs["currentGameScore"] = $score;
+        }
+        $this->notify->all("endScores", "", $endArgs);
+        $this->debugConsole("Fake end scoring with score $score");
+        $this->gamestate->jumpToState(StateConstants::STATE_END_GAME);
     }
 }

@@ -7,6 +7,7 @@ use Bga\Games\skarabrae\Game;
 class SoloChallenge {
     const LEGACY_BEST_SCORE = "bscore";
     const LEGACY_CHALLENGE_PREFIX = "cscore";
+    const LEGACY_LEADERBOARD_PREFIX = "lb";
 
     function __construct(private Game $game, private int $challengeNumber = 0) {}
 
@@ -127,5 +128,93 @@ class SoloChallenge {
         $newBest = max($score, $bestScore);
         $this->game->setPersistent($key, $playerId, "$currentWeek:$newBest");
         $this->setBestScore($playerId, $score);
+
+        // Update leaderboard if score qualifies
+        if ($score >= $minScore) {
+            $playerName = $this->game->getPlayerNameById($playerId);
+            $this->updateLeaderboard($playerId, $playerName, $score);
+        }
+    }
+
+    function getPlayerChallengeScore(int $playerId): ?int {
+        $key = $this->getChallengeLegacyKey();
+        $stored = $this->game->legacy->get($key, $playerId, null);
+        if ($stored === null) {
+            return null;
+        }
+        $parts = explode(":", (string) $stored);
+        if (count($parts) == 2 && $parts[0] === $this->getChallengeWeek()) {
+            return (int) $parts[1];
+        }
+        return null;
+    }
+
+    // --- Leaderboard ---
+
+    function getLeaderboardKey(): string {
+        return self::LEGACY_LEADERBOARD_PREFIX . $this->challengeNumber;
+    }
+
+    /**
+     * Leaderboard stored as plain string: "YYYYWW;pid,name,score;pid,name,score;..."
+     * Names cannot contain ; or , characters (replaced with space on store).
+     */
+    function getLeaderboard(): array {
+        $key = $this->getLeaderboardKey();
+        $stored = $this->game->legacy->get($key, 0, null);
+        if ($stored === null || !is_string($stored)) {
+            return [];
+        }
+        $parts = explode(";", $stored);
+        $week = array_shift($parts);
+        if ($week !== $this->getChallengeWeek()) {
+            return [];
+        }
+        $entries = [];
+        foreach ($parts as $part) {
+            $fields = explode(",", $part);
+            if (count($fields) === 3) {
+                $entries[] = ["p" => (int) $fields[0], "n" => $fields[1], "s" => (int) $fields[2]];
+            }
+        }
+        return $entries;
+    }
+
+    function updateLeaderboard(int $playerId, string $playerName, int $score): void {
+        $key = $this->getLeaderboardKey();
+        $currentWeek = $this->getChallengeWeek();
+        $entries = $this->getLeaderboard();
+
+        // Sanitize name (no ; or ,)
+        $playerName = str_replace([";", ","], " ", $playerName);
+
+        // Update or insert player entry
+        $found = false;
+        foreach ($entries as &$entry) {
+            if ($entry["p"] == $playerId) {
+                $entry["n"] = $playerName; // always refresh name
+                if ($score > $entry["s"]) {
+                    $entry["s"] = $score;
+                }
+                $found = true;
+                break;
+            }
+        }
+        unset($entry);
+        if (!$found) {
+            $entries[] = ["p" => $playerId, "n" => $playerName, "s" => $score];
+        }
+
+        // Sort by score descending, keep top 10
+        usort($entries, fn($a, $b) => $b["s"] <=> $a["s"]);
+        $entries = array_slice($entries, 0, 10);
+
+        // Encode: "YYYYWW;pid,name,score;pid,name,score;..."
+        $rows = [];
+        foreach ($entries as $e) {
+            $rows[] = $e["p"] . "," . $e["n"] . "," . $e["s"];
+        }
+        $data = $currentWeek . ";" . implode(";", $rows);
+        $this->game->setPersistent($key, 0, $data);
     }
 }

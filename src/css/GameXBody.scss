@@ -401,3 +401,48 @@ html.darkmode:before {
     color: var(--player-color);
   }
 }
+
+.challenge_leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+
+  th,
+  td {
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    font-weight: bold;
+  }
+
+  td:first-child,
+  th:first-child {
+    width: 30px;
+    text-align: center;
+  }
+
+  td:last-child,
+  th:last-child {
+    width: 60px;
+    text-align: right;
+  }
+}
+
+
+.challenge_lb_me {
+  font-weight: bold;
+}
+
+.challenge_lb_sep {
+  border-top: 2px solid #999;
+}
+
+.challenge_info_link {
+  cursor: pointer;
+  text-decoration: underline;
+  display: block;
+  margin-top: 4px;
+}
