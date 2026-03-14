@@ -28,6 +28,13 @@ class Op_turn extends Operation {
         $player_id = $this->getPlayerId();
         $this->game->switchActivePlayer($player_id);
 
+        $owner = $this->getOwner();
+        $workers = $this->game->tokens->getTokensOfTypeInLocation("worker", "tableau_$owner", 1);
+        $extraCalls = intdiv(count($workers), 2);
+        for ($i = 0; $i < $extraCalls; $i++) {
+            $this->game->giveExtraTime($player_id);
+        }
+
         $this->game->customUndoSavepoint($player_id, 1);
 
         return parent::auto();
