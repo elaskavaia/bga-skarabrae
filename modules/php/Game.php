@@ -321,6 +321,14 @@ class Game extends Base {
                 "location" => "miniboard_{$color}",
             ];
         }
+
+        if ($this->isSoloChallenge()) {
+            $result["challengeWeek"] = date("o") . "-W" . date("W");
+            // Next Monday (ISO week reset)
+            $nextMonday = new \DateTime("next monday");
+            $result["challengeNextReset"] = $nextMonday->format("F j, Y");
+        }
+
         return $result;
     }
 

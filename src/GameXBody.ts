@@ -70,8 +70,53 @@ class GameXBody extends GameMachine {
       console.error("Exception during game setup", e.stack);
     }
 
+    if (this.isSoloChallenge()) {
+      this.showChallengePopup();
+    }
+
     console.log("Ending game setup");
     this.inSetup = false;
+  }
+
+  isSoloChallenge(): boolean {
+    const soloDif = this.gamedatas.table_options?.[101]?.value;
+    return this.isSolo() && soloDif == 4;
+  }
+
+  showChallengePopup() {
+    const challengeWeek = this.gamedatas.challengeWeek ?? "";
+    const dismissedWeek = localStorage.getItem("skarabrae_challenge_dismissed");
+    if (dismissedWeek === challengeWeek) {
+      return;
+    }
+
+    const challengeNum = this.gamedatas.table_options?.[103]?.value ?? 1;
+    const nextReset = this.gamedatas.challengeNextReset ?? "";
+
+    const html = `<div class="challenge_popup">
+      <p>${this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek })}</p>
+      <ul>
+        <li>${_("All players with the same challenge number this week get an identical game setup.")}</li>
+        <li>${_("Your special action tile is assigned automatically.")}</li>
+        <li>${_("Beat your own score (minimum 45 points) to win.")}</li>
+        <li>${_("Best Score resets each week.")}</li>
+      </ul>
+      <p>${this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset })}</p>
+      <div style="margin-top:10px;">
+        <label><input type="checkbox" id="challenge_dismiss_cb" /> ${_("Don't show this again this week")}</label>
+      </div>
+    </div>`;
+
+    const dialog = this.showPopin(html, "challenge_info", _("Weekly Challenge"));
+    if (dialog) {
+      dialog.replaceCloseCallback(() => {
+        const cb = $("challenge_dismiss_cb") as HTMLInputElement;
+        if (cb?.checked) {
+          localStorage.setItem("skarabrae_challenge_dismissed", challengeWeek);
+        }
+        dialog.destroy();
+      });
+    }
   }
   updateBanner() {
     $("round_banner_text").innerHTML = "";

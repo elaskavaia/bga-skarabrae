@@ -1745,8 +1745,37 @@ var GameXBody = /** @class */ (function (_super) {
         catch (e) {
             console.error("Exception during game setup", e.stack);
         }
+        if (this.isSoloChallenge()) {
+            this.showChallengePopup();
+        }
         console.log("Ending game setup");
         this.inSetup = false;
+    };
+    GameXBody.prototype.isSoloChallenge = function () {
+        var _a, _b;
+        var soloDif = (_b = (_a = this.gamedatas.table_options) === null || _a === void 0 ? void 0 : _a[101]) === null || _b === void 0 ? void 0 : _b.value;
+        return this.isSolo() && soloDif == 4;
+    };
+    GameXBody.prototype.showChallengePopup = function () {
+        var _a, _b, _c, _d, _e;
+        var challengeWeek = (_a = this.gamedatas.challengeWeek) !== null && _a !== void 0 ? _a : "";
+        var dismissedWeek = localStorage.getItem("skarabrae_challenge_dismissed");
+        if (dismissedWeek === challengeWeek) {
+            return;
+        }
+        var challengeNum = (_d = (_c = (_b = this.gamedatas.table_options) === null || _b === void 0 ? void 0 : _b[103]) === null || _c === void 0 ? void 0 : _c.value) !== null && _d !== void 0 ? _d : 1;
+        var nextReset = (_e = this.gamedatas.challengeNextReset) !== null && _e !== void 0 ? _e : "";
+        var html = "<div class=\"challenge_popup\">\n      <p>".concat(this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek }), "</p>\n      <ul>\n        <li>").concat(_("All players with the same challenge number this week get an identical game setup."), "</li>\n        <li>").concat(_("Your special action tile is assigned automatically."), "</li>\n        <li>").concat(_("Beat your own score (minimum 45 points) to win."), "</li>\n        <li>").concat(_("Best Score resets each week."), "</li>\n      </ul>\n      <p>").concat(this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset }), "</p>\n      <div style=\"margin-top:10px;\">\n        <label><input type=\"checkbox\" id=\"challenge_dismiss_cb\" /> ").concat(_("Don't show this again this week"), "</label>\n      </div>\n    </div>");
+        var dialog = this.showPopin(html, "challenge_info", _("Weekly Challenge"));
+        if (dialog) {
+            dialog.replaceCloseCallback(function () {
+                var cb = $("challenge_dismiss_cb");
+                if (cb === null || cb === void 0 ? void 0 : cb.checked) {
+                    localStorage.setItem("skarabrae_challenge_dismissed", challengeWeek);
+                }
+                dialog.destroy();
+            });
+        }
     };
     GameXBody.prototype.updateBanner = function () {
         $("round_banner_text").innerHTML = "";
