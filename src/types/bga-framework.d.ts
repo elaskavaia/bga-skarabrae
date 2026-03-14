@@ -249,6 +249,14 @@ declare class Players {
   isCurrentPlayerSpectator(): boolean;
 
   /**
+   * Returns the URL for a player's avatar image.
+   * @param {number} playerId the player id
+   * @param {number} size the avatar size in pixels
+   * @returns {string} the avatar URL
+   */
+  getPlayerAvatarUrl(playerId: number, size: number): string;
+
+  /**
    * Returns true if the player on whose browser the code is running is currently active (it's his turn to play).
    *
    * @returns {boolean} is current player active
