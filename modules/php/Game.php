@@ -26,17 +26,18 @@ use Bga\Games\skarabrae\Db\DbMultiUndo;
 use Bga\Games\skarabrae\Db\DbTokens;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\OpCommon\OpMachine;
+use Bga\Games\skarabrae\Common\SoloChallenge;
 use Bga\Games\skarabrae\States\GameDispatch;
 
 class Game extends Base {
     const TURNS_NUMBER_GLOBAL = "tracker_nturns";
     const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
-    const LEGACY_BEST_SCORE = "bscore";
     public static Game $instance;
     public OpMachine $machine;
     public Material $material;
     public PGameTokens $tokens;
     public DbMultiUndo $dbMultiUndo;
+    public ?SoloChallenge $challenge = null;
 
     function __construct() {
         Game::$instance = $this;
@@ -45,6 +46,7 @@ class Game extends Base {
             "variant_draft_num" => 100,
             "variant_solo_dif" => 101,
             "variant_multi" => 102,
+            "variant_challenge_type" => 103,
         ]);
 
         $this->material = new Material();
@@ -105,6 +107,12 @@ class Game extends Base {
         //Solo: Return the Turn Order Tile and all Turn Markers to the box.
 
         //7. Shuffle all Village Cards, placing them into a facedown Draw Pile.
+        if ($this->isSolo()) {
+            $this->challenge = new SoloChallenge($this, $this->getVariantChallengeType());
+            if ($this->isSoloChallenge()) {
+                $this->challenge->seedSetup();
+            }
+        }
         $tokens->shuffle("deck_village");
         /*
          * 8. Solo games only: Shuffle the Focus Cards, placing 1 faceup above the Player Board. Return the rest to box. Shuffle the Task Cards, placing 4 faceup above the Player Board. Return the rest to box.
@@ -140,13 +148,18 @@ class Game extends Base {
         }
         $maxdisks = $order + 1;
         // For 2-player games, randomly determine neutral player position (0, 1, or 2)
-        $neutralPosition = ($pnum == 2) ? bga_rand(0, 2) : -1;
+        $neutralPosition = $pnum == 2 ? $this->bgaRand(0, 2) : -1;
         $currentPosition = $maxdisks - 1;
 
         foreach ($p as $player_id) {
             $color = $this->getPlayerColorById((int) $player_id);
-            $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
-            $this->machine->queue("draft", $color);
+            if ($this->isSoloChallenge()) {
+                // In challenge mode, auto-pick 1 action tile (deterministic, no player choice)
+                $tokens->pickTokensForLocation(1, "deck_action", "tableau_$color", 0);
+            } else {
+                $tokens->pickTokensForLocation($n, "deck_action", "hand_$color");
+                $this->machine->queue("draft", $color);
+            }
 
             // Place neutral player if we've reached its random position
             if ($pnum == 2 && $currentPosition == $neutralPosition) {
@@ -189,37 +202,54 @@ class Game extends Base {
             );
         }
 
-        $this->machine->queue("draftdiscard");
+        if (!$this->isSoloChallenge()) {
+            $this->machine->queue("draftdiscard");
+        }
         $this->machine->queue("round", $this->getPlayerColorById((int) $startingPlayer));
 
         if ($this->isSolo()) {
             $var = $this->getVariantSoloDif();
             $goal = 0;
-            if ($var == 3) {
+            if ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE) {
+                // Solo Challenge mode
+                $goal = $this->challenge->getChallengeGoal((int) $startingPlayer, Material::SOLO_GOAL_STANDARD);
+                $challengeNum = $this->getVariantChallengeType();
+                $seed = $this->challenge->getChallengeSeed();
+                $this->notifyMessage(
+                    clienttranslate('${player_name} playing Weekly Challenge ${challenge_num} (seed: ${seed}). Beat ${points} points!'),
+                    ["challenge_num" => $challengeNum, "seed" => $seed, "points" => $goal],
+                    ((int) $startingPlayer)
+                );
+            } elseif ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN) {
                 // Beat your own score mode
-                $goal = $this->legacy->get(self::LEGACY_BEST_SCORE, (int) $startingPlayer, null);
-                if ($goal !== null) {
-                    $goal = (int) $goal;
+                $bestScore = $this->challenge->getBestScore((int) $startingPlayer);
+                $goal = $bestScore ?? 0;
+                if ($bestScore !== null) {
                     $this->notifyMessage(clienttranslate('${player_name} previous best score is ${points}'), [
-                        "points" => $goal,
+                        "points" => $bestScore,
                     ]);
-                } else {
-                    $goal = 0;
                 }
+                $this->notifyMessage(
+                    clienttranslate('${player_name} the goal is get ${points} points or more. Good luck!'),
+                    [
+                        "points" => $goal,
+                    ],
+                    ((int) $startingPlayer)
+                );
             } else {
-                if ($var <= 1) {
-                    $goal = 45;
+                if ($var <= Material::MA_GAMEOPTION_SOLO_DIFFICULTY_STANDARD) {
+                    $goal = Material::SOLO_GOAL_STANDARD;
                 } else {
-                    $goal = 55;
+                    $goal = Material::SOLO_GOAL_HARD;
                 }
+                $this->notifyMessage(
+                    clienttranslate('${player_name} the goal is get ${points} points or more. Good luck!'),
+                    [
+                        "points" => $goal,
+                    ],
+                    ((int) $startingPlayer)
+                );
             }
-            $this->notifyMessage(
-                clienttranslate('${player_name} the goal is get ${points} points or more. Good luck!'),
-                [
-                    "points" => $goal,
-                ],
-                ((int) $startingPlayer)
-            );
         }
         return GameDispatch::class;
     }
@@ -460,6 +490,14 @@ class Game extends Base {
         return (int) $this->getGameStateValue("variant_solo_dif");
     }
 
+    function isSoloChallenge(): bool {
+        return $this->isSolo() && $this->getVariantSoloDif() == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE;
+    }
+
+    function getVariantChallengeType(): int {
+        return (int) $this->getGameStateValue("variant_challenge_type") ?: 1;
+    }
+
     function getTurnMarkerPosition(string $owner) {
         return (int) $this->tokens->db->getTokenState("turnmarker_$owner", 0);
     }
@@ -647,40 +685,19 @@ class Game extends Base {
             $this->playerStats->set("game_vp_total", $score, $player_id);
             if ($this->isSolo()) {
                 $var = $this->getVariantSoloDif();
-                if ($var == 3) {
+                if ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE) {
+                    // Solo Challenge mode
+                    $this->challenge->scoreSoloChallenge($player_id, $score, Material::SOLO_GOAL_STANDARD);
+                } elseif ($var == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN) {
                     // Beat your own score mode
-                    $bestScore = $this->legacy->get(self::LEGACY_BEST_SCORE, $player_id, null);
-                    if ($bestScore !== null) {
-                        $bestScore = (int) $bestScore;
-                        $this->notifyMessage(clienttranslate('${player_name} previous best score is ${points}'), [
-                            "points" => $bestScore,
-                        ]);
-                    } else {
-                        $this->notifyMessage(clienttranslate('${player_name} has no previous best score'));
-                        $bestScore = 0;
-                    }
-                    if ($score <= $bestScore) {
-                        $this->notifyMessage(
-                            clienttranslate('${player_name} did not beat their best score of ${points}, score is negated'),
-                            [
-                                "points" => $bestScore,
-                            ]
-                        );
-                        $this->playerScore->set($player_id, -1);
-                        $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $bestScore); // set to refresh the time as this expires
-                    } else {
-                        $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $score);
-                        $this->notifyMessage(clienttranslate('${player_name} sets a new best personal score of ${points}!'), [
-                            "points" => $score,
-                        ]);
-                    }
+                    $this->challenge->scoreBeatOwnScore($player_id, $score);
                 } else {
-                    if ($var <= 1) {
-                        $goal = 45;
+                    if ($var <= Material::MA_GAMEOPTION_SOLO_DIFFICULTY_STANDARD) {
+                        $goal = Material::SOLO_GOAL_STANDARD;
                     } else {
-                        $goal = 55;
+                        $goal = Material::SOLO_GOAL_HARD;
                     }
-                    $this->setPersistent(self::LEGACY_BEST_SCORE, $player_id, $score);
+                    $this->challenge->setBestScore($player_id, $score);
                     if ($score < $goal) {
                         $this->notifyMessage(clienttranslate('${player_name} scores less than ${points}, score is negated'), [
                             "points" => $goal,

@@ -65,20 +65,19 @@ class GameUT extends Game {
         //$this->tokens = new TokensInMem($this);
         $this->xtable = [];
         $this->machine = new OpMachine(new MachineInMem($this, $this->xtable));
-        $this->curid = 1;
         $this->_colors = [PCOLOR, BCOLOR];
         $this->notify = new FakeNotify();
+        $this->_setCurrentPlayerId(10);
 
         $tokens = new TokensInMem($this);
         $this->tokens = new PGameTokens($this, $tokens);
     }
 
-    function getPlayersNumber(): int {
-        return count($this->_colors);
-    }
-
     function setPlayersNumber(int $num) {
         switch ($num) {
+            case 1:
+                $this->_colors = [PCOLOR];
+                break;
             case 2:
                 $this->_colors = [PCOLOR, BCOLOR];
                 break;
@@ -100,6 +99,10 @@ class GameUT extends Game {
         return ACOLOR;
     }
 
+    public function setupGameTables() {
+        return parent::setupGameTables();
+    }
+
     function init(int $x = 0) {
         //$this->adjustedMaterial(true);
         //$this->createTokens();
@@ -112,12 +115,6 @@ class GameUT extends Game {
 
     function getMultiMachine() {
         return $this->multimachine;
-    }
-
-    public int $curid;
-
-    public function getCurrentPlayerId($bReturnNullIfNotLogged = false): string|int {
-        return $this->curid;
     }
 
     public function getCurrentPlayerColor(): string {
@@ -275,6 +272,7 @@ final class GameTest extends TestCase {
 
     public function testFish() {
         $game = $this->game;
+        $game->tokens->createTokens();
         $color = PCOLOR;
         $game->machine->push("[0,3]fish", $color);
         $op = $this->dispatchOneStep(PlayerTurn::class);
@@ -285,6 +283,7 @@ final class GameTest extends TestCase {
     }
 
     public function testGold2() {
+        $this->game->tokens->createTokens();
         $color = PCOLOR;
         $this->game->machine->push("2fish", $color);
         $this->dispatchOneStep(GameDispatch::class);
@@ -339,6 +338,7 @@ final class GameTest extends TestCase {
     }
 
     public function testRangedOr() {
+        $this->game->tokens->createTokens();
         $rule = "4(wool/stone)";
         $color = PCOLOR;
         $this->game->machine->push($rule, $color, ["reason" => "xxx"]);
@@ -710,10 +710,10 @@ final class GameTest extends TestCase {
         // shepherd was in cardset_1 (shared location, no owner color in key or location)
         // otherCard was ALREADY in discard_village (so it must not be restored)
         $saved_data = [
-            ["token_key" => $shepherd,       "token_location" => "cardset_1",          "token_state" => 0],
-            ["token_key" => $otherCard,      "token_location" => "discard_village",     "token_state" => 0],
-            ["token_key" => $foodKey,        "token_location" => "tracker_{$color}",    "token_state" => 5],
-            ["token_key" => $otherPlayerFood,"token_location" => "tracker_" . BCOLOR,  "token_state" => 10],
+            ["token_key" => $shepherd, "token_location" => "cardset_1", "token_state" => 0],
+            ["token_key" => $otherCard, "token_location" => "discard_village", "token_state" => 0],
+            ["token_key" => $foodKey, "token_location" => "tracker_{$color}", "token_state" => 5],
+            ["token_key" => $otherPlayerFood, "token_location" => "tracker_" . BCOLOR, "token_state" => 10],
         ];
 
         $game->restorePlayerTables("token", $saved_data, ["player_id" => $player_id]);
@@ -734,4 +734,32 @@ final class GameTest extends TestCase {
         $info = $game->tokens->db->getTokenInfo($otherPlayerFood);
         $this->assertEquals(8, (int) $info["state"], "Other player's tokens must not be affected");
     }
+
+    public function testBgaShuffleDeterminismWithSeed() {
+        $arr1 = range(1, 20);
+        $arr2 = range(1, 20);
+
+        mt_srand(20261101);
+        $this->game->bgaShuffle($arr1);
+
+        mt_srand(20261101);
+        $this->game->bgaShuffle($arr2);
+
+        $this->assertEquals($arr1, $arr2, "Same seed must produce same shuffle");
+        $this->assertNotEquals(range(1, 20), $arr1, "Shuffled array should differ from original");
+    }
+
+    public function testBgaShuffleDifferentSeedsProduceDifferentResults() {
+        $arr1 = range(1, 20);
+        $arr2 = range(1, 20);
+
+        mt_srand(20261101);
+        $this->game->bgaShuffle($arr1);
+
+        mt_srand(20261102);
+        $this->game->bgaShuffle($arr2);
+
+        $this->assertNotEquals($arr1, $arr2, "Different seeds should produce different shuffles");
+    }
+
 }

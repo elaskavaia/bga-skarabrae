@@ -274,6 +274,14 @@ class Base extends Table {
     function isSolo() {
         return $this->getPlayersNumber() == 1;
     }
+
+    function bgaShuffle(array &$array): void {
+        shuffle($array);
+    }
+
+    function bgaRand(int $min, int $max): int {
+        return bga_rand($min, $max);
+    }
     function getMostlyActivePlayerId() {
         if ($this->gamestate->isMultiactiveState()) {
             $list = $this->gamestate->getActivePlayerList();

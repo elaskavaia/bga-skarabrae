@@ -678,7 +678,7 @@ abstract class Operation {
             $state = $this->skip();
         } else {
             // TODO: support multi-select
-            $this->userArgs = [Operation::ARG_TARGET => $targets[bga_rand(0, $num - 1)]];
+            $this->userArgs = [Operation::ARG_TARGET => $targets[Game::$instance->bgaRand(0, $num - 1)]];
             $state = $this->resolve($this->userArgs);
         }
         return $state;

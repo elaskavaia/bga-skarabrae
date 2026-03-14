@@ -122,6 +122,42 @@ class TokensInMem extends DbTokens {
         return count($this->getTokensOfTypeInLocation(null, $location, $state));
     }
 
+    function getExtremePosition($getMax, $location, $token_key = null) {
+        $tokens = $this->getTokensOfTypeInLocation($token_key, $location);
+        if (count($tokens) == 0) {
+            return 0;
+        }
+        $states = array_map(fn($t) => (int) $t["state"], $tokens);
+        return $getMax ? max($states) : min($states);
+    }
+
+    function getTokensOnTop($nbr, $location) {
+        $tokens = $this->getTokensOfTypeInLocation(null, $location);
+        uasort($tokens, fn($a, $b) => $b["state"] <=> $a["state"]);
+        return array_slice(array_values($tokens), 0, (int) $nbr);
+    }
+
+    function pickTokensForLocation($nbr, $from_location, $to_location, $state = 0, $no_deck_reform = false, &$was_reshuffled = null) {
+        $tokens = $this->getTokensOnTop($nbr, $from_location);
+        foreach ($tokens as &$token) {
+            $this->moveToken($token["key"], $to_location, $state);
+            $token["location"] = $to_location;
+            $token["state"] = $state;
+        }
+        return $tokens;
+    }
+
+    function shuffle($location) {
+        $tokens = $this->getTokensOfTypeInLocation(null, $location);
+        $keys = array_keys($tokens);
+        $this->game->bgaShuffle($keys);
+        $n = 0;
+        foreach ($keys as $key) {
+            $this->keyindex[$key]["state"] = $n;
+            $n++;
+        }
+    }
+
     function dbReplaceValues($values) {
         foreach ($values as $row) {
             $key = $row["token_key"];

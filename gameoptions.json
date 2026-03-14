@@ -34,6 +34,9 @@
       },
       "3": {
         "name": "Beat your own score"
+      },
+      "4": {
+        "name": "Weekly Solo Challenge"
       }
     },
     "default": 1,
@@ -55,5 +58,43 @@
       }
     },
     "default": 0
+  },
+  "103": {
+    "name": "Solo Challenge Variant",
+    "values": {
+      "1": {
+        "name": "Weekly Challenge 1"
+      },
+      "2": {
+        "name": "Weekly Challenge 2"
+      },
+      "3": {
+        "name": "Weekly Challenge 3"
+      },
+      "4": {
+        "name": "Weekly Challenge 4"
+      },
+      "5": {
+        "name": "Weekly Challenge 5"
+      },
+      "6": {
+        "name": "Weekly Challenge 6"
+      },
+      "7": {
+        "name": "Weekly Challenge 7"
+      }
+    },
+    "default": 1,
+    "displaycondition": [
+      {
+        "type": "maxplayers",
+        "value": 1
+      },
+      {
+        "type": "otheroption",
+        "id": 101,
+        "value": [4]
+      }
+    ]
   }
 }

@@ -15,6 +15,14 @@ class Material {
 
     const MA_PREF_CONFIRM_TURN = 101;
 
+    const MA_GAMEOPTION_SOLO_DIFFICULTY_STANDARD = 1;
+    const MA_GAMEOPTION_SOLO_DIFFICULTY_HARD = 2;
+    const MA_GAMEOPTION_SOLO_DIFFICULTY_BEAT_OWN = 3;
+    const MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE = 4;
+
+    const SOLO_GOAL_STANDARD = 45;
+    const SOLO_GOAL_HARD = 55;
+
     private array $token_types;
     private bool $adjusted = false;
     public function __construct() {

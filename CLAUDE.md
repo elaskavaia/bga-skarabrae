@@ -36,60 +36,57 @@ Deployment does not create git commits automatically. Files are uploaded to BGA 
 
 Prettier with `printWidth: 140`, `braceStyle: "1tbs"`, `trailingComma: "none"`. Includes PHP plugin.
 
+## Design Documents
+
+- [misc/docs/DESIGN.md](misc/docs/DESIGN.md) — Software design: operation machine, state machine, token system, undo, testing
+- [misc/docs/RULES.md](misc/docs/RULES.md) — Game rules reference
+
 ## Architecture
 
 ### Client (TypeScript → `skarabrae.js`)
 
-Class inheritance chain:
+Class inheritance chain: `GameGui (BGA) → Game0Basics → Game1Tokens → GameMachine → GameXBody`
 
-```
-GameGui (BGA) → Game0Basics → Game1Tokens → GameMachine → GameXBody
-```
-
-- **Game0Basics** (`src/Game0Basics.ts`): Base class extending BGA's GameGui. Handles state dispatch, notifications, preferences.
-- **Game1Tokens** (`src/Game1Tokens.ts`): Token display and animation management.
-- **GameMachine** (`src/GameMachine.ts`): Renders operation machine UI — buttons, selectable targets, multi-select.
-- **GameXBody** (`src/GameXBody.ts`): Main game UI. Template setup, player boards, score sheet, game area.
-- **Zain** (`src/Zain.ts`): Module loader. Declares `bgagame.skarabrae` and loads Dojo/BGA libraries.
+- **Game0Basics** (`src/Game0Basics.ts`): Base class. State dispatch, notifications, preferences.
+- **Game1Tokens** (`src/Game1Tokens.ts`): Token display and animation.
+- **GameMachine** (`src/GameMachine.ts`): Operation machine UI — buttons, selectable targets, multi-select.
+- **GameXBody** (`src/GameXBody.ts`): Main game UI. Template setup, player boards, score sheet.
+- **Zain** (`src/Zain.ts`): Module loader.
 - **LaAnimations** (`src/LaAnimations.ts`): Animation helpers independent of Dojo.
 
-State hooks pattern: `onEnteringState_<stateName>()`, `onLeavingState_<stateName>()`, `onUpdateActionButtons_<stateName>()`.
+State hooks: `onEnteringState_<name>()`, `onLeavingState_<name>()`, `onUpdateActionButtons_<name>()`.
 
 ### Server (PHP)
 
-```
-Table (BGA) → Base → Game
-```
+Class chain: `Table (BGA) → Base → Game`
 
 - **Game** (`modules/php/Game.php`): Main game logic.
 - **Base** (`modules/php/Base.php`): Base class extending BGA Table.
-- **Material** (`modules/php/Material.php`): Token/material definitions, error messages. Partially generated — see below.
+- **Material** (`modules/php/Material.php`): Token/material definitions. Partially generated — see Material Generation below.
 
 ### Operation Machine (`modules/php/OpCommon/`)
 
-Core architectural pattern — a stack-based system that drives all game logic:
+Stack-based system driving all game logic. Operations are in `modules/php/Operations/` (~52 `Op_*.php` files).
 
-- **OpMachine** (`OpMachine.php`): Manages operation stack stored in `machine` DB table.
-- **Operation** (`Operation.php`): Base class for all operations. Key methods: `getPrimaryArgType()`, `argPrimaryOperation()`, `resolve()`.
-- **ComplexOperation** (`ComplexOperation.php`): Multi-step operations with sub-operations.
-- **OpExpression** (`OpExpression.php`): Parses operation expression strings.
+- **OpMachine**: Manages operation stack (stored in `machine` DB table).
+- **Operation**: Base class. Key methods: `getPrimaryArgType()`, `argPrimaryOperation()`, `resolve()`.
+- **ComplexOperation**: Multi-step operations with sub-operations.
+- **OpExpression**: Parses operation expression strings (see DESIGN.md for syntax).
 
-Operations are in `modules/php/Operations/` (51 `Op_*.php` files). Each encapsulates one game action (e.g., `Op_cook`, `Op_craft`, `Op_feed`, `Op_village`).
-
-Flow: Server pushes operations → state machine dispatches → player selects target → `resolve()` processes and queues next operations.
+Flow: Push operations → state machine dispatches → player selects target → `resolve()` queues next operations.
 
 ### Game States (`modules/php/States/`)
 
 - **GameDispatch / GameDispatchForced**: Auto-execute queued operations.
-- **PlayerTurn / PlayerTurnConfirm**: Active player interaction states.
-- **MultiPlayerMaster / MultiPlayerTurnPrivate / MultiPlayerWaitPrivate**: Simultaneous play mode.
+- **PlayerTurn / PlayerTurnConfirm**: Active player interaction.
+- **MultiPlayerMaster / MultiPlayerTurnPrivate / MultiPlayerWaitPrivate**: Simultaneous play.
 - **MachineHalted**: Game end.
 
 ### Token System (`modules/php/Db/`)
 
-- **DbTokens**: CRUD for the `token` table (`token_key`, `token_location`, `token_state`). Includes deck/discard auto-reshuffle.
+- **DbTokens**: CRUD for `token` table (`token_key`, `token_location`, `token_state`). Auto-reshuffle.
 - **DbMachine**: Operation stack persistence.
-- **DbMultiUndo**: Multi-step undo system.
+- **DbMultiUndo**: Multi-step undo checkpoints.
 
 ### Database Tables
 
@@ -103,7 +100,7 @@ Entry point: `src/css/GameXBody.scss`. Partials: `Boards.scss`, `Cards.scss`, `T
 
 ### TypeScript Compilation
 
-`tsconfig.json` targets ES5 with no modules, concatenating all `src/**/*.ts` into a single `skarabrae.js`. Type definitions for BGA framework are in `src/types/`.
+`tsconfig.json` targets ES5 with no modules, concatenating all `src/**/*.ts` into a single `skarabrae.js`. Type definitions in `src/types/`.
 
 ## Material Generation
 
