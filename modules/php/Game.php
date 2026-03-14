@@ -1048,7 +1048,7 @@ class Game extends Base {
     function debug_seedLeaderboard() {
         $fakePlayerIds = [2300662, 2300663, 2300664, 2300665, 2300666];
         $fakeNames = ["laskava0", "TestBob", "TestCharlie", "TestDiana", "TestEve"];
-        $fakeScores = [65, 58, 53, 47, 45];
+        $fakeScores = [5, 4, 3, 2, 1];
         for ($i = 0; $i < count($fakePlayerIds); $i++) {
             $this->getChallenge()->updateLeaderboard($fakePlayerIds[$i], $fakeNames[$i], $fakeScores[$i]);
         }
@@ -1056,7 +1056,7 @@ class Game extends Base {
     }
 
     function debug_fakeEndScoring(int $score = 50) {
-        $this->debug_seedLeaderboard();
+        // $this->debug_seedLeaderboard();
         $this->tokens->db->setTokenState(Game::ROUNDS_NUMBER_GLOBAL, 5); // mark as end of game
         $playerId = (int) $this->getActivePlayerId();
         $this->playerScore->set($playerId, $score);

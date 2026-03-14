@@ -113,6 +113,7 @@ final class SoloChallengeTest extends TestCase {
     }
 
     public function testSoloChallengeScoringNotBeaten() {
+        // Player must beat their own previous best to win
         $challenge = new SoloChallenge($this->game, 5);
         $playerId = 10;
         $week = $challenge->getChallengeWeek();
