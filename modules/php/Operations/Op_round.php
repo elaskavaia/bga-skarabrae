@@ -58,7 +58,7 @@ class Op_round extends Operation {
                 $state = 1;
             }
             $pos = 2; // will start at 2 because 1 is face down
-            foreach ($cards as $card) {
+            foreach ($cards as $card => $info) {
                 $this->game->tokens->dbSetTokenLocation($card, "cardset_$i", $state == 1 ? 1 : $pos, "", ["place_from" => "deck_village"]);
                 $pos++;
             }
