@@ -36,7 +36,8 @@
         "name": "Beat your own score"
       },
       "4": {
-        "name": "Weekly Solo Challenge"
+        "name": "Weekly Solo Challenge",
+        "beta": true
       }
     },
     "default": 1,
@@ -48,7 +49,7 @@
     ]
   },
   "102": {
-    "name": "Simultaneous Play (Experimental)",
+    "name": "Simultaneous Play",
     "values": {
       "0": {
         "name": "Off"
