@@ -42,21 +42,11 @@ define("PCOLOR", "a0d28c");
 define("BCOLOR", "6cd0f6");
 define("ACOLOR", "ffcc02");
 
-class FakeNotify extends Notify {
-    public function all(string $notifName, string|NotificationMessage $message = "", array $args = []): void {
-        //echo "Notify all: $notifName : $message\n";
-    }
-    public function player(int $playerId, string $notifName, string|NotificationMessage $message = "", array $args = []): void {
-        //echo "Notify player $playerId: $notifName : $message\n";
-    }
-}
-
 class GameUT extends Game {
     var $multimachine;
     var $xtable;
     var $gameap_number = 0;
     var $var_colonies = 0;
-    var $_colors = [];
 
     function __construct() {
         parent::__construct();
@@ -65,8 +55,8 @@ class GameUT extends Game {
         //$this->tokens = new TokensInMem($this);
         $this->xtable = [];
         $this->machine = new OpMachine(new MachineInMem($this, $this->xtable));
-        $this->_colors = [PCOLOR, BCOLOR];
-        $this->notify = new FakeNotify();
+        $this->_setPlayerBasicInfoFromColors([PCOLOR, BCOLOR]);
+
         $this->_setCurrentPlayerId(10);
 
         $tokens = new TokensInMem($this);
@@ -74,22 +64,9 @@ class GameUT extends Game {
     }
 
     function setPlayersNumber(int $num) {
-        switch ($num) {
-            case 1:
-                $this->_colors = [PCOLOR];
-                break;
-            case 2:
-                $this->_colors = [PCOLOR, BCOLOR];
-                break;
-            case 3:
-                $this->_colors = [PCOLOR, BCOLOR, ACOLOR];
-                break;
-            case 4:
-                $this->_colors = [PCOLOR, BCOLOR, ACOLOR, "ef58a2"];
-                break;
-            default:
-                throw new BgaVisibleSystemException("Invalid number of players");
-        }
+        $allColors = [PCOLOR, BCOLOR, ACOLOR, "ef58a2"];
+        $colors = array_slice($allColors, 0, $num);
+        $this->_setPlayerBasicInfoFromColors($colors);
     }
 
     function getUserPreference(int $player_id, int $code): int {
@@ -121,20 +98,8 @@ class GameUT extends Game {
         return $this->getPlayerColorById($this->curid);
     }
 
-    function _getColors() {
-        return $this->_colors;
-    }
-
     function fakeUserAction(Operation $op, $target = null) {
         return $op->action_resolve([Operation::ARG_TARGET => $target]);
-    }
-
-    function getPlayerColorById($player_id): string {
-        $idx = $player_id - 10;
-        if ($idx >= 0 && $idx < count($this->_colors)) {
-            return $this->_colors[$idx];
-        }
-        return "000000";
     }
 
     // override/stub methods here that access db and stuff
@@ -798,5 +763,4 @@ final class GameTest extends TestCase {
 
         $this->assertNotEquals($arr1, $arr2, "Different seeds should produce different shuffles");
     }
-
 }
