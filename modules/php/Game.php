@@ -47,6 +47,7 @@ class Game extends Base {
             "variant_solo_dif" => 101,
             "variant_multi" => 102,
             "variant_challenge_type" => 103,
+            "challenge_week_start" => 11,
         ]);
 
         $this->material = new Material();
@@ -109,6 +110,8 @@ class Game extends Base {
         //7. Shuffle all Village Cards, placing them into a facedown Draw Pile.
         if ($this->isSoloChallenge()) {
             $this->getChallenge()->seedSetup();
+            // Store the challenge week (YYYYWW as int, e.g. 202511) at game start
+            $this->setGameStateValue("challenge_week_start", $this->getChallenge()->getChallengeWeekNum());
         }
         $tokens->shuffle("deck_village");
         /*
@@ -1050,7 +1053,7 @@ class Game extends Base {
         $fakeNames = ["laskava0", "TestBob", "TestCharlie", "TestDiana", "TestEve"];
         $fakeScores = [5, 4, 3, 2, 1];
         for ($i = 0; $i < count($fakePlayerIds); $i++) {
-            $this->getChallenge()->updateLeaderboard($fakePlayerIds[$i], $fakeNames[$i], $fakeScores[$i]);
+            $this->getChallenge()->updateLeaderboard($this->getChallenge()->getGameStartWeek(), $fakePlayerIds[$i], $fakeNames[$i], $fakeScores[$i]);
         }
         $this->debugConsole("Seeded leaderboard with " . count($fakePlayerIds) . " entries");
     }

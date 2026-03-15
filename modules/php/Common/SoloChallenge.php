@@ -65,6 +65,23 @@ class SoloChallenge {
         return date("o") . date("W"); // e.g. "202627"
     }
 
+    /** Returns current week as integer YYYYWW, e.g. 202511 */
+    function getChallengeWeekNum(): int {
+        return (int) date("o") * 100 + (int) date("W");
+    }
+
+    /** Returns the week stored at game start, or current week if not stored */
+    function getGameStartWeek(): string {
+        $stored = (int) $this->game->getGameStateValue("challenge_week_start");
+        if ($stored > 0) {
+            // stored as YYYYWW integer, convert back to string
+            $year = intdiv($stored, 100);
+            $week = $stored % 100;
+            return $year . str_pad((string) $week, 2, "0", STR_PAD_LEFT);
+        }
+        return $this->getChallengeWeek();
+    }
+
     function getChallengeLegacyKey(): string {
         return self::LEGACY_CHALLENGE_PREFIX . $this->challengeNumber;
     }
@@ -92,13 +109,15 @@ class SoloChallenge {
 
     function scoreSoloChallenge(int $playerId, int $score, int $minScore): void {
         $key = $this->getChallengeLegacyKey();
+        $gameWeek = $this->getGameStartWeek();
         $currentWeek = $this->getChallengeWeek();
         $bestScore = 0;
 
+        // Use the game's start week for score comparison (not live week)
         $stored = $this->game->legacy->get($key, $playerId, null);
         if ($stored !== null) {
             $parts = explode(":", (string) $stored);
-            if (count($parts) == 2 && $parts[0] === $currentWeek) {
+            if (count($parts) == 2 && $parts[0] === $gameWeek) {
                 $bestScore = (int) $parts[1];
                 $this->game->notify->all("message", clienttranslate('${player_name} previous challenge score is ${points}'), [
                     "points" => $bestScore,
@@ -126,13 +145,13 @@ class SoloChallenge {
             ]);
         }
         $newBest = max($score, $bestScore);
-        $this->game->setPersistent($key, $playerId, "$currentWeek:$newBest");
+        $this->game->setPersistent($key, $playerId, "$gameWeek:$newBest");
         $this->setBestScore($playerId, $score);
 
-        // Update leaderboard if score qualifies
-        if ($score >= $minScore) {
+        // Update leaderboard if score qualifies and game week is still recent
+        if ($score >= $minScore && $this->isWeekRecent($gameWeek, $currentWeek)) {
             $playerName = $this->game->getPlayerNameById($playerId);
-            $this->updateLeaderboard($playerId, $playerName, $score);
+            $this->updateLeaderboard($gameWeek, $playerId, $playerName, $score);
         }
     }
 
@@ -143,56 +162,106 @@ class SoloChallenge {
             return null;
         }
         $parts = explode(":", (string) $stored);
-        if (count($parts) == 2 && $parts[0] === $this->getChallengeWeek()) {
+        $gameWeek = $this->getGameStartWeek();
+        if (count($parts) == 2 && $parts[0] === $gameWeek) {
             return (int) $parts[1];
         }
         return null;
     }
 
     // --- Leaderboard ---
+    // Storage format: "YYYYWW;pid,name,score;...|YYYYWW;pid,name,score;..."
+    // Two week slots separated by "|". Old format (single week, no "|") is also supported for reading.
 
     function getLeaderboardKey(): string {
         return self::LEGACY_LEADERBOARD_PREFIX . $this->challengeNumber;
     }
 
+    /** Check if targetWeek is the same as currentWeek or the immediately previous ISO week */
+    function isWeekRecent(string $targetWeek, string $currentWeek): bool {
+        if ($targetWeek === $currentWeek) {
+            return true;
+        }
+        // Calculate previous week from current
+        $currentYear = (int) substr($currentWeek, 0, 4);
+        $currentW = (int) substr($currentWeek, 4, 2);
+        if ($currentW > 1) {
+            $prevWeek = $currentYear . str_pad((string) ($currentW - 1), 2, "0", STR_PAD_LEFT);
+        } else {
+            // Week 1 → previous is last week of prior year
+            $prevYear = $currentYear - 1;
+            $prevW = (int) date("W", mktime(0, 0, 0, 12, 28, $prevYear)); // ISO week of Dec 28
+            $prevWeek = $prevYear . str_pad((string) $prevW, 2, "0", STR_PAD_LEFT);
+        }
+        return $targetWeek === $prevWeek;
+    }
+
     /**
-     * Leaderboard stored as plain string: "YYYYWW;pid,name,score;pid,name,score;..."
-     * Names cannot contain ; or , characters (replaced with space on store).
+     * Parse stored leaderboard string into array keyed by week string.
+     * Supports both old format "YYYYWW;entries" and new "YYYYWW;entries|YYYYWW;entries".
      */
-    function getLeaderboard(): array {
+    private function parseLeaderboardData(): array {
         $key = $this->getLeaderboardKey();
         $stored = $this->game->legacy->get($key, 0, null);
         if ($stored === null || !is_string($stored)) {
             return [];
         }
-        $parts = explode(";", $stored);
-        $week = array_shift($parts);
-        if ($week !== $this->getChallengeWeek()) {
-            return [];
-        }
-        $entries = [];
-        foreach ($parts as $part) {
-            $fields = explode(",", $part);
-            if (count($fields) === 3) {
-                $entries[] = ["p" => (int) $fields[0], "n" => $fields[1], "s" => (int) $fields[2]];
+        $result = [];
+        // Split by "|" for multi-week format; old format has no "|" so yields one segment
+        $segments = explode("|", $stored);
+        foreach ($segments as $segment) {
+            $segment = trim($segment);
+            if ($segment === "") {
+                continue;
             }
+            $parts = explode(";", $segment);
+            $week = array_shift($parts);
+            if (!$week) {
+                continue;
+            }
+            $entries = [];
+            foreach ($parts as $part) {
+                $fields = explode(",", $part);
+                if (count($fields) === 3) {
+                    $entries[] = ["p" => (int) $fields[0], "n" => $fields[1], "s" => (int) $fields[2]];
+                }
+            }
+            $result[$week] = $entries;
         }
-        return $entries;
+        return $result;
     }
 
-    function updateLeaderboard(int $playerId, string $playerName, int $score): void {
+    /** Get leaderboard entries for a specific week (defaults to game start week) */
+    function getLeaderboard(?string $forWeek = null): array {
+        $forWeek = $forWeek ?? $this->getGameStartWeek();
+        $data = $this->parseLeaderboardData();
+        return $data[$forWeek] ?? [];
+    }
+
+    private function encodeWeekEntries(string $week, array $entries): string {
+        $rows = [];
+        foreach ($entries as $e) {
+            $rows[] = $e["p"] . "," . $e["n"] . "," . $e["s"];
+        }
+        return $week . ";" . implode(";", $rows);
+    }
+
+    function updateLeaderboard(string $forWeek, int $playerId, string $playerName, int $score): void {
         $key = $this->getLeaderboardKey();
         $currentWeek = $this->getChallengeWeek();
-        $entries = $this->getLeaderboard();
+        $allData = $this->parseLeaderboardData();
 
-        // Sanitize name (no ; or ,)
-        $playerName = str_replace([";", ","], " ", $playerName);
+        // Sanitize name (no ; or , or |)
+        $playerName = str_replace([";", ",", "|"], " ", $playerName);
+
+        // Get or init entries for the target week
+        $entries = $allData[$forWeek] ?? [];
 
         // Update or insert player entry
         $found = false;
         foreach ($entries as &$entry) {
             if ($entry["p"] == $playerId) {
-                $entry["n"] = $playerName; // always refresh name
+                $entry["n"] = $playerName;
                 if ($score > $entry["s"]) {
                     $entry["s"] = $score;
                 }
@@ -209,12 +278,17 @@ class SoloChallenge {
         usort($entries, fn($a, $b) => $b["s"] <=> $a["s"]);
         $entries = array_slice($entries, 0, 10);
 
-        // Encode: "YYYYWW;pid,name,score;pid,name,score;..."
-        $rows = [];
-        foreach ($entries as $e) {
-            $rows[] = $e["p"] . "," . $e["n"] . "," . $e["s"];
+        $allData[$forWeek] = $entries;
+
+        // Keep only current and previous week, drop anything older
+        $segments = [];
+        foreach ($allData as $week => $weekEntries) {
+            if ($this->isWeekRecent($week, $currentWeek) && !empty($weekEntries)) {
+                $segments[] = $this->encodeWeekEntries($week, $weekEntries);
+            }
         }
-        $data = $currentWeek . ";" . implode(";", $rows);
+
+        $data = implode("|", $segments);
         $this->game->setPersistent($key, 0, $data);
     }
 }

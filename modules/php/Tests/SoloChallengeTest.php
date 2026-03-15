@@ -179,7 +179,7 @@ final class SoloChallengeTest extends TestCase {
         $this->assertEmpty($entries, "Leaderboard from old week should be empty");
 
         // Writing a new entry should start fresh
-        $challenge->updateLeaderboard($playerId, "Alice", 50);
+        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
         $entries = $challenge->getLeaderboard();
         $this->assertCount(1, $entries, "Leaderboard should have 1 entry after reset");
         $this->assertEquals(50, $entries[0]["s"]);
@@ -190,7 +190,7 @@ final class SoloChallengeTest extends TestCase {
 
         // Add 12 players
         for ($i = 1; $i <= 12; $i++) {
-            $challenge->updateLeaderboard(1000 + $i, "Player$i", 40 + $i);
+            $challenge->updateLeaderboard($challenge->getChallengeWeek(), 1000 + $i, "Player$i", 40 + $i);
         }
         $entries = $challenge->getLeaderboard();
         $this->assertCount(10, $entries, "Leaderboard should be capped at 10");
@@ -202,8 +202,8 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 3);
         $playerId = 10;
 
-        $challenge->updateLeaderboard($playerId, "Alice", 50);
-        $challenge->updateLeaderboard($playerId, "Alice", 60);
+        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
+        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
         $entries = $challenge->getLeaderboard();
         $this->assertCount(1, $entries, "Should have 1 entry, not 2");
         $this->assertEquals(60, $entries[0]["s"], "Score should be updated to 60");
@@ -213,8 +213,8 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 4);
         $playerId = 10;
 
-        $challenge->updateLeaderboard($playerId, "Alice", 60);
-        $challenge->updateLeaderboard($playerId, "Alice", 50);
+        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
+        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
         $entries = $challenge->getLeaderboard();
         $this->assertEquals(60, $entries[0]["s"], "Higher score should be kept");
     }
@@ -232,5 +232,28 @@ final class SoloChallengeTest extends TestCase {
 
         $goal = $challenge->getChallengeGoal($playerId, 45);
         $this->assertEquals(45, $goal, "Goal should be minScore when old week score expired");
+    }
+
+    public function testIsWeekRecent() {
+        $challenge = new SoloChallenge($this->game, 1);
+
+        // Same week
+        $this->assertTrue($challenge->isWeekRecent("202511", "202511"), "Same week should be recent");
+
+        // Previous week (normal case)
+        $this->assertTrue($challenge->isWeekRecent("202510", "202511"), "Previous week should be recent");
+
+        // Two weeks ago
+        $this->assertFalse($challenge->isWeekRecent("202509", "202511"), "Two weeks ago should not be recent");
+
+        // Year boundary: week 1 of 2026, previous is last week of 2025
+        // 2025 has 52 ISO weeks (Dec 28 2025 is in week 52)
+        $this->assertTrue($challenge->isWeekRecent("202552", "202601"), "Last week of prev year should be recent");
+
+        // Stale across year boundary
+        $this->assertFalse($challenge->isWeekRecent("202551", "202601"), "Two weeks before across year should not be recent");
+
+        // Completely different year
+        $this->assertFalse($challenge->isWeekRecent("202411", "202611"), "Different year should not be recent");
     }
 }
