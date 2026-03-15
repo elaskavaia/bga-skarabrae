@@ -735,6 +735,43 @@ final class GameTest extends TestCase {
         $this->assertEquals(8, (int) $info["state"], "Other player's tokens must not be affected");
     }
 
+    public function testOpRoundDealsVillageCardsSolo() {
+        // Regression test: Op_round was passing numeric loop index (0,1,2) instead of
+        // token key string to dbSetTokenLocation, causing "token_id is null/empty 0" error
+        // in non-challenge solo mode.
+        $game = $this->game;
+        $game->setPlayersNumber(1);
+        $game->tokens->createTokens();
+
+        // Ensure we are in round 0 (not end of game)
+        $game->tokens->db->setTokenState(Game::ROUNDS_NUMBER_GLOBAL, 0);
+        $game->tokens->db->setTokenState(Game::TURNS_NUMBER_GLOBAL, 0);
+
+        $game->machine->push("round", \Bga\Games\skarabrae\OpCommon\OpMachine::GAME_BARIER_COLOR);
+
+        // Should not throw — previously threw "token_id is null/empty 0"
+        $this->dispatch();
+
+        // In solo mode: cardset_1 should have cards dealt face-up (state >= 2),
+        // cardset_2 and cardset_3 should have cards face-down (state = 1).
+        $cards1 = $game->tokens->db->getTokensOfTypeInLocation(null, "cardset_1");
+        $cards2 = $game->tokens->db->getTokensOfTypeInLocation(null, "cardset_2");
+        $cards3 = $game->tokens->db->getTokensOfTypeInLocation(null, "cardset_3");
+
+        $this->assertNotEmpty($cards1, "cardset_1 should have cards after round start");
+        $this->assertNotEmpty($cards2, "cardset_2 should have cards after round start");
+        $this->assertNotEmpty($cards3, "cardset_3 should have cards after round start");
+
+        // Verify token keys are real strings (not numeric 0)
+        foreach ([$cards1, $cards2, $cards3] as $cards) {
+            foreach ($cards as $info) {
+                $this->assertIsString($info["key"], "token key must be a string");
+                $this->assertNotEmpty($info["key"], "token key must not be empty");
+                $this->assertNotEquals("0", $info["key"], "token key must not be '0'");
+            }
+        }
+    }
+
     public function testBgaShuffleDeterminismWithSeed() {
         $arr1 = range(1, 20);
         $arr2 = range(1, 20);
