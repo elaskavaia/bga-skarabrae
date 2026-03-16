@@ -81,7 +81,7 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 2);
         $playerId = 10;
         $week = $challenge->getChallengeWeek();
-        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "$week:55");
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "$week;$playerId,Alice,55");
         $goal = $challenge->getChallengeGoal($playerId, 45);
         $this->assertEquals(55, $goal);
     }
@@ -90,7 +90,7 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 2);
         $playerId = 10;
         // Store score from a different week
-        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999999:55");
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999999;$playerId,Alice,55");
         $goal = $challenge->getChallengeGoal($playerId, 45);
         $this->assertEquals(45, $goal, "Expired week score should be ignored");
     }
@@ -99,7 +99,7 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 3);
         $playerId = 10;
         $challenge->scoreSoloChallenge($playerId, 50, 45);
-        $this->assertEquals(50, $challenge->getBestScore($playerId));
+        $this->assertEquals(50, $challenge->getPlayerChallengeScore($playerId));
         $stored = $this->game->legacy->get($challenge->getChallengeLegacyKey(), $playerId, null);
         $this->assertNotNull($stored);
         $this->assertStringContainsString("50", (string) $stored);
@@ -117,7 +117,7 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 5);
         $playerId = 10;
         $week = $challenge->getChallengeWeek();
-        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "$week:60");
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "$week;$playerId,Alice,60");
         $challenge->scoreSoloChallenge($playerId, 55, 45);
         $this->assertEquals(-1, $this->game->playerScore->get($playerId));
     }
@@ -174,15 +174,15 @@ final class SoloChallengeTest extends TestCase {
         $staleData = "999999;$playerId,Alice,80;2300663,Bob,70";
         $this->game->legacy->set($challenge->getLeaderboardKey(), 0, $staleData);
 
-        // Reading should return empty (week mismatch = reset)
-        $entries = $challenge->getLeaderboard();
-        $this->assertEmpty($entries, "Leaderboard from old week should be empty");
+        // Reading should return empty (week mismatch = reset, 999999 is not recent)
+        $lb = $challenge->getLeaderboard();
+        $this->assertEmpty($lb["current"]["entries"], "Leaderboard from old week should be empty");
 
         // Writing a new entry should start fresh
         $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
-        $entries = $challenge->getLeaderboard();
-        $this->assertCount(1, $entries, "Leaderboard should have 1 entry after reset");
-        $this->assertEquals(50, $entries[0]["s"]);
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(1, $lb["current"]["entries"], "Leaderboard should have 1 entry after reset");
+        $this->assertEquals(50, $lb["current"]["entries"][0]["s"]);
     }
 
     public function testLeaderboardTop10Limit() {
@@ -192,10 +192,10 @@ final class SoloChallengeTest extends TestCase {
         for ($i = 1; $i <= 12; $i++) {
             $challenge->updateLeaderboard($challenge->getChallengeWeek(), 1000 + $i, "Player$i", 40 + $i);
         }
-        $entries = $challenge->getLeaderboard();
-        $this->assertCount(10, $entries, "Leaderboard should be capped at 10");
-        $this->assertEquals(52, $entries[0]["s"], "Top score should be 52");
-        $this->assertEquals(43, $entries[9]["s"], "10th score should be 43");
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(10, $lb["current"]["entries"], "Leaderboard should be capped at 10");
+        $this->assertEquals(52, $lb["current"]["entries"][0]["s"], "Top score should be 52");
+        $this->assertEquals(43, $lb["current"]["entries"][9]["s"], "10th score should be 43");
     }
 
     public function testLeaderboardUpdatesExistingPlayer() {
@@ -204,9 +204,9 @@ final class SoloChallengeTest extends TestCase {
 
         $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
         $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
-        $entries = $challenge->getLeaderboard();
-        $this->assertCount(1, $entries, "Should have 1 entry, not 2");
-        $this->assertEquals(60, $entries[0]["s"], "Score should be updated to 60");
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(1, $lb["current"]["entries"], "Should have 1 entry, not 2");
+        $this->assertEquals(60, $lb["current"]["entries"][0]["s"], "Score should be updated to 60");
     }
 
     public function testLeaderboardKeepsHigherScore() {
@@ -215,8 +215,8 @@ final class SoloChallengeTest extends TestCase {
 
         $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
         $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
-        $entries = $challenge->getLeaderboard();
-        $this->assertEquals(60, $entries[0]["s"], "Higher score should be kept");
+        $lb = $challenge->getLeaderboard();
+        $this->assertEquals(60, $lb["current"]["entries"][0]["s"], "Higher score should be kept");
     }
 
     public function testChallengeScoreResetsOnNewWeek() {
@@ -224,7 +224,7 @@ final class SoloChallengeTest extends TestCase {
         $playerId = 10;
 
         // Store a score from a different week
-        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999999:80");
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999999;$playerId,Alice,80");
 
         // Should be treated as no score (expired)
         $score = $challenge->getPlayerChallengeScore($playerId);
@@ -255,5 +255,70 @@ final class SoloChallengeTest extends TestCase {
 
         // Completely different year
         $this->assertFalse($challenge->isWeekRecent("202411", "202611"), "Different year should not be recent");
+    }
+
+    public function testChallengeScoringNewWeekWithHighPreviousScore() {
+        // Player scored 65 last week, scores 46 this week — should win (>= 45)
+        $challenge = new SoloChallenge($this->game, 1);
+        $playerId = 10;
+        $currentWeek = $challenge->getChallengeWeek();
+
+        // Store last week's high score in new format
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "999901;$playerId,Alice,65");
+
+        // Score 46 this week — above minScore, no previous score this week
+        $challenge->scoreSoloChallenge($playerId, 46, 45);
+
+        // Should NOT be negated — 46 >= 45
+        $score = $this->game->playerScore->get($playerId);
+        $this->assertNotEquals(-1, $score, "Score >= minScore should win even if last week was higher");
+
+        // Per-player best for this week should be 46
+        $this->assertEquals(46, $challenge->getPlayerChallengeScore($playerId));
+    }
+
+    public function testOldFormatSilentlyDropped() {
+        $challenge = new SoloChallenge($this->game, 1);
+        $playerId = 10;
+        $week = $challenge->getChallengeWeek();
+
+        // Store in old "YYYYWW:score" format
+        $this->game->legacy->set($challenge->getChallengeLegacyKey(), $playerId, "$week:55");
+
+        // Should not crash, should return null (old format silently dropped)
+        $score = $challenge->getPlayerChallengeScore($playerId);
+        $this->assertNull($score, "Old format should be silently dropped");
+
+        $goal = $challenge->getChallengeGoal($playerId, 45);
+        $this->assertEquals(45, $goal, "Old format should be ignored for goal");
+
+        // New score should overwrite old format data
+        $challenge->scoreSoloChallenge($playerId, 50, 45);
+        $this->assertEquals(50, $challenge->getPlayerChallengeScore($playerId), "New score should be stored in new format");
+    }
+
+    public function testEncodeWeeklyDataPreservesBothWeeks() {
+        $allData = [
+            "202611" => [["p" => 10, "n" => "Alice", "s" => 65]],
+            "202612" => [["p" => 10, "n" => "Alice", "s" => 46]],
+        ];
+        $encoded = SoloChallenge::encodeWeeklyData($allData, "202612", 1);
+        $parsed = SoloChallenge::parseWeeklyData($encoded);
+
+        $this->assertCount(2, $parsed, "Both weeks should be preserved");
+        $this->assertEquals(65, $parsed["202611"][0]["s"], "Previous week score should be preserved");
+        $this->assertEquals(46, $parsed["202612"][0]["s"], "Current week score should be preserved");
+    }
+
+    public function testEncodeWeeklyDataDropsStaleWeek() {
+        $allData = [
+            "202609" => [["p" => 10, "n" => "Alice", "s" => 80]],
+            "202612" => [["p" => 10, "n" => "Alice", "s" => 46]],
+        ];
+        $encoded = SoloChallenge::encodeWeeklyData($allData, "202612", 1);
+        $parsed = SoloChallenge::parseWeeklyData($encoded);
+
+        $this->assertCount(1, $parsed, "Only current week should remain");
+        $this->assertArrayNotHasKey("202609", $parsed, "Stale week should be dropped");
     }
 }

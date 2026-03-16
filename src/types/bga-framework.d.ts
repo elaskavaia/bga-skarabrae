@@ -91,6 +91,7 @@ interface Gamedatas<P extends Player = Player> {
   gamestates: { [gamestateId: number]: Gamestate };
   playerorder: (string | number)[];
   players: { [playerId: number]: P };
+  [key: string]: any;
 }
 
 interface Player {

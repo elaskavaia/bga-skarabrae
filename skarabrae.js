@@ -1766,7 +1766,7 @@ var GameXBody = /** @class */ (function (_super) {
         }
         var challengeNum = (_d = (_c = (_b = this.gamedatas.table_options) === null || _b === void 0 ? void 0 : _b[103]) === null || _c === void 0 ? void 0 : _c.value) !== null && _d !== void 0 ? _d : 1;
         var nextReset = (_e = this.gamedatas.challengeNextReset) !== null && _e !== void 0 ? _e : "";
-        var html = "<div class=\"challenge_popup\">\n      <p>".concat(this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek }), "</p>\n      <ul>\n        <li>").concat(_("All players with the same challenge number this week get an identical game setup."), "</li>\n        <li>").concat(_("Beat your own score to win, but aim for the leaderboard to get famous!"), "</li>\n        <li>").concat(_("Best Score resets each week."), "</li>\n      </ul>\n      <p>").concat(this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset }), "</p>\n      ").concat(this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore), "\n      <div style=\"margin-top:10px;\">\n        <label><input type=\"checkbox\" id=\"challenge_dismiss_cb\" /> ").concat(_("Don't show this again this week"), "</label>\n      </div>\n    </div>");
+        var html = "<div class=\"challenge_popup\">\n      <p>".concat(this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek }), "</p>\n      <ul>\n        <li>").concat(_("All players with the same challenge number this week get an identical game setup."), "</li>\n        <li>").concat(_("Beat your own score to win, but aim for the leaderboard to get famous!"), "</li>\n        <li>").concat(_("Best Score resets each week."), "</li>\n      </ul>\n      ").concat(this.gamedatas.challengePlayerScore != null ? "<p>".concat(this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: this.gamedatas.challengePlayerScore }), "</p>") : "", "\n      <p>").concat(this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset }), "</p>\n      ").concat(this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore), "\n      <div style=\"margin-top:10px;\">\n        <label><input type=\"checkbox\" id=\"challenge_dismiss_cb\" /> ").concat(_("Don't show this again this week"), "</label>\n      </div>\n    </div>");
         var dialog = this.showPopin(html, "challenge_info", _("Weekly Challenge"));
         if (dialog) {
             dialog.replaceCloseCallback(function () {
@@ -1778,23 +1778,36 @@ var GameXBody = /** @class */ (function (_super) {
             });
         }
     };
-    GameXBody.prototype.renderLeaderboard = function (entries, currentGameScore) {
-        var _a, _b;
-        entries = entries || [];
+    GameXBody.prototype.renderLeaderboard = function (lbData, currentGameScore) {
+        var _a, _b, _c;
         var currentPlayerId = this.bga.players.getCurrentPlayerId();
         var currentPlayerName = (_b = (_a = this.gamedatas.players[currentPlayerId]) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : "";
         var esc = function (s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
-        var rows = "";
-        for (var i = 0; i < entries.length; i++) {
-            var e = entries[i];
-            var isMe = e.p == currentPlayerId;
-            var highlight = isMe ? ' class="challenge_lb_me"' : "";
-            rows += "<tr".concat(highlight, "><td>").concat(i + 1, "</td><td>").concat(esc(e.n), "</td><td>").concat(e.s, "</td></tr>");
+        var renderTable = function (title, entries, showCurrentPlayer) {
+            var rows = "";
+            for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                var isMe = e.p == currentPlayerId;
+                var highlight = isMe ? ' class="challenge_lb_me"' : "";
+                rows += "<tr".concat(highlight, "><td>").concat(i + 1, "</td><td>").concat(esc(e.n), "</td><td>").concat(e.s, "</td></tr>");
+            }
+            if (showCurrentPlayer) {
+                var gameScore = currentGameScore != null ? currentGameScore : "*";
+                rows += "<tr class=\"challenge_lb_me challenge_lb_sep\"><td></td><td>".concat(esc(currentPlayerName), " (").concat(_("current game"), ")</td><td>").concat(gameScore, "</td></tr>");
+            }
+            return "<h3>".concat(title, "</h3>\n        <table class=\"challenge_leaderboard\"><thead><tr><th>#</th><th>").concat(_("Player"), "</th><th>").concat(_("Score"), "</th></tr></thead>\n        <tbody>").concat(rows, "</tbody></table>");
+        };
+        // New format: {current, previous}
+        if (lbData === null || lbData === void 0 ? void 0 : lbData.current) {
+            var html = renderTable(_("Top Scores This Week"), lbData.current.entries || [], true);
+            if (lbData.previous && ((_c = lbData.previous.entries) === null || _c === void 0 ? void 0 : _c.length) > 0) {
+                html += renderTable(_("Top Scores Last Week"), lbData.previous.entries, false);
+            }
+            return html;
         }
-        // Always show current player's row at the bottom
-        var gameScore = currentGameScore != null ? currentGameScore : "*";
-        rows += "<tr class=\"challenge_lb_me challenge_lb_sep\"><td></td><td>".concat(esc(currentPlayerName), " (").concat(_("current game"), ")</td><td>").concat(gameScore, "</td></tr>");
-        return "<h3>".concat(_("Top Scores This Week"), "</h3>\n      <table class=\"challenge_leaderboard\"><thead><tr><th>#</th><th>").concat(_("Player"), "</th><th>").concat(_("Score"), "</th></tr></thead>\n      <tbody>").concat(rows, "</tbody></table>");
+        // Legacy fallback
+        var entries = Array.isArray(lbData) ? lbData : [];
+        return renderTable(_("Top Scores This Week"), entries, true);
     };
     GameXBody.prototype.updateBanner = function () {
         $("round_banner_text").innerHTML = "";

@@ -100,6 +100,7 @@ class GameXBody extends GameMachine {
         <li>${_("Beat your own score to win, but aim for the leaderboard to get famous!")}</li>
         <li>${_("Best Score resets each week.")}</li>
       </ul>
+      ${this.gamedatas.challengePlayerScore != null ? `<p>${this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: this.gamedatas.challengePlayerScore })}</p>` : ""}
       <p>${this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset })}</p>
       ${this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore)}
       <div style="margin-top:10px;">
@@ -118,25 +119,39 @@ class GameXBody extends GameMachine {
       });
     }
   }
-  renderLeaderboard(entries: any[], currentGameScore?: number | null): string {
-    entries = entries || [];
+  renderLeaderboard(lbData: any, currentGameScore?: number | null): string {
     const currentPlayerId = this.bga.players.getCurrentPlayerId();
     const currentPlayerName = this.gamedatas.players[currentPlayerId]?.name ?? "";
     const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    let rows = "";
-    for (let i = 0; i < entries.length; i++) {
-      const e = entries[i];
-      const isMe = e.p == currentPlayerId;
-      const highlight = isMe ? ' class="challenge_lb_me"' : "";
-      rows += `<tr${highlight}><td>${i + 1}</td><td>${esc(e.n)}</td><td>${e.s}</td></tr>`;
-    }
-    // Always show current player's row at the bottom
-    const gameScore = currentGameScore != null ? currentGameScore : "*";
-    rows += `<tr class="challenge_lb_me challenge_lb_sep"><td></td><td>${esc(currentPlayerName)} (${_("current game")})</td><td>${gameScore}</td></tr>`;
 
-    return `<h3>${_("Top Scores This Week")}</h3>
-      <table class="challenge_leaderboard"><thead><tr><th>#</th><th>${_("Player")}</th><th>${_("Score")}</th></tr></thead>
-      <tbody>${rows}</tbody></table>`;
+    const renderTable = (title: string, entries: any[], showCurrentPlayer: boolean) => {
+      let rows = "";
+      for (let i = 0; i < entries.length; i++) {
+        const e = entries[i];
+        const isMe = e.p == currentPlayerId;
+        const highlight = isMe ? ' class="challenge_lb_me"' : "";
+        rows += `<tr${highlight}><td>${i + 1}</td><td>${esc(e.n)}</td><td>${e.s}</td></tr>`;
+      }
+      if (showCurrentPlayer) {
+        const gameScore = currentGameScore != null ? currentGameScore : "*";
+        rows += `<tr class="challenge_lb_me challenge_lb_sep"><td></td><td>${esc(currentPlayerName)} (${_("current game")})</td><td>${gameScore}</td></tr>`;
+      }
+      return `<h3>${title}</h3>
+        <table class="challenge_leaderboard"><thead><tr><th>#</th><th>${_("Player")}</th><th>${_("Score")}</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+    };
+
+    // New format: {current, previous}
+    if (lbData?.current) {
+      let html = renderTable(_("Top Scores This Week"), lbData.current.entries || [], true);
+      if (lbData.previous && lbData.previous.entries?.length > 0) {
+        html += renderTable(_("Top Scores Last Week"), lbData.previous.entries, false);
+      }
+      return html;
+    }
+    // Legacy fallback
+    const entries = Array.isArray(lbData) ? lbData : [];
+    return renderTable(_("Top Scores This Week"), entries, true);
   }
 
   updateBanner() {

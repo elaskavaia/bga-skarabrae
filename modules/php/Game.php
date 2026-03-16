@@ -214,7 +214,8 @@ class Game extends Base {
                 // Solo Challenge mode
                 $goal = $this->getChallenge()->getChallengeGoal((int) $startingPlayer, Material::SOLO_GOAL_STANDARD);
                 $challengeNum = $this->getVariantChallengeType();
-                $challengeWeek = date("o") . "-W" . date("W");
+                $gw = $this->getChallenge()->getGameStartWeek();
+                $challengeWeek = substr($gw, 0, 4) . "-W" . substr($gw, 4, 2);
                 $this->notifyMessage(
                     clienttranslate('${player_name} playing Weekly Challenge ${challenge_num} (${week}). Beat ${points} points!'),
                     ["challenge_num" => $challengeNum, "week" => $challengeWeek, "points" => $goal],
@@ -323,10 +324,16 @@ class Game extends Base {
         }
 
         if ($this->isSoloChallenge()) {
-            $result["challengeWeek"] = date("o") . "-W" . date("W");
-            // Next Monday (ISO week reset)
-            $nextMonday = new \DateTime("next monday");
-            $result["challengeNextReset"] = $nextMonday->format("F j, Y");
+            $gameWeek = $this->getChallenge()->getGameStartWeek();
+            $year = (int) substr($gameWeek, 0, 4);
+            $week = (int) substr($gameWeek, 4, 2);
+            $result["challengeWeek"] = $year . "-W" . str_pad((string) $week, 2, "0", STR_PAD_LEFT);
+            // Next Monday after the game's challenge week ends
+            $weekStart = new \DateTime();
+            $weekStart->setISODate($year, $week, 1); // Monday of the game's week
+            $nextMonday = clone $weekStart;
+            $nextMonday->modify("+7 days"); // Following Monday = reset
+            $result["challengeNextReset"] = $nextMonday->format("F j, Y") . " 00:00 UTC";
             $result["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
             $playerId = (int) $this->getActivePlayerId();
             $result["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
