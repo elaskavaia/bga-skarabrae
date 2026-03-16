@@ -166,6 +166,44 @@ final class SoloChallengeTest extends TestCase {
         $this->assertEquals($snapshots[0]["village_top5"], $snapshots[1]["village_top5"], "Village deck order should be identical");
     }
 
+    public function testDifferentWeeksProduceDifferentSetups() {
+        $color = PCOLOR;
+
+        // Same challenge number, different weeks — should produce different setups
+        // Week 11: Monday March 10 2025 00:00 UTC
+        // Week 12: Monday March 17 2025 00:00 UTC
+        $timestamps = [
+            "w11" => gmmktime(0, 0, 0, 3, 10, 2025),
+            "w12" => gmmktime(0, 0, 0, 3, 17, 2025),
+        ];
+
+        $snapshots = [];
+        foreach ($timestamps as $label => $ts) {
+            $game = new GameUT();
+            $game->setPlayersNumber(1);
+            $game->_setCurrentPlayerId(10);
+            $game->gamestate->changeActivePlayer(10);
+            $game->setGameStateInitialValue("variant_solo_dif", Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE);
+            $game->setGameStateInitialValue("variant_challenge_type", 1);
+            $game->challenge = new SoloChallenge($game, 1);
+            $game->challenge->setNow($ts);
+            $game->setupGameTables();
+
+            $snapshots[$label] = [
+                "tasks" => array_keys($game->tokens->getTokensOfTypeInLocation("card_task", "tableau_$color")),
+                "goals" => array_keys($game->tokens->getTokensOfTypeInLocation("card_goal", "tableau_$color")),
+                "action" => array_keys($game->tokens->getTokensOfTypeInLocation("action_special", "tableau_$color")),
+                "village_top5" => array_keys($game->tokens->db->getTokensOnTop(5, "deck_village")),
+            ];
+        }
+
+        $allSame = $snapshots["w11"]["tasks"] === $snapshots["w12"]["tasks"]
+            && $snapshots["w11"]["goals"] === $snapshots["w12"]["goals"]
+            && $snapshots["w11"]["action"] === $snapshots["w12"]["action"]
+            && $snapshots["w11"]["village_top5"] === $snapshots["w12"]["village_top5"];
+        $this->assertFalse($allSame, "Different weeks should produce different setups");
+    }
+
     public function testLeaderboardResetsOnNewWeek() {
         $challenge = new SoloChallenge($this->game, 1);
         $playerId = 10;
@@ -196,6 +234,27 @@ final class SoloChallengeTest extends TestCase {
         $this->assertCount(10, $lb["current"]["entries"], "Leaderboard should be capped at 10");
         $this->assertEquals(52, $lb["current"]["entries"][0]["s"], "Top score should be 52");
         $this->assertEquals(43, $lb["current"]["entries"][9]["s"], "10th score should be 43");
+    }
+
+    public function testLeaderboard11thPlayerWithTiedScoreDoesNotMakeIt() {
+        $challenge = new SoloChallenge($this->game, 3);
+        $week = $challenge->getChallengeWeek();
+
+        // Add 10 players all with score 50
+        for ($i = 1; $i <= 10; $i++) {
+            $challenge->updateLeaderboard($week, 1000 + $i, "Player$i", 50);
+        }
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(10, $lb["current"]["entries"]);
+
+        // 11th player also scores 50 — should not make the leaderboard
+        $challenge->updateLeaderboard($week, 2000, "Latecomer", 50);
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(10, $lb["current"]["entries"], "Should still be 10 entries");
+
+        // Latecomer should not be on the board
+        $names = array_map(fn($e) => $e["n"], $lb["current"]["entries"]);
+        $this->assertNotContains("Latecomer", $names, "11th player with tied score should not make leaderboard");
     }
 
     public function testLeaderboardUpdatesExistingPlayer() {
@@ -255,6 +314,30 @@ final class SoloChallengeTest extends TestCase {
 
         // Completely different year
         $this->assertFalse($challenge->isWeekRecent("202411", "202611"), "Different year should not be recent");
+    }
+
+    public function testLeaderboardTwoPlayers() {
+        $challenge = new SoloChallenge($this->game, 1);
+        $week = $challenge->getChallengeWeek();
+
+        // Initially empty
+        $lb = $challenge->getLeaderboard();
+        $this->assertEmpty($lb["current"]["entries"], "Leaderboard should start empty");
+
+        // First player scores 50
+        $challenge->updateLeaderboard($week, 10, "Alice", 50);
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(1, $lb["current"]["entries"], "Should have 1 entry");
+        $this->assertEquals(50, $lb["current"]["entries"][0]["s"]);
+        $this->assertEquals("Alice", $lb["current"]["entries"][0]["n"]);
+
+        // Second player scores 47
+        $challenge->updateLeaderboard($week, 20, "Bob", 47);
+        $lb = $challenge->getLeaderboard();
+        $this->assertCount(2, $lb["current"]["entries"], "Should have 2 entries");
+        // Sorted by score descending
+        $this->assertEquals(50, $lb["current"]["entries"][0]["s"], "Alice should be first");
+        $this->assertEquals(47, $lb["current"]["entries"][1]["s"], "Bob should be second");
     }
 
     public function testChallengeScoringNewWeekWithHighPreviousScore() {

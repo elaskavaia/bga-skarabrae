@@ -13,8 +13,12 @@ class SoloChallenge {
     private string $isoWeek;
 
     function __construct(private Game $game, private int $challengeNumber = 0) {
-        // Use UTC to ensure consistent week calculation across all BGA server nodes
-        $utc = new \DateTimeImmutable("now", new \DateTimeZone("UTC"));
+        $this->setNow();
+    }
+
+    /** Set the current time. Pass a UTC timestamp to override for testing. */
+    function setNow(?int $utcTimestamp = null): void {
+        $utc = new \DateTimeImmutable($utcTimestamp !== null ? "@$utcTimestamp" : "now", new \DateTimeZone("UTC"));
         $this->isoYear = $utc->format("o");
         $this->isoWeek = $utc->format("W");
     }
