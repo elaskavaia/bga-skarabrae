@@ -324,22 +324,26 @@ class Game extends Base {
         }
 
         if ($this->isSoloChallenge()) {
-            $gameWeek = $this->getChallenge()->getGameStartWeek();
-            $year = (int) substr($gameWeek, 0, 4);
-            $week = (int) substr($gameWeek, 4, 2);
-            $result["challengeWeek"] = $year . "-W" . str_pad((string) $week, 2, "0", STR_PAD_LEFT);
-            // Next Monday after the game's challenge week ends
-            $weekStart = new \DateTime();
-            $weekStart->setISODate($year, $week, 1); // Monday of the game's week
-            $nextMonday = clone $weekStart;
-            $nextMonday->modify("+7 days"); // Following Monday = reset
-            $result["challengeNextReset"] = $nextMonday->format("F j, Y") . " 00:00 UTC";
+            $result["challenge"] = $this->getChallegeScores();
+        }
+
+        return $result;
+    }
+
+    function getChallegeScores() {
+        $result = [];
+        if ($this->isSoloChallenge()) {
+            $startWeek = $this->getChallenge()->getGameStartWeek();
+            $challengeWeek = $this->getChallenge()->getGameStartWeek();
+
+            $result["challengeWeek"] = $challengeWeek;
+            $result["startWeek"] = $startWeek;
+
             $result["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
             $playerId = (int) $this->getActivePlayerId();
             $result["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
-            if ($isGameEnded) {
-                $result["currentGameScore"] = $this->playerStats->get("game_vp_total", $playerId);
-            }
+
+            $result["currentGameScore"] = $this->playerStats->get("game_vp_total", $playerId);
         }
 
         return $result;
@@ -739,13 +743,12 @@ class Game extends Base {
             }
         }
         $endArgs = ["endScores" => $this->getEndScores(), "final" => true];
-        if ($this->isSoloChallenge()) {
-            $playerId = (int) $this->getActivePlayerId();
-            $endArgs["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
-            $endArgs["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
-            $endArgs["currentGameScore"] = $this->playerStats->get("game_vp_total", $playerId);
-        }
+
         $this->notify->all("endScores", "", $endArgs);
+
+        if ($this->isSoloChallenge()) {
+            $this->notify->all("challengeScores", "", $this->getChallegeScores());
+        }
     }
 
     function getEndScores(): array {
@@ -1057,10 +1060,9 @@ class Game extends Base {
 
     function debug_seedLeaderboard() {
         $fakePlayerIds = [2300662, 2300663, 2300664, 2300665, 2300666];
-        $fakeNames = ["laskava0", "TestBob", "TestCharlie", "TestDiana", "TestEve"];
         $fakeScores = [5, 4, 3, 2, 1];
         for ($i = 0; $i < count($fakePlayerIds); $i++) {
-            $this->getChallenge()->updateLeaderboard($this->getChallenge()->getGameStartWeek(), $fakePlayerIds[$i], $fakeNames[$i], $fakeScores[$i]);
+            $this->getChallenge()->updateLeaderboard($this->getChallenge()->getGameStartWeek(), $fakePlayerIds[$i], $fakeScores[$i]);
         }
         $this->debugConsole("Seeded leaderboard with " . count($fakePlayerIds) . " entries");
     }
@@ -1078,12 +1080,11 @@ class Game extends Base {
         }
 
         $endArgs = ["endScores" => $this->getEndScores(), "final" => true];
-        if ($this->isSoloChallenge()) {
-            $endArgs["challengeLeaderboard"] = $this->getChallenge()->getLeaderboard();
-            $endArgs["challengePlayerScore"] = $this->getChallenge()->getPlayerChallengeScore($playerId);
-            $endArgs["currentGameScore"] = $score;
-        }
+
         $this->notify->all("endScores", "", $endArgs);
+        if ($this->isSoloChallenge()) {
+            $this->notify->all("challengeScores", "", $this->getChallegeScores());
+        }
         $this->debugConsole("Fake end scoring with score $score");
         $this->gamestate->jumpToState(StateConstants::STATE_END_GAME);
     }

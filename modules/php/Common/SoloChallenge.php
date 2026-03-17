@@ -129,7 +129,6 @@ class SoloChallenge {
 
     function scoreSoloChallenge(int $playerId, int $score, int $minScore): void {
         $gameWeek = $this->getGameStartWeek();
-        $currentWeek = $this->getChallengeWeek();
         $data = $this->getPlayerChallengeData($playerId);
         $entries = $data[$gameWeek] ?? [];
         $bestScore = !empty($entries) ? $entries[0]["s"] : 0;
@@ -159,15 +158,22 @@ class SoloChallenge {
         }
 
         // Store per-player best score
-        $playerName = $this->game->getPlayerNameById($playerId);
-        self::upsertEntry($data, $gameWeek, $playerId, $playerName, $score);
+
+        $this->upsertEntry($data, $gameWeek, $playerId, $score);
         $this->setPlayerChallengeData($playerId, $data);
         $this->setBestScore($playerId, $score);
 
-        // Update shared leaderboard if score qualifies and game week is still recent
-        if ($score >= $minScore && $this->isWeekRecent($gameWeek, $currentWeek)) {
-            $this->updateLeaderboard($gameWeek, $playerId, $playerName, $score);
+        // Update shared leaderboard (independent of min score)
+        $this->updateLeaderboard($gameWeek, $playerId, $score);
+    }
+
+    function getSanitizedPlayerName(int $playerId): string {
+        $players = $this->game->loadPlayersBasicInfos();
+        if (!isset($players[$playerId])) {
+            return "player_$playerId";
         }
+        $playerName = $players[$playerId]["player_name"] ?? "x";
+        return str_replace([";", ",", "|"], " ", $playerName);
     }
 
     function getPlayerChallengeScore(int $playerId): ?int {
@@ -231,22 +237,12 @@ class SoloChallenge {
     /**
      * Returns ["current" => ["entries" => [...], "week" => "YYYYWW"], "previous" => ["entries" => [...], "week" => "YYYYWW"] | null].
      */
-    function getLeaderboard(?string $forWeek = null): array {
-        $forWeek = $forWeek ?? $this->getGameStartWeek();
+    function getLeaderboard(): array {
         $data = $this->parseLeaderboardData();
-        $currentWeek = $this->getChallengeWeek();
-
-        $result = [
-            "current" => ["entries" => $data[$forWeek] ?? [], "week" => $forWeek],
-            "previous" => null,
-        ];
-
+        $result = [];
         // Include previous week if it exists and is different from current
         foreach ($data as $week => $entries) {
-            if ($week !== $forWeek && $this->isWeekRecent($week, $currentWeek) && !empty($entries)) {
-                $result["previous"] = ["entries" => $entries, "week" => $week];
-                break;
-            }
+            $result[$week] = $entries;
         }
 
         return $result;
@@ -277,8 +273,8 @@ class SoloChallenge {
      * Update or insert a player entry in the parsed weekly data.
      * Only keeps the higher score if the player already has an entry for that week.
      */
-    static function upsertEntry(array &$allData, string $forWeek, int $playerId, string $playerName, int $score): void {
-        $playerName = str_replace([";", ",", "|"], " ", $playerName);
+    function upsertEntry(array &$allData, string $forWeek, int $playerId, int $score): void {
+        $playerName = $this->getSanitizedPlayerName($playerId);
         $entries = $allData[$forWeek] ?? [];
         $found = false;
         foreach ($entries as &$entry) {
@@ -314,11 +310,10 @@ class SoloChallenge {
         return $targetWeek === $prevWeek;
     }
 
-    function updateLeaderboard(string $forWeek, int $playerId, string $playerName, int $score): void {
+    function updateLeaderboard(string $forWeek, int $playerId, int $score): void {
         $key = $this->getLeaderboardKey();
-        $gameWeek = $this->getGameStartWeek();
         $allData = $this->parseLeaderboardData();
-        self::upsertEntry($allData, $forWeek, $playerId, $playerName, $score);
-        $this->game->setPersistent($key, 0, self::encodeWeeklyData($allData, $this->getGameStartWeek()));
+        $this->upsertEntry($allData, $forWeek, $playerId, $score);
+        $this->game->setPersistent($key, 0, self::encodeWeeklyData($allData, $forWeek));
     }
 }

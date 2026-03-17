@@ -36,11 +36,11 @@
         "name": "Beat your own score"
       },
       "4": {
-        "name": "Weekly Solo Challenge",
+        "name": "Weekly Solo Challenges",
         "beta": true
       }
     },
-    "default": 1,
+    "default": 4,
     "displaycondition": [
       {
         "type": "maxplayers",

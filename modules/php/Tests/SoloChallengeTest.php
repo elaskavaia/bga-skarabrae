@@ -207,75 +207,96 @@ final class SoloChallengeTest extends TestCase {
     public function testLeaderboardResetsOnNewWeek() {
         $challenge = new SoloChallenge($this->game, 1);
         $playerId = 10;
+        $week = $challenge->getChallengeWeek();
 
         // Store leaderboard data from a different week
         $staleData = "999999;$playerId,Alice,80;2300663,Bob,70";
         $this->game->legacy->set($challenge->getLeaderboardKey(), 0, $staleData);
 
-        // Reading should return empty (week mismatch = reset, 999999 is not recent)
+        // Reading returns stale data (getLeaderboard does not filter)
         $lb = $challenge->getLeaderboard();
-        $this->assertEmpty($lb["current"]["entries"], "Leaderboard from old week should be empty");
+        $this->assertArrayHasKey("999999", $lb, "Stale week data is still present on read");
+        $this->assertArrayNotHasKey($week, $lb, "Current week should not exist yet");
 
-        // Writing a new entry should start fresh
-        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
+        // Writing a new entry should drop stale data (encodeWeeklyData filters)
+        $challenge->updateLeaderboard($week, $playerId, 50);
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(1, $lb["current"]["entries"], "Leaderboard should have 1 entry after reset");
-        $this->assertEquals(50, $lb["current"]["entries"][0]["s"]);
+        $this->assertArrayNotHasKey("999999", $lb, "Stale week should be dropped after write");
+        $this->assertCount(1, $lb[$week], "Leaderboard should have 1 entry after reset");
+        $this->assertEquals(50, $lb[$week][0]["s"]);
     }
 
     public function testLeaderboardTop10Limit() {
         $challenge = new SoloChallenge($this->game, 2);
+        $week = $challenge->getChallengeWeek();
+
+        // Register 12 players
+        $players = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $players[1000 + $i] = ["player_name" => "Player$i"];
+        }
+        $this->game->_setPlayerBasicInfo($players);
 
         // Add 12 players
         for ($i = 1; $i <= 12; $i++) {
-            $challenge->updateLeaderboard($challenge->getChallengeWeek(), 1000 + $i, "Player$i", 40 + $i);
+            $challenge->updateLeaderboard($week, 1000 + $i, 40 + $i);
         }
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(10, $lb["current"]["entries"], "Leaderboard should be capped at 10");
-        $this->assertEquals(52, $lb["current"]["entries"][0]["s"], "Top score should be 52");
-        $this->assertEquals(43, $lb["current"]["entries"][9]["s"], "10th score should be 43");
+        $this->assertCount(10, $lb[$week], "Leaderboard should be capped at 10");
+        $this->assertEquals(52, $lb[$week][0]["s"], "Top score should be 52");
+        $this->assertEquals(43, $lb[$week][9]["s"], "10th score should be 43");
     }
 
     public function testLeaderboard11thPlayerWithTiedScoreDoesNotMakeIt() {
         $challenge = new SoloChallenge($this->game, 3);
         $week = $challenge->getChallengeWeek();
 
+        // Register 11 players
+        $players = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $players[1000 + $i] = ["player_name" => "Player$i"];
+        }
+        $players[2000] = ["player_name" => "Latecomer"];
+        $this->game->_setPlayerBasicInfo($players);
+
         // Add 10 players all with score 50
         for ($i = 1; $i <= 10; $i++) {
-            $challenge->updateLeaderboard($week, 1000 + $i, "Player$i", 50);
+            $challenge->updateLeaderboard($week, 1000 + $i, 50);
         }
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(10, $lb["current"]["entries"]);
+        $this->assertCount(10, $lb[$week]);
 
         // 11th player also scores 50 — should not make the leaderboard
-        $challenge->updateLeaderboard($week, 2000, "Latecomer", 50);
+        $challenge->updateLeaderboard($week, 2000, 50);
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(10, $lb["current"]["entries"], "Should still be 10 entries");
+        $this->assertCount(10, $lb[$week], "Should still be 10 entries");
 
         // Latecomer should not be on the board
-        $names = array_map(fn($e) => $e["n"], $lb["current"]["entries"]);
+        $names = array_map(fn($e) => $e["n"], $lb[$week]);
         $this->assertNotContains("Latecomer", $names, "11th player with tied score should not make leaderboard");
     }
 
     public function testLeaderboardUpdatesExistingPlayer() {
         $challenge = new SoloChallenge($this->game, 3);
         $playerId = 10;
+        $week = $challenge->getChallengeWeek();
 
-        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
-        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
+        $challenge->updateLeaderboard($week, $playerId, 50);
+        $challenge->updateLeaderboard($week, $playerId, 60);
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(1, $lb["current"]["entries"], "Should have 1 entry, not 2");
-        $this->assertEquals(60, $lb["current"]["entries"][0]["s"], "Score should be updated to 60");
+        $this->assertCount(1, $lb[$week], "Should have 1 entry, not 2");
+        $this->assertEquals(60, $lb[$week][0]["s"], "Score should be updated to 60");
     }
 
     public function testLeaderboardKeepsHigherScore() {
         $challenge = new SoloChallenge($this->game, 4);
         $playerId = 10;
+        $week = $challenge->getChallengeWeek();
 
-        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 60);
-        $challenge->updateLeaderboard($challenge->getChallengeWeek(), $playerId, "Alice", 50);
+        $challenge->updateLeaderboard($week, $playerId, 60);
+        $challenge->updateLeaderboard($week, $playerId, 50);
         $lb = $challenge->getLeaderboard();
-        $this->assertEquals(60, $lb["current"]["entries"][0]["s"], "Higher score should be kept");
+        $this->assertEquals(60, $lb[$week][0]["s"], "Higher score should be kept");
     }
 
     public function testChallengeScoreResetsOnNewWeek() {
@@ -320,24 +341,30 @@ final class SoloChallengeTest extends TestCase {
         $challenge = new SoloChallenge($this->game, 1);
         $week = $challenge->getChallengeWeek();
 
+        // Register players with names
+        $this->game->_setPlayerBasicInfo([
+            10 => ["player_name" => "Alice"],
+            20 => ["player_name" => "Bob"],
+        ]);
+
         // Initially empty
         $lb = $challenge->getLeaderboard();
-        $this->assertEmpty($lb["current"]["entries"], "Leaderboard should start empty");
+        $this->assertEmpty($lb, "Leaderboard should start empty");
 
         // First player scores 50
-        $challenge->updateLeaderboard($week, 10, "Alice", 50);
+        $challenge->updateLeaderboard($week, 10, 50);
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(1, $lb["current"]["entries"], "Should have 1 entry");
-        $this->assertEquals(50, $lb["current"]["entries"][0]["s"]);
-        $this->assertEquals("Alice", $lb["current"]["entries"][0]["n"]);
+        $this->assertCount(1, $lb[$week], "Should have 1 entry");
+        $this->assertEquals(50, $lb[$week][0]["s"]);
+        $this->assertEquals("Alice", $lb[$week][0]["n"]);
 
         // Second player scores 47
-        $challenge->updateLeaderboard($week, 20, "Bob", 47);
+        $challenge->updateLeaderboard($week, 20, 47);
         $lb = $challenge->getLeaderboard();
-        $this->assertCount(2, $lb["current"]["entries"], "Should have 2 entries");
+        $this->assertCount(2, $lb[$week], "Should have 2 entries");
         // Sorted by score descending
-        $this->assertEquals(50, $lb["current"]["entries"][0]["s"], "Alice should be first");
-        $this->assertEquals(47, $lb["current"]["entries"][1]["s"], "Bob should be second");
+        $this->assertEquals(50, $lb[$week][0]["s"], "Alice should be first");
+        $this->assertEquals(47, $lb[$week][1]["s"], "Bob should be second");
     }
 
     public function testChallengeScoringNewWeekWithHighPreviousScore() {

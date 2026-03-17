@@ -83,26 +83,42 @@ class GameXBody extends GameMachine {
     return this.isSolo() && soloDif == 4;
   }
 
+  formatWeekRange(yyyyww: string): string {
+    const year = parseInt(yyyyww.substring(0, 4), 10);
+    const week = parseInt(yyyyww.substring(4, 6), 10);
+    // ISO week: Jan 4 is always in week 1. Monday of week 1 = Jan 4 - dayOfWeek + 1
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const dayOfWeek = jan4.getUTCDay() || 7; // convert Sunday=0 to 7
+    const monday = new Date(Date.UTC(year, 0, 4 - dayOfWeek + 1 + (week - 1) * 7));
+    const sunday = new Date(monday);
+    sunday.setUTCDate(sunday.getUTCDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+    const yearStr = sunday.getUTCFullYear();
+    return `${fmt(monday)} - ${fmt(sunday)} ${yearStr}`;
+  }
+
   showChallengePopup(force = false) {
-    const challengeWeek = this.gamedatas.challengeWeek ?? "";
+    const challenge = this.gamedatas.challenge;
+    const challengeWeek = challenge?.challengeWeek ?? "";
     const dismissedWeek = localStorage.getItem("skarabrae_challenge_dismissed");
     if (!force && dismissedWeek === challengeWeek) {
       return;
     }
 
     const challengeNum = this.gamedatas.table_options?.[103]?.value ?? 1;
-    const nextReset = this.gamedatas.challengeNextReset ?? "";
+    const weekRange = challengeWeek ? this.formatWeekRange(challengeWeek) : "";
+    const challengePlayerScore = challenge?.challengePlayerScore;
 
     const html = `<div class="challenge_popup">
-      <p>${this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek })}</p>
+      <p>${this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: weekRange })}</p>
       <ul>
         <li>${_("All players with the same challenge number this week get an identical game setup.")}</li>
         <li>${_("Beat your own score to win, but aim for the leaderboard to get famous!")}</li>
         <li>${_("Best Score resets each week.")}</li>
+        <li>${_("If you prefer regular solo mode, start a new game and change the Solo Difficulty option.")}</li>
       </ul>
-      ${this.gamedatas.challengePlayerScore != null ? `<p>${this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: this.gamedatas.challengePlayerScore })}</p>` : ""}
-      <p>${this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset })}</p>
-      ${this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore)}
+      ${challengePlayerScore != null ? `<p>${this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: challengePlayerScore })}</p>` : ""}
+      ${this.renderLeaderboard(this.gamedatas.challenge)}
       <div style="margin-top:10px;">
         <label><input type="checkbox" id="challenge_dismiss_cb" /> ${_("Don't show this again this week")}</label>
       </div>
@@ -119,10 +135,12 @@ class GameXBody extends GameMachine {
       });
     }
   }
-  renderLeaderboard(lbData: any, currentGameScore?: number | null): string {
+  renderLeaderboard(challengeData: any): string {
+    if (!challengeData) return "";
     const currentPlayerId = this.bga.players.getCurrentPlayerId();
     const currentPlayerName = this.gamedatas.players[currentPlayerId]?.name ?? "";
     const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const currentGameScore = challengeData.currentGameScore;
 
     const renderTable = (title: string, entries: any[], showCurrentPlayer: boolean) => {
       let rows = "";
@@ -141,17 +159,15 @@ class GameXBody extends GameMachine {
         <tbody>${rows}</tbody></table>`;
     };
 
-    // New format: {current, previous}
-    if (lbData?.current) {
-      let html = renderTable(_("Top Scores This Week"), lbData.current.entries || [], true);
-      if (lbData.previous && lbData.previous.entries?.length > 0) {
-        html += renderTable(_("Top Scores Last Week"), lbData.previous.entries, false);
-      }
-      return html;
+    const lb = challengeData.challengeLeaderboard || {};
+    const challengeWeek = challengeData.challengeWeek;
+    const startWeek = challengeData.startWeek;
+
+    let html = renderTable(_("Top Scores This Week"), lb[challengeWeek] || [], true);
+    if (startWeek && startWeek !== challengeWeek && lb[startWeek]?.length > 0) {
+      html += renderTable(_("Top Scores Start Week"), lb[startWeek], false);
     }
-    // Legacy fallback
-    const entries = Array.isArray(lbData) ? lbData : [];
-    return renderTable(_("Top Scores This Week"), entries, true);
+    return html;
   }
 
   updateBanner() {
@@ -784,9 +800,12 @@ class GameXBody extends GameMachine {
     await this.scoreSheet.setScores(args.endScores, {
       startBy: this.bga.players.getCurrentPlayerId()
     });
-    if (args.challengeLeaderboard && this.isSoloChallenge()) {
+  }
+
+  notif_challengeScores(args: any) {
+    if (this.isSoloChallenge()) {
       this.showPopin(
-        `<div class="challenge_popup">${this.renderLeaderboard(args.challengeLeaderboard, args.currentGameScore)}</div>`,
+        `<div class="challenge_popup">${this.renderLeaderboard(args)}</div>`,
         "challenge_leaderboard",
         _("Weekly Challenge Leaderboard")
       );

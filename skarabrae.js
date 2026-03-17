@@ -1756,17 +1756,32 @@ var GameXBody = /** @class */ (function (_super) {
         var soloDif = (_b = (_a = this.gamedatas.table_options) === null || _a === void 0 ? void 0 : _a[101]) === null || _b === void 0 ? void 0 : _b.value;
         return this.isSolo() && soloDif == 4;
     };
+    GameXBody.prototype.formatWeekRange = function (yyyyww) {
+        var year = parseInt(yyyyww.substring(0, 4), 10);
+        var week = parseInt(yyyyww.substring(4, 6), 10);
+        // ISO week: Jan 4 is always in week 1. Monday of week 1 = Jan 4 - dayOfWeek + 1
+        var jan4 = new Date(Date.UTC(year, 0, 4));
+        var dayOfWeek = jan4.getUTCDay() || 7; // convert Sunday=0 to 7
+        var monday = new Date(Date.UTC(year, 0, 4 - dayOfWeek + 1 + (week - 1) * 7));
+        var sunday = new Date(monday);
+        sunday.setUTCDate(sunday.getUTCDate() + 6);
+        var fmt = function (d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" }); };
+        var yearStr = sunday.getUTCFullYear();
+        return "".concat(fmt(monday), " - ").concat(fmt(sunday), " ").concat(yearStr);
+    };
     GameXBody.prototype.showChallengePopup = function (force) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d;
         if (force === void 0) { force = false; }
-        var challengeWeek = (_a = this.gamedatas.challengeWeek) !== null && _a !== void 0 ? _a : "";
+        var challenge = this.gamedatas.challenge;
+        var challengeWeek = (_a = challenge === null || challenge === void 0 ? void 0 : challenge.challengeWeek) !== null && _a !== void 0 ? _a : "";
         var dismissedWeek = localStorage.getItem("skarabrae_challenge_dismissed");
         if (!force && dismissedWeek === challengeWeek) {
             return;
         }
         var challengeNum = (_d = (_c = (_b = this.gamedatas.table_options) === null || _b === void 0 ? void 0 : _b[103]) === null || _c === void 0 ? void 0 : _c.value) !== null && _d !== void 0 ? _d : 1;
-        var nextReset = (_e = this.gamedatas.challengeNextReset) !== null && _e !== void 0 ? _e : "";
-        var html = "<div class=\"challenge_popup\">\n      <p>".concat(this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: challengeWeek }), "</p>\n      <ul>\n        <li>").concat(_("All players with the same challenge number this week get an identical game setup."), "</li>\n        <li>").concat(_("Beat your own score to win, but aim for the leaderboard to get famous!"), "</li>\n        <li>").concat(_("Best Score resets each week."), "</li>\n      </ul>\n      ").concat(this.gamedatas.challengePlayerScore != null ? "<p>".concat(this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: this.gamedatas.challengePlayerScore }), "</p>") : "", "\n      <p>").concat(this.format_string_recursive(_("Next reset: <b>${date}</b>"), { date: nextReset }), "</p>\n      ").concat(this.renderLeaderboard(this.gamedatas.challengeLeaderboard, this.gamedatas.currentGameScore), "\n      <div style=\"margin-top:10px;\">\n        <label><input type=\"checkbox\" id=\"challenge_dismiss_cb\" /> ").concat(_("Don't show this again this week"), "</label>\n      </div>\n    </div>");
+        var weekRange = challengeWeek ? this.formatWeekRange(challengeWeek) : "";
+        var challengePlayerScore = challenge === null || challenge === void 0 ? void 0 : challenge.challengePlayerScore;
+        var html = "<div class=\"challenge_popup\">\n      <p>".concat(this.format_string_recursive(_("You are playing <b>Weekly Challenge ${n}</b> for week <b>${week}</b>."), { n: challengeNum, week: weekRange }), "</p>\n      <ul>\n        <li>").concat(_("All players with the same challenge number this week get an identical game setup."), "</li>\n        <li>").concat(_("Beat your own score to win, but aim for the leaderboard to get famous!"), "</li>\n        <li>").concat(_("Best Score resets each week."), "</li>\n        <li>").concat(_("If you prefer regular solo mode, start a new game and change the Solo Difficulty option."), "</li>\n      </ul>\n      ").concat(challengePlayerScore != null ? "<p>".concat(this.format_string_recursive(_("Your score to beat: <b>${points}</b>"), { points: challengePlayerScore }), "</p>") : "", "\n      ").concat(this.renderLeaderboard(this.gamedatas.challenge), "\n      <div style=\"margin-top:10px;\">\n        <label><input type=\"checkbox\" id=\"challenge_dismiss_cb\" /> ").concat(_("Don't show this again this week"), "</label>\n      </div>\n    </div>");
         var dialog = this.showPopin(html, "challenge_info", _("Weekly Challenge"));
         if (dialog) {
             dialog.replaceCloseCallback(function () {
@@ -1778,11 +1793,14 @@ var GameXBody = /** @class */ (function (_super) {
             });
         }
     };
-    GameXBody.prototype.renderLeaderboard = function (lbData, currentGameScore) {
+    GameXBody.prototype.renderLeaderboard = function (challengeData) {
         var _a, _b, _c;
+        if (!challengeData)
+            return "";
         var currentPlayerId = this.bga.players.getCurrentPlayerId();
         var currentPlayerName = (_b = (_a = this.gamedatas.players[currentPlayerId]) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : "";
         var esc = function (s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+        var currentGameScore = challengeData.currentGameScore;
         var renderTable = function (title, entries, showCurrentPlayer) {
             var rows = "";
             for (var i = 0; i < entries.length; i++) {
@@ -1797,17 +1815,14 @@ var GameXBody = /** @class */ (function (_super) {
             }
             return "<h3>".concat(title, "</h3>\n        <table class=\"challenge_leaderboard\"><thead><tr><th>#</th><th>").concat(_("Player"), "</th><th>").concat(_("Score"), "</th></tr></thead>\n        <tbody>").concat(rows, "</tbody></table>");
         };
-        // New format: {current, previous}
-        if (lbData === null || lbData === void 0 ? void 0 : lbData.current) {
-            var html = renderTable(_("Top Scores This Week"), lbData.current.entries || [], true);
-            if (lbData.previous && ((_c = lbData.previous.entries) === null || _c === void 0 ? void 0 : _c.length) > 0) {
-                html += renderTable(_("Top Scores Last Week"), lbData.previous.entries, false);
-            }
-            return html;
+        var lb = challengeData.challengeLeaderboard || {};
+        var challengeWeek = challengeData.challengeWeek;
+        var startWeek = challengeData.startWeek;
+        var html = renderTable(_("Top Scores This Week"), lb[challengeWeek] || [], true);
+        if (startWeek && startWeek !== challengeWeek && ((_c = lb[startWeek]) === null || _c === void 0 ? void 0 : _c.length) > 0) {
+            html += renderTable(_("Top Scores Start Week"), lb[startWeek], false);
         }
-        // Legacy fallback
-        var entries = Array.isArray(lbData) ? lbData : [];
-        return renderTable(_("Top Scores This Week"), entries, true);
+        return html;
     };
     GameXBody.prototype.updateBanner = function () {
         $("round_banner_text").innerHTML = "";
@@ -2431,13 +2446,15 @@ var GameXBody = /** @class */ (function (_super) {
                             })];
                     case 1:
                         _a.sent();
-                        if (args.challengeLeaderboard && this.isSoloChallenge()) {
-                            this.showPopin("<div class=\"challenge_popup\">".concat(this.renderLeaderboard(args.challengeLeaderboard, args.currentGameScore), "</div>"), "challenge_leaderboard", _("Weekly Challenge Leaderboard"));
-                        }
                         return [2 /*return*/];
                 }
             });
         });
+    };
+    GameXBody.prototype.notif_challengeScores = function (args) {
+        if (this.isSoloChallenge()) {
+            this.showPopin("<div class=\"challenge_popup\">".concat(this.renderLeaderboard(args), "</div>"), "challenge_leaderboard", _("Weekly Challenge Leaderboard"));
+        }
     };
     /** @Override */
     GameXBody.prototype.bgaFormatText = function (log, args) {
