@@ -72,6 +72,12 @@ class MachineInMem extends DbMachine {
         return $res;
     }
 
+    function compact() {
+        $this->xtable = array_filter($this->xtable, function ($elem) {
+            return $elem["rank"] >= 0;
+        });
+    }
+
     function getHistoricalOperations($owner = null, $type = null) {
         $arr = $this->xtable;
         $res = array_filter($arr, function ($elem) use ($owner, $type) {

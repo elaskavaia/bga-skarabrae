@@ -77,7 +77,7 @@ class Op_draft extends Operation {
         $owner = $this->getOwner();
         $card = $this->game->tokens->db->getTokensOfTypeInLocationSingleKey("action_special", "tableau_{$owner}");
         $this->game->userAssert(clienttranslate("Nothing to undo"), $card);
-        $this->game->tokens->dbSetTokenLocation($card, "hand_{$owner}", 0, "*", ["_private" => true], $this->getPlayerId());
+        $this->game->tokens->dbSetTokenLocation($card, "hand_{$owner}", null, "*", ["_private" => true], $this->getPlayerId());
         $this->game->machine->push($this->getType(), $owner);
         return true;
     }

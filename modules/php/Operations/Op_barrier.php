@@ -27,6 +27,7 @@ use Bga\Games\skarabrae\States\GameDispatchForced;
 class Op_barrier extends Operation {
     function onEnteringGameState() {
         $this->destroy();
+        $this->game->machine->compact();
         $this->game->customUndoSavepoint(0, 1);
 
         return GameDispatchForced::class;

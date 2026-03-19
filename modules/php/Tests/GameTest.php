@@ -751,6 +751,65 @@ final class GameTest extends TestCase {
         $this->assertNotEquals(range(1, 20), $arr1, "Shuffled array should differ from original");
     }
 
+    public function testCompactRemovesHistoricalOperations() {
+        // Regression test: undo during opponent's turn could reach Op_draft from game start
+        // because historical operations (rank < 0) were never cleaned up. compact() must
+        // delete them so mid-game undo cannot call Op_draft::unresolve().
+        $game = $this->game;
+        $color = PCOLOR;
+
+        // Queue operations: draft then turn
+        $game->machine->queue("draft", $color);
+        $game->machine->queue("turn", $color);
+
+        // Simulate draft being resolved and hidden (rank < 0) by directly manipulating the table
+        $op = $game->machine->createTopOperationFromDbForOwner($color);
+        $this->assertEquals("draft", $op->getType());
+        $id = $op->getId();
+        $game->machine->db->hide($id);
+
+        // Verify draft is in historical operations
+        $hist = $game->machine->db->getHistoricalOperations($color);
+        $this->assertCount(1, $hist, "Draft should be in historical operations before compact");
+
+        // Compact removes historical operations
+        $game->machine->compact();
+
+        // Verify historical operations are gone
+        $hist = $game->machine->db->getHistoricalOperations($color);
+        $this->assertCount(0, $hist, "Historical operations should be empty after compact");
+
+        // Current operations should still be there
+        $ops = $game->machine->db->getOperations($color);
+        $this->assertGreaterThan(0, count($ops), "Current operations should not be affected by compact");
+    }
+
+    public function testDraftUnresolvePreservesCraftedState() {
+        // Regression test: Op_draft::unresolve() was resetting token_state to 0,
+        // losing the crafted/upgraded status of the action tile.
+        $game = $this->game;
+        $color = PCOLOR;
+        $game->tokens->createTokens();
+
+        // Place a special action tile on the player's tableau with crafted state (1)
+        $tile = "action_special_1";
+        $game->tokens->dbSetTokenLocation($tile, "tableau_{$color}", 1);
+        $this->assertEquals(1, (int) $game->tokens->db->getTokenState($tile), "Tile should be crafted (state=1)");
+
+        // Queue and get the draft operation
+        $game->machine->queue("draft", $color);
+        $op = $game->machine->createTopOperationFromDbForOwner($color);
+        $this->assertEquals("draft", $op->getType());
+
+        // Unresolve should move tile to hand but preserve state
+        $result = $op->unresolve();
+        $this->assertTrue($result);
+
+        $info = $game->tokens->db->getTokenInfo($tile);
+        $this->assertEquals("hand_{$color}", $info["location"], "Tile should be moved to hand");
+        $this->assertEquals(1, (int) $info["state"], "Crafted state must be preserved after unresolve");
+    }
+
     public function testBgaShuffleDifferentSeedsProduceDifferentResults() {
         $arr1 = range(1, 20);
         $arr2 = range(1, 20);

@@ -402,6 +402,10 @@ class OpMachine {
         }
         return [];
     }
+    function compact() {
+        $this->db->compact();
+    }
+
     function isMultiplayerOperationMode() {
         if (!$this->isMultiplayerSupported()) {
             return false;

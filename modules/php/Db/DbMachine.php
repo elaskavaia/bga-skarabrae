@@ -150,6 +150,10 @@ class DbMachine {
         $this->game->DbQuery("UPDATE machine SET `rank` = `rank` + $count WHERE `rank` >= $from");
     }
 
+    function compact() {
+        $this->game->DbQuery("DELETE from machine WHERE `rank` < 0");
+    }
+
     function normalize() {
         $top = $this->getTopRank();
         if ($top > 1) {
