@@ -48,7 +48,7 @@ class Op_feed extends CountableOperation {
     }
 
     function getPrompt() {
-        return clienttranslate('Select how much ${token_div} to pay (max ${max})');
+        return clienttranslate('End of round feeding: Select how much ${token_div} to pay (max ${max})');
     }
 
     function getSubTitle() {
