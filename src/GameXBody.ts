@@ -726,7 +726,7 @@ class GameXBody extends GameMachine {
         const name_tr = this.getTr(tokenInfo.name);
         const imageTypes = tokenInfo.imageTypes;
         if (imageTypes.includes("_override")) return;
-        const origtt = tokenInfo.tooltip;
+        const origtt = this.getTr(tokenInfo.tooltip);
         tokenInfo.imageTypes += " _override";
         let flip = "";
         if (state === 0) {

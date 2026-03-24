@@ -2369,7 +2369,7 @@ var GameXBody = /** @class */ (function (_super) {
                 var imageTypes = tokenInfo.imageTypes;
                 if (imageTypes.includes("_override"))
                     return;
-                var origtt = tokenInfo.tooltip;
+                var origtt = this.getTr(tokenInfo.tooltip);
                 tokenInfo.imageTypes += " _override";
                 var flip = "";
                 if (state === 0) {

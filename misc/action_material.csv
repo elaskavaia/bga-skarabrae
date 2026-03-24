@@ -2,7 +2,6 @@ num|name|r|rb|craft|tooltip|php
 #set create=4
 #set type=action main
 #set location=tableau_{COLOR}
-#set _tr=tooltip
 #set id=action_main_{num}
 #set rb={r}
 #general actions
