@@ -11,6 +11,8 @@ use Bga\Games\skarabrae\Common\PGameTokens;
 use Bga\Games\skarabrae\OpCommon\ComplexOperation;
 use Bga\Games\skarabrae\Operations\Op_or;
 use Bga\Games\skarabrae\Operations\Op_paygain;
+use Bga\Games\skarabrae\Operations\Op_forage;
+use Bga\Games\skarabrae\Operations\Op_barter;
 use Bga\Games\skarabrae\Operations\Op_seq;
 use Bga\Games\skarabrae\Operations\Op_cotag;
 use Bga\Games\skarabrae\Operations\Op_craft;
@@ -821,5 +823,102 @@ final class GameTest extends TestCase {
         $this->game->bgaShuffle($arr2);
 
         $this->assertNotEquals($arr1, $arr2, "Different seeds should produce different shuffles");
+    }
+
+    // --- Promo tiles: Forage ---
+
+    public function testForageQueuesRangedGatherRule() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+
+        $thickets = "action_main_8_$owner"; // Gather on Thickets, unflipped -> "wood"
+        $game->machine->push("[1,2]forage", $owner);
+
+        $op = $game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertInstanceOf(Op_forage::class, $op);
+        $this->assertEquals(2, $op->getCount());
+
+        $moves = $op->getPossibleMoves();
+        $this->assertArrayHasKey($thickets, $moves);
+        $this->assertArrayHasKey("action_main_6_$owner", $moves);
+
+        // Selecting a single tile queues its rule, resolvable up to N times
+        $game->fakeUserAction($op, $thickets);
+        $top = $game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertEquals("[1,2](wood)", $top->getTypeFullExpr());
+    }
+
+    public function testForageResolvesGatherTileMultipleTimes() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+
+        $thickets = "action_main_8_$owner"; // unflipped -> 1 wood per resolution
+        $game->machine->push("[1,2]forage", $owner);
+
+        $op = $game->machine->createTopOperationFromDbForOwner(null);
+        $game->fakeUserAction($op, $thickets);
+
+        // Resolve the queued ranged gather rule the maximum number of times
+        $this->dispatch(PlayerTurn::class);
+        $gain = $game->machine->createTopOperationFromDbForOwner(null);
+        $gain->action_resolve([Operation::ARG_TARGET => 2]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+
+        $this->assertEquals(2, $game->tokens->getTrackerValue($owner, "wood"));
+    }
+
+    // --- Promo tiles: Barter ---
+
+    public function testBarterPurchaseCostsSkaillUnflipped() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+        $game->tokens->db->createToken("action_special_9", "tableau_$owner"); // Barter, unflipped
+        $game->effect_incTrack($owner, "trade", 1, ""); // Trade Marker at level 1 -> cow
+        $game->effect_incCount($owner, "skaill", 1, "");
+
+        $game->machine->push("barter", $owner);
+        $this->dispatch();
+
+        $op = $game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertInstanceOf(Op_paygain::class, $op);
+        $this->assertTrue($op->canSkip(), "purchase is optional");
+        $op->action_resolve([Operation::ARG_TARGET => "confirm"]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+
+        $this->assertEquals(1, $game->tokens->getTrackerValue($owner, "cow"));
+        $this->assertEquals(0, $game->tokens->getTrackerValue($owner, "skaill"));
+    }
+
+    public function testBarterFreeWhenFlipped() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+        $game->tokens->db->createToken("action_special_9", "tableau_$owner");
+        $game->tokens->dbSetTokenState("action_special_9", 1); // flipped -> free
+        $game->effect_incTrack($owner, "trade", 1, ""); // Trade Marker at level 1 -> cow
+
+        $game->machine->push("barter", $owner);
+        $this->dispatch();
+
+        // Purchase is offered and free: not void even with 0 Skaill Knives.
+        $op = $game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertNotNull($op, "purchase should be offered");
+        $this->assertFalse($op->isVoid(), "flipped Barter purchase is free (no Skaill needed)");
+        $this->assertEquals(0, $game->tokens->getTrackerValue($owner, "skaill"));
+    }
+
+    public function testBarterNoEffectWhenTradeMarkerNotMoved() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+        $game->tokens->db->createToken("action_special_9", "tableau_$owner");
+        // Trade Marker at 0 -> no purchase offered
+        $game->machine->push("barter", $owner);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+
+        $this->assertEquals(0, $game->tokens->getTrackerValue($owner, "cow"));
     }
 }

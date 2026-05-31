@@ -31,6 +31,11 @@ num|name|r|rb|craft|tooltip|php
 1|Spin Wool|2(n_bone/n_food):spin|||Gain 1 Spindle Whorl Card. These should be taken from those stored nearby the Player Board during Setup. Spindle Whorl Cards should be placed below the Player Board, much like Roofs, Stone Balls, and Utensils. After doing so, the player immediately gains 1 Wool per Spindle Whorl they have, including from the Card they just placed. Spindle Whorl Cards are worth 1VP at the game's end. Once flipped, after resolving the Spindle Whorl, a player may optionally spend 3 Wool to gain 1 Roof Card. This is resolved in the same way as gaining Roof Cards from the Clean Action Tile.
 4|Tend Land|2(n_bone/n_food):3tend|2(n_bone/n_food):(4tend)||Resolve up to 3 different Gather Action Tiles, just as if Workers had been placed there. Alternatively this player may forgo any of these Gather actions to instead clear 1 Midden. As with the Clean action, they may either discard 1 Midden from their Storage Area, or move their Slider 1 column to the left. For example, a player might decide to Gather from the Hills and Fields, and clear 1 Midden, or simply just clear 3 Midden. Once flipped, this action allows players to do this up to 4 times, instead of 3.
 
+#set type=action special promo
+#set create=0
+9|Barter|2(n_bone/n_food):3skaill|||Gain 3 Skaill Knives. May pay 1 Skaill Knife at the end of each Round to purchase the Resources shown directly below the Trade Marker. This is free once flipped. If a player has not moved their Trade Marker at least one space, this has no effect.
+10|Forage|2(n_bone/n_food):(2forage,skaill)|2(n_bone/n_food):(3forage,skaill)||Resolve 1 Gather Action Tile up to 2 times (3 times when flipped), just as if Workers had been placed there. Also gain 1 Skaill Knife. For Gather Action Tiles that have a choice of rewards, choose from any combination.
+
 #set type=recipe
 #set location=limbo
 #set id=recipe_{num}

@@ -1,4 +1,5 @@
 <?php
+
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -19,11 +20,18 @@
 declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Operations;
+
 use Bga\Games\skarabrae\OpCommon\Operation;
 
 class Op_night extends Operation {
-    function auto(): bool {
+    public function auto(): bool {
         $color = $this->getOwner();
+        $owner = $color;
+        if ($this->game->hasSpecial(9, $owner)) {
+            // barter: optional end-of-round purchase below the Trade Marker
+            $this->queue("barter", $owner);
+        }
+
         $cards = $this->game->tokens->getTokensOfTypeInLocation("action", "tableau_{$color}");
         foreach ($cards as $card => $info) {
             $state = $info["state"];
@@ -34,12 +42,13 @@ class Op_night extends Operation {
                 }
             }
         }
-        $owner = $color;
+
         if ($this->game->hasSpecial(3, $owner)) {
             // recruit
             $workers = $this->game->tokens->getTokensOfTypeInLocation("worker%_000000", null, 1);
             $this->game->tokens->dbSetTokensLocation($workers, "supply", 0);
         }
+
         $this->queue("feed", $this->getOwner());
         $this->queue("clutter", $this->getOwner());
         return true;

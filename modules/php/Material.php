@@ -308,6 +308,14 @@ class Material {
         "type" => "tend",
         "name" => clienttranslate("Tend Land"),
 ],
+    "Op_forage" => [ 
+        "type" => "forage",
+        "name" => clienttranslate("Forage"),
+],
+    "Op_barter" => [ 
+        "type" => "barter",
+        "name" => clienttranslate("Barter"),
+],
     "Op_draft" => [ 
         "type" => "draft",
         "name" => clienttranslate("Select Special Action"),
@@ -1021,6 +1029,28 @@ class Material {
         "name" => clienttranslate("Tend Land"),
         "r" => "2(n_bone/n_food):3tend",
         "tooltip" => clienttranslate("Resolve up to 3 different Gather Action Tiles, just as if Workers had been placed there. Alternatively this player may forgo any of these Gather actions to instead clear 1 Midden. As with the Clean action, they may either discard 1 Midden from their Storage Area, or move their Slider 1 column to the left. For example, a player might decide to Gather from the Hills and Fields, and clear 1 Midden, or simply just clear 3 Midden. Once flipped, this action allows players to do this up to 4 times, instead of 3."),
+],
+    "action_special_9" => [ 
+        "create" => 0,
+        "type" => "action special promo",
+        "location" => "deck_action",
+        "rb" => "2(n_bone/n_food):3skaill",
+        "craft" => "n_bone,n_hide",
+        "num" => 9,
+        "name" => clienttranslate("Barter"),
+        "r" => "2(n_bone/n_food):3skaill",
+        "tooltip" => clienttranslate("Gain 3 Skaill Knives. May pay 1 Skaill Knife at the end of each Round to purchase the Resources shown directly below the Trade Marker. This is free once flipped. If a player has not moved their Trade Marker at least one space, this has no effect."),
+],
+    "action_special_10" => [ 
+        "create" => 0,
+        "type" => "action special promo",
+        "location" => "deck_action",
+        "rb" => "2(n_bone/n_food):(3forage,skaill)",
+        "craft" => "n_bone,n_hide",
+        "num" => 10,
+        "name" => clienttranslate("Forage"),
+        "r" => "2(n_bone/n_food):(2forage,skaill)",
+        "tooltip" => clienttranslate("Resolve 1 Gather Action Tile up to 2 times (3 times when flipped), just as if Workers had been placed there. Also gain 1 Skaill Knife. For Gather Action Tiles that have a choice of rewards, choose from any combination."),
 ],
 // #cooking Options (recipies)
     "recipe_1" => [ 

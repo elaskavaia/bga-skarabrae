@@ -80,6 +80,23 @@
   background-position: 100% 0;
 }
 
+.action.special.promo {
+  background-image: url(img/action_Promo.jpg);
+  background-size: 200% auto;
+}
+.action.special.promo.action_special_9 {
+  background-position: 0% 0%;
+}
+.action.special.promo.action_special_9[data-state="1"] {
+  background-position: 0% 100%;
+}
+.action.special.promo.action_special_10 {
+  background-position: 100% 0%;
+}
+.action.special.promo.action_special_10[data-state="1"] {
+  background-position: 100% 100%;
+}
+
 .card.task {
   background-image: url(img/solo_cards.jpg);
   background-size: 1000% auto;
@@ -1508,9 +1525,6 @@ latin
   --accent-game-font: "Caesar Dressing";
 }
 
-#gameaction_status_wrap {
-  display: block !important;
-}
 #gameaction_status_wrap img {
   display: none;
 }
@@ -1520,12 +1534,7 @@ latin
 }
 
 #page-title {
-  min-height: 76px !important;
   line-height: 24px;
-}
-
-#pagemaintitle_wrap {
-  min-height: 42px !important;
 }
 
 #oversurface {

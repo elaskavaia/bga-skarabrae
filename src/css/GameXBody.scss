@@ -83,7 +83,7 @@ latin
 }
 
 #gameaction_status_wrap {
-  display: block !important; // prevent flickering of top bar
+  //display: block !important; // prevent flickering of top bar
 
   img {
     display: none;
@@ -93,11 +93,7 @@ latin
   font-size: x-small;
 }
 #page-title {
-  min-height: 76px !important;
   line-height: 24px;
-}
-#pagemaintitle_wrap {
-  min-height: 42px !important;
 }
 
 #oversurface {
@@ -430,7 +426,6 @@ html.darkmode:before {
     text-align: right;
   }
 }
-
 
 .challenge_lb_me {
   font-weight: bold;

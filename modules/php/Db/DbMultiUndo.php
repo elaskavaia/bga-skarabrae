@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\skarabrae\Db;
 
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\UserException;
 use Bga\Games\skarabrae\Game;
 use BgaUserException;
@@ -27,21 +28,25 @@ CREATE TABLE IF NOT EXISTS `multiundo` (
  *
  */
 
-class DbMultiUndo {
-    var $table;
+class DbMultiUndo
+{
+    public $table;
     public Game $game; // game ref
 
-    function __construct(Game $game, private $customRestoreHook = null) {
+    public function __construct(Game $game, private $customRestoreHook = null)
+    {
         $this->table = "multiundo";
         $this->game = $game;
     }
 
-    function getSelectQuery() {
+    public function getSelectQuery()
+    {
         $sql = "SELECT * FROM " . $this->table;
         return $sql;
     }
 
-    function setMoveSnapshot(int $move_id, int $player_id, array $data, array $meta = []) {
+    public function setMoveSnapshot(int $move_id, int $player_id, array $data, array $meta = [])
+    {
         $meta = $meta + ["version" => 1];
         $json_data = $this->game->escapeStringForDB(fixedJsonEncode($data));
         $json_meta = $this->game->escapeStringForDB(fixedJsonEncode($meta));
@@ -60,7 +65,8 @@ class DbMultiUndo {
         }
     }
 
-    function doSaveUndoSnapshot(array $meta, int $player_id, bool $notify = false) {
+    public function doSaveUndoSnapshot(array $meta, int $player_id, bool $notify = false)
+    {
         $move_id = $this->getNextMoveId() - 1; // this is called after notify so the stored move id is previous
 
         $barrier = $meta["barrier"] ?? 0;
@@ -84,7 +90,8 @@ class DbMultiUndo {
         }
     }
 
-    function getNextMoveId() {
+    public function getNextMoveId()
+    {
         //getGameStateValue does not work when dealing with undo, have to read directly from db
         $next_move_index = 3;
         $subsql = "SELECT global_value FROM global WHERE global_id='$next_move_index' ";
@@ -92,13 +99,15 @@ class DbMultiUndo {
         return (int) $move_id;
     }
 
-    function notifyUndoMove(int $move_id, int $player_id) {
+    public function notifyUndoMove(int $move_id, int $player_id)
+    {
         $this->game->systemAssert("Missing player_id in notifyUndoMove", $player_id);
         $meta = $this->getMetaForMove($move_id, $player_id, true);
         $this->notifyUndoMoveMeta($meta ?? []);
     }
 
-    function notifyUndoMoveMeta($meta) {
+    public function notifyUndoMoveMeta($meta)
+    {
         $this->game->notify->all(
             "undoMove",
             "",
@@ -107,7 +116,8 @@ class DbMultiUndo {
         );
     }
 
-    function clearSnapshotsAfter(int $move_id, int $player_id) {
+    public function clearSnapshotsAfter(int $move_id, int $player_id)
+    {
         $undotable = $this->table;
         if ($player_id == 0) {
             $this->game->DbQuery("DELETE FROM $undotable WHERE `move_id` >= $move_id");
@@ -115,7 +125,8 @@ class DbMultiUndo {
             $this->game->DbQuery("DELETE FROM $undotable WHERE `move_id` >= $move_id AND `player_id` = $player_id");
         }
     }
-    function clearSnapshotsBefore(int $move_id, int $player_id) {
+    public function clearSnapshotsBefore(int $move_id, int $player_id)
+    {
         $undotable = $this->table;
         if ($player_id == 0) {
             $this->game->DbQuery("DELETE FROM $undotable WHERE `move_id` < $move_id");
@@ -124,7 +135,8 @@ class DbMultiUndo {
         }
     }
 
-    function deleteGamelogs(int $move_id) {
+    public function deleteGamelogs(int $move_id)
+    {
         $packet_id = $this->game->getUniqueValueFromDB("SELECT MIN(`gamelog_packet_id`) FROM gamelog WHERE `gamelog_move_id` > $move_id");
         if (!$packet_id) {
             return;
@@ -133,7 +145,8 @@ class DbMultiUndo {
         $this->game->DbQuery("DELETE FROM gamelog WHERE `gamelog_packet_id` >= $packet_id AND `gamelog_private` != 1");
     }
 
-    function getLatestSavedMoveId(int $before, int $player_id) {
+    public function getLatestSavedMoveId(int $before, int $player_id)
+    {
         $undotable = $this->table;
 
         return $this->game->getUniqueValueFromDB(
@@ -141,13 +154,15 @@ class DbMultiUndo {
         );
     }
 
-    function getEarlistSavedMoveId(int $player_id) {
+    public function getEarlistSavedMoveId(int $player_id)
+    {
         $undotable = $this->table;
 
         return $this->game->getUniqueValueFromDB("SELECT MIN(`move_id`) FROM $undotable WHERE `player_id` = $player_id");
     }
 
-    function getAvailableUndoMoves(int $player_id) {
+    public function getAvailableUndoMoves(int $player_id)
+    {
         $moves = [];
         $undotable = $this->table;
         $all = $this->game->getObjectListFromDB(
@@ -164,16 +179,18 @@ class DbMultiUndo {
         return $moves;
     }
 
-    function errorCannotUndo(int $move_id = 0) {
+    public function errorCannotUndo(int $move_id = 0)
+    {
         if ($move_id == 0) {
             throw new UserException(clienttranslate("Nothing to undo"));
         } else {
-            throw new UserException(clienttranslate('Nothing to undo for move ${move_id}'), ["move_id" => $move_id]);
+            throw new UserException(new NotificationMessage(clienttranslate('Nothing to undo for move ${move_id}'), ["move_id" => $move_id]));
         }
     }
 
     /** Replace custom undo data of move_id into bga system undo tables */
-    function doReplaceUndoSnapshot(int $move_id, int $player_id) {
+    public function doReplaceUndoSnapshot(int $move_id, int $player_id)
+    {
         //$this->warn("restoring to move $move_id ($current)|");
 
         $tables = $this->game->getObjectListFromDB("SHOW TABLES", true);
@@ -210,21 +227,24 @@ class DbMultiUndo {
         }
     }
 
-    function needsSaving(string $table) {
+    public function needsSaving(string $table)
+    {
         if ($table == "token" || $table == "machine" || $table == "stats") {
             return true;
         }
         return false;
     }
 
-    function needsRestoring(string $table) {
+    public function needsRestoring(string $table)
+    {
         return false;
     }
 
     /**
      * The tables that need copying are in "undo" list but the should not be, we preserve current copy instead
      */
-    function needsOverrideFromCurrent(string $table) {
+    public function needsOverrideFromCurrent(string $table)
+    {
         // if (
         //     $table == $this->table || // multiundo
         //     $table == "user_preferences" ||
@@ -238,7 +258,8 @@ class DbMultiUndo {
         return false;
     }
 
-    function getMoveSnapshotDataJson(int $move_id, int $player_id) {
+    public function getMoveSnapshotDataJson(int $move_id, int $player_id)
+    {
         $row = $this->getMoveSnapshot($move_id, $player_id);
         if ($row == null) {
             return null;
@@ -247,7 +268,8 @@ class DbMultiUndo {
         return json_decode($value, true);
     }
 
-    function getMetaForMove(int $move_id, int $player_id, $extra = false) {
+    public function getMetaForMove(int $move_id, int $player_id, $extra = false)
+    {
         $row = $this->getMoveSnapshot($move_id, $player_id);
         if ($row == null) {
             return null;
@@ -261,7 +283,8 @@ class DbMultiUndo {
         return $res;
     }
 
-    function getCurrentTablesAsObject() {
+    public function getCurrentTablesAsObject()
+    {
         $tables = $this->game->getObjectListFromDB("SHOW TABLES", true);
         $data_all = [];
 
@@ -274,14 +297,16 @@ class DbMultiUndo {
         return $data_all;
     }
 
-    function getMoveSnapshot(int $move_id, int $player_id) {
+    public function getMoveSnapshot(int $move_id, int $player_id)
+    {
         $sql = $this->getSelectQuery();
         $sql .= " WHERE move_id='$move_id' AND player_id='$player_id'";
         $dbres = $this->game->getObjectListFromDB($sql);
         return reset($dbres);
     }
 
-    function rewriteHistory(int $from_move_id, int $to_move_id, int $player_id) {
+    public function rewriteHistory(int $from_move_id, int $to_move_id, int $player_id)
+    {
         $undotable = $this->table;
         $meta = $this->getMetaForMove($from_move_id, $player_id);
         if (!$meta) {
@@ -293,7 +318,8 @@ class DbMultiUndo {
         $this->game->DbQuery("UPDATE $undotable SET `meta` = '$json_meta' WHERE `move_id` = $from_move_id");
     }
 
-    function undoRestorePoint(int $player_id = 0, int $move_id = 0, bool $partial = false) {
+    public function undoRestorePoint(int $player_id = 0, int $move_id = 0, bool $partial = false)
+    {
         if ($player_id === 0) {
             $player_id = (int) $this->game->getCurrentPlayerId(true);
         }
@@ -353,7 +379,8 @@ class DbMultiUndo {
         $this->notifyUndoMoveMeta($meta);
     }
 
-    protected static function extractNotifIds($notifications) {
+    protected static function extractNotifIds($notifications)
+    {
         $notificationUIds = [];
         foreach ($notifications as $packet) {
             $data = \json_decode($packet["gamelog_notification"], true);
@@ -364,7 +391,8 @@ class DbMultiUndo {
         return $notificationUIds;
     }
 
-    function dbInsertValues($table, $values) {
+    public function dbInsertValues($table, $values)
+    {
         if (count($values) == 0) {
             return;
         }
@@ -392,7 +420,8 @@ class DbMultiUndo {
     }
 }
 
-function convertToUtf8($d) {
+function convertToUtf8($d)
+{
     if (is_array($d)) {
         foreach ($d as $k => $v) {
             $d[$k] = convertToUtf8($v);
@@ -411,7 +440,8 @@ function convertToUtf8($d) {
     return $d;
 }
 
-function fixedJsonEncode($data) {
+function fixedJsonEncode($data)
+{
     $result = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
     $ret = json_last_error();
     if ($result === false) {

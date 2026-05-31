@@ -13,7 +13,7 @@ Skara Brae is a BoardGameArena (BGA) game implementation using TypeScript (clien
 ```
 Table (BGA Framework)
   └── Base (modules/php/Base.php)        — BGA integration, static instance, player helpers
-        └── Game (modules/php/Game.php)  — Game logic, effect methods, scoring
+  └── Game (modules/php/Game.php)  — Game logic, effect methods, scoring
 ```
 
 ### Client Class Hierarchy
@@ -21,9 +21,9 @@ Table (BGA Framework)
 ```
 GameGui (BGA Framework)
   └── Game0Basics (src/Game0Basics.ts)   — State dispatch, notifications, preferences
-        └── Game1Tokens (src/Game1Tokens.ts) — Token display, animation manager
-              └── GameMachine (src/GameMachine.ts) — Operation UI: buttons, selectable targets
-                    └── GameXBody (src/GameXBody.ts) — Main UI: boards, score sheet, setup
+  └── Game1Tokens (src/Game1Tokens.ts) — Token display, animation manager
+  └── GameMachine (src/GameMachine.ts) — Operation UI: buttons, selectable targets
+  └── GameXBody   (src/GameXBody.ts) — Main UI: boards, score sheet, setup
 ```
 
 ### Key Subsystems
@@ -262,6 +262,11 @@ effect_drawSimpleCard($deck, $location)         // Draw from deck
 ```
 
 The `reason` parameter tracks action origin for log messages and undo context.
+
+### Graphics
+
+Single card ?x382 jpg
+Cards arranged in sprites
 
 ## Material System
 

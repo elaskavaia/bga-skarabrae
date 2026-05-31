@@ -85,5 +85,18 @@
         "value": [4]
       }
     ]
+  },
+  "104": {
+    "name": "Promo Action Tiles",
+    "values": {
+      "0": {
+        "name": "Off"
+      },
+      "1": {
+        "name": "On (Barter & Forage)",
+        "beta": true
+      }
+    },
+    "default": 0
   }
 }

@@ -53,6 +53,21 @@
     }
   }
 }
+.action.special.promo {
+  // single sheet, 2x2: columns = tile (Barter, Forage), rows = flip state
+  background-image: url(img/action_Promo.jpg);
+  $cols: 2;
+  background-size: calc($cols * 100%) auto;
+
+  @each $num, $col in (9: 0, 10: 1) {
+    &.action_special_#{$num} {
+      background-position: calc($col * 100% / ($cols - 1)) 0%;
+      &[data-state="1"] {
+        background-position: calc($col * 100% / ($cols - 1)) 100%;
+      }
+    }
+  }
+}
 
 .card.task {
   background-image: url(img/solo_cards.jpg);

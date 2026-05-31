@@ -1,4 +1,5 @@
 <?php
+
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -30,8 +31,8 @@ use Bga\Games\skarabrae\Common\SoloChallenge;
 use Bga\Games\skarabrae\States\GameDispatch;
 
 class Game extends Base {
-    const TURNS_NUMBER_GLOBAL = "tracker_nturns";
-    const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
+    public const TURNS_NUMBER_GLOBAL = "tracker_nturns";
+    public const ROUNDS_NUMBER_GLOBAL = "tracker_nrounds";
     public static Game $instance;
     public OpMachine $machine;
     public Material $material;
@@ -39,7 +40,7 @@ class Game extends Base {
     public DbMultiUndo $dbMultiUndo;
     public ?SoloChallenge $challenge = null;
 
-    function __construct() {
+    public function __construct() {
         Game::$instance = $this;
         parent::__construct();
         self::initGameStateLabels([
@@ -47,6 +48,7 @@ class Game extends Base {
             "variant_solo_dif" => 101,
             "variant_multi" => 102,
             "variant_challenge_type" => 103,
+            "variant_promo" => 104,
             "challenge_week_start" => 11,
         ]);
 
@@ -71,7 +73,7 @@ class Game extends Base {
 
     /*
         setupGameTables:
-        
+
         init all game tables (players and stats init in base class)
         called from setupNewGame
     */
@@ -80,9 +82,9 @@ class Game extends Base {
         $tokens = $this->tokens->db;
         // setup
 
-        /* 
-        1. Each player takes 1 Player Board with a Slider placed over the second column of the Storage Area (see below). 
-        They also place 1 Furnish Marker into the left-most slot of the Furnish Track, and 1 Trade Marker into the left-most slot of the Trade Track. 
+        /*
+        1. Each player takes 1 Player Board with a Slider placed over the second column of the Storage Area (see below).
+        They also place 1 Furnish Marker into the left-most slot of the Furnish Track, and 1 Trade Marker into the left-most slot of the Trade Track.
         */
         $players = $this->loadPlayersBasicInfos();
         $pnum = $this->getPlayersNumber();
@@ -130,6 +132,11 @@ class Game extends Base {
          * 9. Shuffle all Special Action Tiles and deal 2 to each player. Players must select 1 to keep, returning the other to the box.
          * 1-2 Players: If desired, 3 Special Action Tiles can be dealt to each player instead, with each player returning 2 of them.
          */
+        if ($this->getVariantPromo()) {
+            // promo Special Action Tiles join the draft pool
+            $tokens->createToken("action_special_9", "deck_action");
+            $tokens->createToken("action_special_10", "deck_action");
+        }
         $tokens->shuffle("deck_action");
         $dnum = $this->getVariantDraftNum();
         $n = 2;
@@ -137,7 +144,7 @@ class Game extends Base {
             $n = 3;
         } elseif ($dnum == 4) {
             //max possible
-            $x = 8; //$this->tokens->db->countTokensInLocation("deck_action");
+            $x = $this->tokens->db->countTokensInLocation("deck_action");
             $n = floor($x / $pnum);
         }
 
@@ -273,7 +280,7 @@ class Game extends Base {
         return null;
     }
 
-    function switchActivePlayer(int $playerId, bool $moreTime = true) {
+    public function switchActivePlayer(int $playerId, bool $moreTime = true) {
         if ($playerId <= 2) {
             return;
         }
@@ -291,10 +298,10 @@ class Game extends Base {
     }
 
     /*
-        getAllDatas: 
-        
+        getAllDatas:
+
         Gather all informations about current game situation (visible by the current player).
-        
+
         The method is called each time the game interface is displayed to a player, ie:
         _ when the game starts
         _ when a player refreshes the game page (F5)
@@ -330,7 +337,7 @@ class Game extends Base {
         return $result;
     }
 
-    function getChallegeScores() {
+    public function getChallegeScores() {
         $result = [];
         if ($this->isSoloChallenge()) {
             $startWeek = $this->getChallenge()->getGameStartWeek();
@@ -351,15 +358,15 @@ class Game extends Base {
 
     /*
         getGameProgression:
-        
+
         Compute and return the current game progression.
         The number returned must be an integer beween 0 (=the game just started) and
         100 (= the game is finished or almost finished).
-    
-        This method is called each time we are in a game state with the "updateGameProgression" property set to true 
+
+        This method is called each time we are in a game state with the "updateGameProgression" property set to true
         (see states.inc.php)
     */
-    function getGameProgression() {
+    public function getGameProgression() {
         $round = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         $turn = $this->tokens->db->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         if ($round == 0) {
@@ -371,12 +378,12 @@ class Game extends Base {
         return ($round - 1) * 25 + ($turn - 1) * 8;
     }
 
-    function isEndOfGame() {
+    public function isEndOfGame() {
         $num = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $num >= 5;
     }
 
-    function getUserPreference(int $player_id, int $code): int {
+    public function getUserPreference(int $player_id, int $code): int {
         return (int) $this->userPreferences->get($player_id, $code);
     }
 
@@ -384,7 +391,7 @@ class Game extends Base {
     //////////// Utility functions
     ////////////
 
-    function effect_incCount(string $color, string $type, int $inc = 1, string $reason, array $options = []) {
+    public function effect_incCount(string $color, string $type, int $inc = 1, string $reason, array $options = []) {
         $message = array_get($options, "message", "*");
         unset($options["message"]);
 
@@ -418,7 +425,7 @@ class Game extends Base {
         );
     }
 
-    function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
+    public function effect_incTrack(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
         $message = array_get($args, "message", "*");
         unset($args["message"]);
         $token_id = $this->tokens->getTrackerId($color, $type);
@@ -435,7 +442,7 @@ class Game extends Base {
         );
     }
 
-    function effect_incVp(string $owner, int $inc, string $stat = "", array $options = []) {
+    public function effect_incVp(string $owner, int $inc, string $stat = "", array $options = []) {
         $player_id = $this->getPlayerIdByColor($owner);
 
         if ($inc < 0) {
@@ -456,7 +463,7 @@ class Game extends Base {
         $this->playerStats->inc($stat, $inc, $player_id);
     }
 
-    function getPlayerIdByColor(?string $color): int {
+    public function getPlayerIdByColor(?string $color): int {
         if ($color === OpMachine::GAME_MULTI_COLOR) {
             return 1;
         }
@@ -466,7 +473,7 @@ class Game extends Base {
         return parent::getPlayerIdByColor($color);
     }
 
-    function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
+    public function effect_drawSimpleCard(string $color, string $type, int $inc = 1, string $reason = "", array $args = []) {
         $message = array_get($args, "message", clienttranslate('${player_name} gains ${token_name} ${reason}'));
         unset($args["message"]);
         $from = "deck_$type";
@@ -485,59 +492,63 @@ class Game extends Base {
         return $tokens;
     }
 
-    function effect_cleanCards(mixed $n) {
+    public function effect_cleanCards(mixed $n) {
         $cards = $this->tokens->getTokensOfTypeInLocation(null, "cardset_$n");
         $this->tokens->dbSetTokensLocation($cards, "discard_village", 0, "");
     }
 
-    function getRoundNumber() {
+    public function getRoundNumber() {
         $n = $this->tokens->db->getTokenState(Game::ROUNDS_NUMBER_GLOBAL);
         return $n;
     }
 
-    function getTurnNumber() {
+    public function getTurnNumber() {
         $n = $this->tokens->db->getTokenState(Game::TURNS_NUMBER_GLOBAL);
         return $n;
     }
 
-    function isSimultanousPlay() {
+    public function isSimultanousPlay() {
         if ($this->isSolo()) {
             return false;
         }
         return ((int) $this->getGameStateValue("variant_multi")) ? 1 : 0;
     }
 
-    function getVariantDraftNum() {
+    public function getVariantDraftNum() {
         return (int) $this->getGameStateValue("variant_draft_num") ?: 2;
     }
 
-    function getVariantSoloDif() {
+    public function getVariantPromo(): bool {
+        return (bool) $this->getGameStateValue("variant_promo");
+    }
+
+    public function getVariantSoloDif() {
         return (int) $this->getGameStateValue("variant_solo_dif");
     }
 
-    function isSoloChallenge(): bool {
+    public function isSoloChallenge(): bool {
         return $this->isSolo() && $this->getVariantSoloDif() == Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE;
     }
 
-    function getChallenge(): SoloChallenge {
+    public function getChallenge(): SoloChallenge {
         if ($this->challenge === null) {
             $this->challenge = new SoloChallenge($this, $this->getVariantChallengeType());
         }
         return $this->challenge;
     }
 
-    function getVariantChallengeType(): int {
+    public function getVariantChallengeType(): int {
         return (int) $this->getGameStateValue("variant_challenge_type") ?: 1;
     }
 
-    function getTurnMarkerPosition(string $owner) {
+    public function getTurnMarkerPosition(string $owner) {
         return (int) $this->tokens->db->getTokenState("turnmarker_$owner", 0);
     }
-    function setTurnMarkerPosition(string $owner, int $pos) {
+    public function setTurnMarkerPosition(string $owner, int $pos) {
         return $this->tokens->dbSetTokenState("turnmarker_$owner", $pos, "");
     }
 
-    function getMaxTurnMarkerPosition(int $level = 1, ?string &$token = null) {
+    public function getMaxTurnMarkerPosition(int $level = 1, ?string &$token = null) {
         $maxpass = $level * 10 - 1;
         $others = $this->tokens->getTokensOfTypeInLocation("turnmarker", "turndisk");
         foreach ($others as $key => $info) {
@@ -550,31 +561,31 @@ class Game extends Base {
         return $maxpass;
     }
 
-    function getRulesFor($token_id, $field = "r", $default = "") {
+    public function getRulesFor($token_id, $field = "r", $default = "") {
         return $this->material->getRulesFor($token_id, $field, $default);
     }
-    function getTokenName($token_id, $default = "") {
+    public function getTokenName($token_id, $default = "") {
         if (!$default) {
             $default = "$token_id ?";
         }
         return $this->material->getRulesFor($token_id, "name", $default);
     }
 
-    function getTrackerIdAndValue(?string $color, string $type, ?array &$arr = null) {
+    public function getTrackerIdAndValue(?string $color, string $type, ?array &$arr = null) {
         return $this->tokens->getTrackerIdAndValue($color, $type, $arr);
     }
 
-    function getTerrainNum(string $card) {
+    public function getTerrainNum(string $card) {
         $terr = (int) $this->getRulesFor($card, "t");
         return $terr;
     }
 
-    function getActionTileSide(string $action_tile) {
+    public function getActionTileSide(string $action_tile) {
         $state = $this->tokens->db->getTokenState($action_tile, 0);
         return $state;
     }
 
-    function getActionRules($act) {
+    public function getActionRules($act) {
         $state = $this->getActionTileSide($act);
 
         if ($state) {
@@ -586,7 +597,7 @@ class Game extends Base {
         return $rules;
     }
 
-    function getHearthLimit(string $color) {
+    public function getHearthLimit(string $color) {
         $owner = $color;
         $hearth_limit = 4;
         $craftState = $this->getActionTileSide("action_main_2_$owner");
@@ -604,12 +615,12 @@ class Game extends Base {
         return $hearth_limit;
     }
 
-    function hasSpecial(int $num, string $color) {
+    public function hasSpecial(int $num, string $color) {
         $cards = $this->tokens->getTokensOfTypeInLocation("action_special_$num", "tableau_{$color}");
         return count($cards) > 0;
     }
 
-    function countTags(int $tagtype, string $owner) {
+    public function countTags(int $tagtype, string $owner) {
         if ($tagtype <= 4) {
             $ac = $tagtype + 5;
             // if gathering card is flipped it has another tag
@@ -637,7 +648,7 @@ class Game extends Base {
         return $count;
     }
 
-    function finalScoring() {
+    public function finalScoring() {
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $player_id => $player) {
             $this->playerScore->set($player_id, 0);
@@ -751,7 +762,7 @@ class Game extends Base {
         }
     }
 
-    function getEndScores(): array {
+    public function getEndScores(): array {
         // this would be filled dynamically on your game, but should have the shape of this static example
         $endScores = [];
         $players = $this->loadPlayersBasicInfos();
@@ -781,7 +792,7 @@ class Game extends Base {
         return $endScores;
     }
 
-    function isGoalAchieved(string $card, string $color) {
+    public function isGoalAchieved(string $card, string $color) {
         switch ($card) {
             case "card_goal_1":
                 //Have 6 or more Settlers from 1 Environment.
@@ -842,7 +853,7 @@ class Game extends Base {
         return true;
     }
 
-    function getTotalResCount(string $color) {
+    public function getTotalResCount(string $color) {
         $count = 0;
         foreach (Material::getAllNonPoopResources() as $res) {
             $count += $this->tokens->getTrackerValue($color, $res);
@@ -878,7 +889,7 @@ class Game extends Base {
         }
     }
 
-    function doCustomUndoSavePoint() {
+    public function doCustomUndoSavePoint() {
         foreach ($this->undoSavepointMeta as $player_id => $meta) {
             // generic one first
             if (!$player_id) {
@@ -892,7 +903,7 @@ class Game extends Base {
         $this->undoSavepointMeta = []; // and reset
     }
 
-    function restorePlayerTables($table, $saved_data, $meta) {
+    public function restorePlayerTables($table, $saved_data, $meta) {
         $player_id = (int) $meta["player_id"];
         $owner = $this->getPlayerColorById($player_id);
         if ($table == "token") {
@@ -960,7 +971,7 @@ class Game extends Base {
         return false;
     }
 
-    function setPersistent(string $key, int $playerId, mixed $value): void {
+    public function setPersistent(string $key, int $playerId, mixed $value): void {
         try {
             $this->legacy->set($key, $playerId, $value);
         } catch (\Throwable $e) {
@@ -970,29 +981,29 @@ class Game extends Base {
 
     //// DEBUG STUFF
 
-    function debug_op(string $type) {
+    public function debug_op(string $type) {
         $color = $this->getCurrentPlayerColor();
         $this->machine->push($type, $color);
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
 
-    function debug_specialCard(int $num) {
+    public function debug_specialCard(int $num) {
         $color = $this->getCurrentPlayerColor();
         $cards = $this->tokens->getTokensOfTypeInLocation("action_special", "tableau_{$color}");
         $this->tokens->dbSetTokensLocation($cards, "limbo", 0);
         $this->tokens->dbSetTokenLocation("action_special_$num", "tableau_{$color}", 0);
     }
 
-    function debug_q() {
+    public function debug_q() {
         $this->notifyWithName("test", "flip", []);
     }
-    function debug_flip0() {
+    public function debug_flip0() {
         $this->notifyWithName("test", "flip", ["state" => "0"]);
     }
-    function debug_flip1() {
+    public function debug_flip1() {
         $this->notifyWithName("test", "flip", ["state" => "1"]);
     }
-    function debug_game_variant(string $type = "variant_multi", int $value = 1) {
+    public function debug_game_variant(string $type = "variant_multi", int $value = 1) {
         $this->setGameStateValue($type, $value);
     }
     /**
@@ -1021,7 +1032,7 @@ class Game extends Base {
         return $this->debug_playAutomatically(1);
     }
 
-    function debug_maxRes() {
+    public function debug_maxRes() {
         $color = $this->getCurrentPlayerColor();
 
         foreach (Material::getAllNonPoopResources() as $res) {
@@ -1031,7 +1042,7 @@ class Game extends Base {
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
 
-    function debug_setupGameTables() {
+    public function debug_setupGameTables() {
         $this->DbQuery("DELETE FROM token");
         $this->DbQuery("DELETE FROM machine");
         $this->DbQuery("DELETE FROM multiundo");
@@ -1044,21 +1055,21 @@ class Game extends Base {
         $this->gamestate->jumpToState(StateConstants::STATE_GAME_DISPATCH);
     }
 
-    function debug_dumpMachineDb() {
+    public function debug_dumpMachineDb() {
         $t = $this->machine->gettablearr();
         $this->debugLog("all stack " . ($t[0]["type"] ?? "halt"), $t);
         return $t;
     }
-    function debugConsole($info, $args = []) {
+    public function debugConsole($info, $args = []) {
         $this->notify->all("log", $info, $args);
         $this->warn($info);
     }
-    function debugLog($info, $args = []) {
+    public function debugLog($info, $args = []) {
         $this->notify->all("log", "", ["log" => $info, "args" => $args]);
         //$this->warn($info . ": " . toJson($args));
     }
 
-    function debug_seedLeaderboard() {
+    public function debug_seedLeaderboard() {
         $fakePlayerIds = [2300662, 2300663, 2300664, 2300665, 2300666];
         $fakeScores = [5, 4, 3, 2, 1];
         for ($i = 0; $i < count($fakePlayerIds); $i++) {
@@ -1067,7 +1078,7 @@ class Game extends Base {
         $this->debugConsole("Seeded leaderboard with " . count($fakePlayerIds) . " entries");
     }
 
-    function debug_fakeEndScoring(int $score = 50) {
+    public function debug_fakeEndScoring(int $score = 50) {
         // $this->debug_seedLeaderboard();
         $this->tokens->db->setTokenState(Game::ROUNDS_NUMBER_GLOBAL, 5); // mark as end of game
         $playerId = (int) $this->getActivePlayerId();
