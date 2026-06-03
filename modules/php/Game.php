@@ -133,9 +133,13 @@ class Game extends Base {
          * 1-2 Players: If desired, 3 Special Action Tiles can be dealt to each player instead, with each player returning 2 of them.
          */
         if ($this->getVariantPromo()) {
-            // promo Special Action Tiles join the draft pool
-            $tokens->createToken("action_special_9", "deck_action");
-            $tokens->createToken("action_special_10", "deck_action");
+            if ($this->isSoloChallenge()) {
+                $this->notifyMessage(clienttranslate("Promo Action Tiles are not available in this weekly challenge"));
+            } else {
+                // promo Special Action Tiles join the draft pool
+                $tokens->createToken("action_special_9", "deck_action");
+                $tokens->createToken("action_special_10", "deck_action");
+            }
         }
         $tokens->shuffle("deck_action");
         $dnum = $this->getVariantDraftNum();

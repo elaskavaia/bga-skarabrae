@@ -36,8 +36,7 @@
         "name": "Beat your own score"
       },
       "4": {
-        "name": "Weekly Solo Challenges",
-        "beta": true
+        "name": "Weekly Solo Challenges"
       }
     },
     "default": 4,

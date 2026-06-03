@@ -910,6 +910,45 @@ final class GameTest extends TestCase {
         $this->assertEquals(0, $game->tokens->getTrackerValue($owner, "skaill"));
     }
 
+    public function testPromoTilesAddedToDraftPoolWhenEnabled() {
+        $game = new GameUT();
+        $game->setPlayersNumber(2);
+        $game->_setCurrentPlayerId(10);
+        $game->gamestate->changeActivePlayer(10);
+        $game->setGameStateInitialValue("variant_promo", 1);
+        $game->setupGameTables();
+
+        $this->assertNotNull($game->tokens->db->getTokenInfo("action_special_9"), "Barter created when promo on");
+        $this->assertNotNull($game->tokens->db->getTokenInfo("action_special_10"), "Forage created when promo on");
+    }
+
+    public function testPromoTilesNotCreatedWhenDisabled() {
+        $game = new GameUT();
+        $game->setPlayersNumber(2);
+        $game->_setCurrentPlayerId(10);
+        $game->gamestate->changeActivePlayer(10);
+        // variant_promo defaults to 0
+        $game->setupGameTables();
+
+        $this->assertNull($game->tokens->db->getTokenInfo("action_special_9"), "no promo tiles when option off");
+        $this->assertNull($game->tokens->db->getTokenInfo("action_special_10"), "no promo tiles when option off");
+    }
+
+    public function testPromoTilesSkippedInWeeklyChallenge() {
+        $game = new GameUT();
+        $game->setPlayersNumber(1);
+        $game->_setCurrentPlayerId(10);
+        $game->gamestate->changeActivePlayer(10);
+        $game->setGameStateInitialValue("variant_promo", 1);
+        $game->setGameStateInitialValue("variant_solo_dif", \Bga\Games\skarabrae\Material::MA_GAMEOPTION_SOLO_DIFFICULTY_CHALLENGE);
+        $game->setGameStateInitialValue("variant_challenge_type", 1);
+        $game->setupGameTables();
+
+        // Deterministic weekly challenge must not gain extra tiles in deck_action
+        $this->assertNull($game->tokens->db->getTokenInfo("action_special_9"), "promo skipped in weekly challenge");
+        $this->assertNull($game->tokens->db->getTokenInfo("action_special_10"), "promo skipped in weekly challenge");
+    }
+
     public function testBarterNoEffectWhenTradeMarkerNotMoved() {
         $game = $this->game();
         $owner = PCOLOR;
