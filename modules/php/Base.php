@@ -234,9 +234,8 @@ class Base extends Table {
             }
         }
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        $table_options = $this->getTableOptions();
         $result["table_options"] = [];
-        foreach ($table_options as $option_id => $option) {
+        foreach ($this->getGameOptions() as $option_id => $option) {
             $value = $this->tableOptions->get($option_id) ?? ($option["default"] ?? 0);
             $result["table_options"][$option_id] = $option;
             $result["table_options"][$option_id]["value"] = $value;
