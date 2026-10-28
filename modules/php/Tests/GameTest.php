@@ -910,6 +910,29 @@ final class GameTest extends TestCase {
         $this->assertEquals(0, $game->tokens->getTrackerValue($owner, "skaill"));
     }
 
+    public function testBarterFlippedCountedResource() {
+        $game = $this->game();
+        $owner = PCOLOR;
+        $game->tokens->createTokens();
+        $game->tokens->db->createToken("action_special_9", "tableau_$owner");
+        $game->tokens->dbSetTokenState("action_special_9", 1);
+        $game->effect_incTrack($owner, "trade", 6, ""); // Trade Marker at level 6 -> 2shell
+        $shells = $game->tokens->getTrackerValue($owner, "shell");
+
+        $game->machine->push("barter", $owner);
+        $this->dispatch();
+
+        $op = $game->machine->createTopOperationFromDbForOwner(null);
+        $this->assertTrue($op->canSkip(), "purchase is optional");
+        $args = $op->getArgs();
+        $this->assertEquals('Perform ${name}', $args["descriptionOnMyTurn"]);
+        $this->assertEquals('${p0}', $args["name"]["log"] ?? null, "prompt name must be sent");
+        $op->action_resolve([Operation::ARG_TARGET => "1"]);
+        $this->dispatch(StateConstants::STATE_MACHINE_HALTED);
+
+        $this->assertEquals($shells + 2, $game->tokens->getTrackerValue($owner, "shell"));
+    }
+
     public function testPromoTilesAddedToDraftPoolWhenEnabled() {
         $game = new GameUT();
         $game->setPlayersNumber(2);

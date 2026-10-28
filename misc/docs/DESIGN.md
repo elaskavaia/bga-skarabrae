@@ -135,6 +135,7 @@ Operations are queued using a mini-language parsed by `OpExpression.php` / `OpPa
    - Leaf → `instanciateSimpleOperation()` → concrete `Op_*` class
    - Composite → `ComplexOperation` with delegate sub-operations
    - Ranged → wrapped in `Op_seq` or `CountableOperation`
+   - Ranged of ranged (e.g. `?(2shell)`) -> outer counts on `Op_seq` wrapping the inner op; counts multiply on expand
 
 ## State Machine Integration
 

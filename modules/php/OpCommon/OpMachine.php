@@ -105,6 +105,9 @@ class OpMachine {
             $op->withCounts($expr);
             return $op;
         }
+        if ($expr->args[0] instanceof OpExpressionRanged) {
+            return $this->wrapInSeq($this->exprToOperation($expr->args[0], $owner), $expr, $owner);
+        }
 
         $unrangedType = OpExpression::str($expr->toUnranged());
         $matches = null;
@@ -120,14 +123,17 @@ class OpMachine {
                 $sub->withCounts($expr);
                 return $sub;
             } else {
-                /** @var ComplexOperation */
-                $op = $this->instanciateCommonOperation("seq", $owner);
-                $op->withDelegate($sub)->withCounts($expr);
-                return $op;
+                return $this->wrapInSeq($sub, $expr, $owner);
             }
         } else {
             return $sub;
         }
+    }
+    function wrapInSeq(Operation $sub, OpExpression $expr, ?string $owner) {
+        /** @var ComplexOperation */
+        $op = $this->instanciateCommonOperation("seq", $owner);
+        $op->withDelegate($sub)->withCounts($expr);
+        return $op;
     }
     static function opToMnemonic(string $operand) {
         return match ($operand) {

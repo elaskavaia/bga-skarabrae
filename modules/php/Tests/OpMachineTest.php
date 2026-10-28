@@ -58,4 +58,15 @@ class OpMachineTest extends TestCase {
         $this->assertEquals($op->getDataField("params"), "a");
         $this->assertEquals($op->getDataField("count"), "5");
     }
+
+    public function testInstanciateOptionalCountedOperation() {
+        $op = $this->factory->instanciateOperation("?(2shell)", "aaa");
+
+        $this->assertTrue($op->canSkip());
+        $this->assertEquals("[0,1](2(shell))", $op->getTypeFullExpr());
+
+        $op = $this->factory->instanciateOperation("2(3shell)", "aaa");
+        $this->assertFalse($op->canSkip());
+        $this->assertEquals("2(3(shell))", $op->getTypeFullExpr());
+    }
 }
