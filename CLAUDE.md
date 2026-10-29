@@ -100,7 +100,7 @@ Entry point: `src/css/GameXBody.scss`. Partials: `Boards.scss`, `Cards.scss`, `T
 
 ### TypeScript Compilation
 
-`tsconfig.json` targets ES5 with no modules, concatenating all `src/**/*.ts` into a single `skarabrae.js`. Type definitions in `src/types/`.
+`tsconfig.json` targets ES5 with no modules, concatenating all `src/**/*.ts` into a single `skarabrae.js`. Official `bga-framework.d.ts` in the root; extras in `src/types/`.
 
 ## Material Generation
 

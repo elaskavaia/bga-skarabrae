@@ -373,7 +373,7 @@ Solo difficulty modes and goals defined in `Material.php`:
 - `npm run predeploy` — Build + lint PHP + run tests
 - `npm run tests` — PHPUnit with in-memory doubles
 
-Compiled outputs are checked into the repo (BGA requirement). Type definitions for BGA framework are in `src/types/`.
+Compiled outputs are checked into the repo (BGA requirement). The official BGA framework typings `bga-framework.d.ts` are in the game root (synced from Studio); `src/types/` holds library typings and `bga-framework-extra.d.ts` for members missing from the official file.
 
 ## Future Designs
 
